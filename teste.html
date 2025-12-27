@@ -1,0 +1,1262 @@
+    <!DOCTYPE html>
+        <html lang="pt-br">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>LDC | Ferramentaria Pro</title>
+            
+            <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛠️</text></svg>">
+            <script src="https://cdn.tailwindcss.com"></script>
+            <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+            <script src="https://unpkg.com/lucide@latest"></script>
+
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
+                
+                :root {
+                    --brand-primary: #0F172A;
+                    --brand-action: #2563EB;
+                    --bg-main: #F8FAFC;
+                }
+
+                body { 
+                    font-family: 'Plus Jakarta Sans', sans-serif; 
+                    background-color: var(--bg-main); 
+                    display: flex; 
+                    min-height: 100vh; 
+                    color: #1E293B;
+                }
+
+                .sidebar { width: 280px; transition: all 0.3s ease; background-color: #0B1120; border-right: 1px solid #1E293B; }
+                .sidebar.collapsed { width: 80px; }
+                
+                .main-content { flex: 1; display: none; opacity: 0; transform: translateY(10px); transition: all 0.4s ease; }
+                .main-content.active-section { display: block; opacity: 1; transform: translateY(0); }
+                
+                .nav-btn { width: 100%; display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: 0.75rem; font-weight: 700; color: #64748B; transition: all 0.2s; border: none; cursor: pointer; background: transparent; }
+                .nav-btn:hover { color: #F1F5F9; background-color: #1E293B; }
+                .nav-btn.active { background-color: var(--brand-action); color: white; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3); }
+                
+                .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+                
+                .status-quebrado { background-color: #FFF1F2 !important; color: #E11D48 !important; border: 1px solid #FDA4AF; }
+                
+                .filter-pill { padding: 0.5rem 1.25rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; transition: all 0.2s; border: 2px solid transparent; cursor: pointer; }
+                .filter-pill.active { border-color: currentColor; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+
+                .img-container { cursor: pointer !important; }
+            </style>
+        </head>
+        <body>
+
+            <aside id="sidebar" class="sidebar text-slate-400 flex flex-col sticky top-0 h-screen z-50">
+                <div class="p-6 flex items-center justify-between">
+                    <h1 class="text-white font-black text-xl sidebar-text uppercase tracking-tighter">LDC PRO</h1>
+                    <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white bg-transparent border-none cursor-pointer"><i data-lucide="menu"></i></button>
+                </div>
+                <nav class="flex-1 px-4 space-y-2 mt-4">
+                    <button id="btn-main" onclick="showSection('main')" class="nav-btn active"><i data-lucide="layout-dashboard"></i> <span class="sidebar-text">Painel Principal</span></button>
+                    <button id="btn-catalog" onclick="showSection('catalog')" class="nav-btn"><i data-lucide="archive"></i> <span class="sidebar-text">Estoque</span></button>
+                    <button id="btn-team" onclick="openModal('teamModal'); renderTeam();" class="nav-btn"><i data-lucide="users"></i> <span class="sidebar-text">Equipe</span></button>
+                    <button id="btn-logs" onclick="showSection('logs')" class="nav-btn"><i data-lucide="history"></i> <span class="sidebar-text">Histórico</span></button>
+                    <button id="btn-database" onclick="showSection('database')" class="nav-btn"><i data-lucide="database"></i> <span class="sidebar-text">Backup</span></button>
+                </nav>
+            </aside>
+
+            <main id="section-main" class="main-content p-4 md:p-8 active-section">
+                <div class="max-w-[1400px] mx-auto">
+                    <div class="flex justify-between items-center mb-8">
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-900 uppercase tracking-tighter">Inventário Operacional</h2>
+                            <p id="currentDateDisplay" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest"></p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="openMaterialModal()" class="bg-indigo-600 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all border-none cursor-pointer"><i data-lucide="package-minus" size="16"></i> Saída de Material</button>
+                            <button onclick="openMaintenanceModal()" class="bg-red-600 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all border-none cursor-pointer"><i data-lucide="wrench" size="16"></i> Reportar Manutenção</button>
+                            <button onclick="openAddModal('disponivel')" class="bg-emerald-600 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all border-none cursor-pointer"><i data-lucide="plus" size="16"></i> Novo Item</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <div class="lg:col-span-12 space-y-6">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-slate-400 text-[10px] font-bold uppercase mb-1">Total Geral</p><h2 id="totalCount" class="text-2xl font-black">0</h2></div>
+                                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-emerald-500 text-[10px] font-bold uppercase mb-1">Disponíveis</p><h2 id="availCount" class="text-2xl font-black text-emerald-600">0</h2></div>
+                                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-orange-500 text-[10px] font-bold uppercase mb-1">Em Uso</p><h2 id="loanCount" class="text-2xl font-black text-orange-500">0</h2></div>
+                                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-red-500 text-[10px] font-bold uppercase mb-1">Manutenção</p><h2 id="brokenCount" class="text-2xl font-black text-red-600">0</h2></div>
+                            </div>
+                            
+                            <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100">
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+                                        <tr><th class="px-8 py-4">Equipamento</th><th class="px-8 py-4">Status / Responsável</th><th class="px-8 py-4 text-right">Ações</th></tr>
+                                    </thead>
+                                    <tbody id="toolList" class="divide-y divide-slate-50"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <main id="section-catalog" class="main-content p-4 md:p-8">
+                <div class="max-w-[1400px] mx-auto">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                        <div>
+                            <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase">Estoque</h2>
+                        </div>
+                        <div class="relative">
+                            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
+                            <input type="text" id="catalogSearchInput" onkeyup="renderCatalog()" placeholder="BUSCAR POR NOME, CÓDIGO OU LOCAL..." class="w-full md:w-80 bg-white border-2 border-slate-100 rounded-xl pl-12 pr-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                        </div>
+                    </div>
+                    <div class="flex gap-4 mb-8">
+                        <button onclick="setCatalogFilter('all')" id="filter-all" class="filter-pill active bg-slate-200 text-slate-700">Todos</button>
+                        <button onclick="setCatalogFilter('disponivel')" id="filter-disponivel" class="filter-pill bg-emerald-100 text-emerald-600">Disponíveis</button>
+                        <button onclick="setCatalogFilter('em uso')" id="filter-uso" class="filter-pill bg-orange-100 text-orange-600">Em Uso</button>
+                        <button onclick="setCatalogFilter('quebrado')" id="filter-quebrado" class="filter-pill bg-red-100 text-red-600">Manutenção</button>
+                    </div>
+                    <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"></div>
+                </div>
+            </main>
+
+            <main id="section-logs" class="main-content p-4 md:p-8">
+                <div class="max-w-[1400px] mx-auto">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                        <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase">Histórico</h2>
+                        <div class="relative">
+                            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
+                            <input type="text" id="historySearchInput" onkeyup="renderHistory()" placeholder="PESQUISAR POR FERRAMENTA OU RESPONSÁVEL..." class="w-full md:w-80 bg-white border-2 border-slate-100 rounded-xl pl-12 pr-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                        </div>
+                    </div>
+                    <div id="historyGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </div>
+            </main>
+
+            <div id="teamModal" class="fixed inset-0 bg-slate-900/80 hidden z-[750] flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('teamModal')">
+                <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-md shadow-2xl" onclick="event.stopPropagation()">
+                    <h3 class="text-lg font-black mb-6 text-center uppercase tracking-tighter">Gestão de Equipe</h3>
+                    <div class="space-y-2 mb-6">
+                        <input type="text" id="workerNameInput" placeholder="NOME DO COLABORADOR" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                        <div class="flex gap-2">
+                            <input type="text" id="workerCompanyInput" placeholder="EMPRESA / DEPARTAMENTO" class="flex-1 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                            <button onclick="addWorker()" class="bg-blue-600 text-white px-5 rounded-xl border-none cursor-pointer hover:bg-blue-700 transition-all shadow-md"><i data-lucide="plus"></i></button>
+                        </div>
+                    </div>
+                    <hr class="border-slate-100 mb-6">
+                    <div class="relative mb-4">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size="14"></i>
+                        <input type="text" id="teamSearchInput" onkeyup="renderTeam()" placeholder="PESQUISAR NA EQUIPE..." class="w-full bg-slate-50 border-none rounded-xl pl-10 pr-4 py-2 font-bold uppercase text-[10px] outline-none">
+                    </div>
+                    <div id="teamList" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2"></div>
+                    <button onclick="closeModal('teamModal')" class="w-full mt-6 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black uppercase text-xs border-none cursor-pointer hover:bg-slate-200">Fechar</button>
+                </div>
+            </div>
+
+            <div id="zoomModal" class="fixed inset-0 bg-black/90 hidden z-[600] flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('zoomModal')">
+
+                <button onclick="closeModal('zoomModal'); event.stopPropagation();" class="absolute top-5 right-5 text-white bg-transparent border-none cursor-pointer z-10"><i data-lucide="x" size="32"></i></button>
+                <div id="zoomContainer" class="w-full h-full flex items-center justify-center overflow-hidden" onclick="event.stopPropagation()">
+                    <img id="zoomImage" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl transition-transform duration-200 ease-out cursor-zoom-in">
+                </div>
+            </div>
+
+            <div id="deleteModal" class="fixed inset-0 bg-slate-900/80 hidden z-[700] flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('deleteModal')">
+                <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm text-center shadow-2xl" onclick="event.stopPropagation()">
+                    <div class="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="alert-circle" size="32"></i></div>
+                    <h3 class="text-lg font-black text-slate-900 uppercase mb-2">Excluir Item?</h3>
+                    <p class="text-slate-500 text-sm mb-6">Você tem certeza que deseja remover este item? Esta ação não pode ser desfeita.</p>
+                    <div class="flex gap-3">
+                        <button onclick="closeModal('deleteModal')" class="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none">Cancelar</button>
+                        <button id="confirmDeleteBtn" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none shadow-lg hover:bg-rose-700 transition-all">Confirmar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="returnModal" class="fixed inset-0 bg-slate-900/80 hidden z-[700] flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('returnModal')">
+                <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm text-center shadow-2xl" onclick="event.stopPropagation()">
+                    <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="activity" size="32"></i></div>
+                    <h3 id="returnModalTitle" class="text-lg font-black text-slate-900 uppercase mb-2">Estado da Ferramenta</h3>
+                    <p id="returnModalText" class="text-slate-500 text-sm mb-6">Qual o estado de devolução do item?</p>
+                    <div class="flex gap-3">
+                        <button onclick="handleReturnCondition('quebrado')" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none shadow-lg hover:bg-rose-700">Quebrado</button>
+                        <button onclick="handleReturnCondition('funcionando')" class="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none shadow-lg hover:bg-emerald-600">Funcionando</button>
+                    </div>
+                    <button onclick="closeModal('returnModal')" class="w-full mt-6 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black uppercase text-xs border-none cursor-pointer hover:bg-slate-200">Cancelar</button>
+                </div>
+            </div>
+
+            <div id="stockReturnModal" class="fixed inset-0 bg-slate-900/80 hidden z-[700] flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('stockReturnModal')">
+                <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-sm text-center shadow-2xl" onclick="event.stopPropagation()">
+                    <div class="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="check-circle" size="32"></i></div>
+                    <h3 id="stockReturnModalTitle" class="text-lg font-black text-slate-900 uppercase mb-2">Finalizar Manutenção?</h3>
+                    <p id="stockReturnModalText" class="text-slate-500 text-sm mb-6">Você confirma que a manutenção deste item foi concluída e ele pode voltar ao estoque?</p>
+                    <div class="flex gap-3">
+                        <button onclick="closeModal('stockReturnModal')" class="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none">Cancelar</button>
+                        <button id="confirmStockReturnBtn" class="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none shadow-lg">Sim, Finalizar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="addModal" class="fixed inset-0 bg-slate-900/90 hidden z-[800] flex items-center justify-center p-4 backdrop-blur-md" onclick="closeModal('addModal')">
+                <div class="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
+                    <div class="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center">
+                        <h3 id="addModalTitle" class="font-black uppercase tracking-tighter text-slate-900">Novo Item</h3>
+                        <button onclick="closeModal('addModal'); event.stopPropagation();" class="text-slate-400 hover:text-rose-500 bg-transparent border-none cursor-pointer"><i data-lucide="x"></i></button>
+                    </div>
+                    <div class="p-8 max-h-[80vh] overflow-y-auto custom-scrollbar">
+                        <div class="space-y-3">
+                            <div class="border-2 border-dashed border-slate-200 rounded-2xl p-4 text-center h-40 flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors" onclick="document.getElementById('fileInput').click()">
+                                <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="previewImage(this)">
+                                <div id="uploadPlaceholder" class="text-slate-400">
+                                    <i data-lucide="camera" class="mx-auto" size="24"></i>
+                                    <p class="text-[8px] font-black uppercase">Adicionar Foto</p>
+                                </div>
+                                <div id="imagePreviewContainer" class="hidden relative h-full" onclick="event.stopPropagation()"><img id="imagePreview" class="h-full object-contain rounded-lg"><button onclick="removeImage(event)" class="absolute top-1 right-1 bg-rose-500 text-white rounded-full p-0.5 leading-none shadow-md border-2 border-white cursor-pointer" title="Remover Imagem"><i data-lucide="x" size="14"></i></button></div>
+                            </div>
+                            <div>
+                                <label for="toolCodeInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Código (#)</label>
+                                <input type="text" id="toolCodeInput" placeholder="CÓDIGO / TAG" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-emerald-500 transition-all">
+                            </div>
+                            <div>
+                                <label for="toolNameInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Nome do Equipamento</label>
+                                <input type="text" id="toolNameInput" placeholder="NOME DA FERRAMENTA" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-emerald-500 transition-all">
+                            </div>
+                            <div>
+                                <label for="toolLocationInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Localização no Estoque</label>
+                                <input type="text" id="toolLocationInput" placeholder="EX: GAVETA 01, PRATELEIRA C" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-emerald-500 transition-all">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label for="toolValueInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Valor (R$)</label>
+                                    <input type="number" id="toolValueInput" placeholder="150,00" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-xs outline-none focus:border-emerald-500 transition-all">
+                                </div>
+                                <div>
+                                    <label for="toolQtyInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Quantidade</label>
+                                    <input type="number" id="toolQtyInput" placeholder="1" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-xs outline-none focus:border-emerald-500 transition-all">
+                                </div>
+                            </div>
+                        </div>
+                        <button id="btnSaveTool" class="w-full mt-6 py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase text-xs shadow-lg border-none cursor-pointer hover:bg-emerald-700 transition-all">Salvar</button>
+                    </div>
+                </div>
+            </div>
+
+            <main id="section-database" class="main-content p-4 md:p-8">
+                <div class="max-w-4xl mx-auto mt-10">
+                    <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase mb-10">Backup do Sistema</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div onclick="exportData()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-blue-500 text-center">
+                            <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="download-cloud"></i></div>
+                            <h3 class="font-black uppercase text-slate-800">Exportar Dados</h3>
+                        </div>
+                        <div onclick="document.getElementById('importInput').click()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-emerald-500 text-center">
+                            <input type="file" id="importInput" class="hidden" accept=".json" onchange="importData(this)">
+                            <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="upload-cloud"></i></div>
+                            <h3 class="font-black uppercase text-slate-800">Importar Dados</h3>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <div id="maintenanceModal" class="fixed inset-0 bg-slate-900/90 hidden z-[800] flex items-center justify-center p-4 backdrop-blur-md" onclick="closeModal('maintenanceModal')">
+                <div class="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
+                    <div class="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center">
+                        <h3 class="font-black uppercase tracking-tighter text-slate-900">Reportar Manutenção</h3>
+                        <button onclick="closeModal('maintenanceModal'); event.stopPropagation();" class="text-slate-400 hover:text-rose-500 bg-transparent border-none cursor-pointer"><i data-lucide="x"></i></button>
+                    </div>
+                    <div class="p-8">
+                        <div id="step-selecionar-ferramenta">
+                            <p class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">1. Qual ferramenta quebrou?</p>
+                            <div id="toolGridMaintenance" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[55vh] overflow-y-auto p-1 custom-scrollbar"></div>
+                        </div>
+                        <div id="step-detalhes-manutencao" class="hidden">
+                            <p class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">2. Detalhes do problema</p>
+                            <div id="selectedToolMaintenance" class="mb-4"></div>
+                            <textarea id="maintenanceNoteInput" placeholder="Descreva o problema ou o motivo da manutenção..." class="w-full h-24 border-2 border-slate-100 rounded-xl p-3 font-medium text-sm outline-none focus:border-red-500 transition-all"></textarea>
+                            <div class="flex gap-3 mt-4">
+                                <button onclick="resetMaintenance()" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase text-[10px] cursor-pointer border-none">Voltar</button>
+                                <button id="btnFinalizeMaintenance" class="flex-1 py-4 bg-red-600 text-white rounded-2xl font-black uppercase text-[10px] shadow-lg border-none cursor-pointer hover:bg-red-700">Confirmar Manutenção</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="materialModal" class="fixed inset-0 bg-slate-900/90 hidden z-[800] flex items-center justify-center p-4 backdrop-blur-md" onclick="closeModal('materialModal')">
+                <div class="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
+                    <div class="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center gap-4">
+                        <h3 id="materialModalTitle" class="font-black uppercase tracking-tighter text-slate-900">Saída de Material</h3>
+                        <div class="flex-1 flex justify-end gap-2">
+                            <input type="text" id="barcodeInput" class="absolute -left-[9999px]" onchange="handleBarcodeScan(this.value)">
+                            <button onclick="focusBarcode()" class="bg-white border-2 border-slate-200 text-slate-500 px-3 py-2 rounded-lg font-bold flex items-center gap-2 text-[10px] uppercase hover:bg-slate-100 transition-all"><i data-lucide="barcode" size="14"></i> Bipar</button>
+                            <button onclick="startQrScanner()" class="bg-white border-2 border-slate-200 text-slate-500 px-3 py-2 rounded-lg font-bold flex items-center gap-2 text-[10px] uppercase hover:bg-slate-100 transition-all"><i data-lucide="qr-code" size="14"></i> QR Code</button>
+                        </div>
+                        <button onclick="closeModal('materialModal'); event.stopPropagation();" class="text-slate-400 hover:text-rose-500 bg-transparent border-none cursor-pointer"><i data-lucide="x"></i></button>
+                    </div>
+                    <div class="p-8">
+                        <div id="qrScannerContainer" class="hidden">
+                            <div id="qr-reader" class="w-full rounded-xl overflow-hidden border-2 border-slate-200"></div>
+                        </div>
+                        <div id="step-material-tool" class="">
+                            <p id="materialModalStep1" class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">1. Qual item será retirado?</p>
+                            <div class="relative mb-4">
+                                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
+                                <input type="text" id="materialSearchInput" onkeyup="openMaterialModal(true)" placeholder="BUSCAR POR NOME, CÓDIGO OU LOCAL..." class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl pl-12 pr-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                            </div>
+                            <div id="toolGridMaterial" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[55vh] overflow-y-auto p-1 custom-scrollbar"></div>
+                        </div>
+                        <div id="step-material-qty" class="hidden text-center py-6">
+                            <p class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">2. Qual a quantidade?</p>
+                            <div id="selectedToolMaterial" class="mb-6"></div>
+                            <input type="number" id="materialQtyInput" placeholder="QTD" class="w-32 text-center border-2 border-slate-200 rounded-xl px-4 py-3 font-black text-lg outline-none focus:border-blue-500 transition-all">
+                            <div class="flex gap-3 mt-6">
+                                <button onclick="resetMaterial(0)" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase text-[10px] cursor-pointer border-none">Voltar</button>
+                                <button onclick="processQtyStep()" class="flex-1 py-4 bg-slate-700 text-white rounded-2xl font-black uppercase text-[10px] shadow-lg border-none cursor-pointer hover:bg-slate-800">Avançar</button>
+                            </div>
+                        </div>
+                        <div id="step-material-worker" class="hidden">
+                            <p class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">3. Quem está retirando?</p>
+                            <div id="teamGridMaterial" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar"></div>
+                                <button onclick="resetMaterial(1)" class="w-full mt-4 py-3 bg-slate-100 text-slate-500 rounded-xl font-black uppercase text-[10px] cursor-pointer border-none">Voltar</button>
+                        </div>
+                        <div id="step-material-confirm" class="hidden text-center py-6">
+                            <div id="confirmationDetails" class="mb-6"></div>
+                            <h4 class="text-xl font-black text-slate-900 uppercase mb-8">Confirmar Retirada?</h4>
+                            <div class="flex gap-3">
+                                    <button onclick="resetMaterial(2)" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase text-[10px] cursor-pointer border-none">Voltar</button>
+                                    <button id="btnFinalizeMaterial" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] shadow-lg border-none cursor-pointer hover:bg-indigo-700">Confirmar Saída</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                let tools = JSON.parse(localStorage.getItem('ldc_pro_db')) || [];
+                let team = JSON.parse(localStorage.getItem('ldc_team_db')) || [{id: 1, name: 'ALMOXARIFADO', company: 'LDC'}];
+                let history = JSON.parse(localStorage.getItem('ldc_history_db')) || [];
+                
+                let currentImageBase64 = "";
+                let pendingStatus = "disponivel";
+                let catalogFilter = 'all';
+                let itemToDeleteId = null;
+                let itemToReturnId = null;
+                let itemToStockReturnId = null;
+                let historyItemToDeleteId = null;
+                let maintenanceData = { toolId: null };
+                let materialData = { toolId: null, workerId: null, qty: null };
+                let zoomState = { level: 1, isPanning: false, startX: 0, startY: 0, translateX: 0, translateY: 0 };
+                let qrScanner = null;
+
+                const formatBRL = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+
+                function save() { 
+                    localStorage.setItem('ldc_pro_db', JSON.stringify(tools)); 
+                    localStorage.setItem('ldc_team_db', JSON.stringify(team));
+                    localStorage.setItem('ldc_history_db', JSON.stringify(history));
+                    render();
+                    renderCatalog();
+                    if (document.getElementById('section-logs').classList.contains('active-section')) {
+                        renderHistory();
+                    }
+                }
+
+                function showSection(s) {
+                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.main-content').forEach(c => c.classList.remove('active-section'));
+                    document.getElementById(`btn-${s}`).classList.add('active');
+                    const section = document.getElementById(`section-${s}`);
+                    if (section) {
+                        if (qrScanner) stopQrScanner();
+                        section.classList.add('active-section');
+                    }
+                    if (s === 'catalog') renderCatalog();
+                    if (s === 'logs') renderHistory();
+                    render();
+                }
+
+                function toggleSidebar() { 
+                    document.getElementById('sidebar').classList.toggle('collapsed'); 
+                    document.querySelectorAll('.sidebar-text').forEach(e => e.classList.toggle('hidden')); 
+                }
+
+                function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+                function closeModal(id) { 
+                    const modal = document.getElementById(id);
+                    if (modal) modal.classList.add('hidden');
+                    if (id === 'materialModal' && qrScanner) stopQrScanner();
+                    
+                    if (id === 'zoomModal') {
+                        const zoomModal = document.getElementById('zoomModal');
+                        zoomModal.onmousemove = null;
+                        zoomModal.onmouseup = null;
+                        zoomModal.onmouseleave = null;
+                        document.getElementById('zoomContainer').onwheel = null;
+                    }
+                }
+
+                function addWorker() {
+                    const nameInput = document.getElementById('workerNameInput');
+                    const companyInput = document.getElementById('workerCompanyInput');
+                    const name = nameInput.value.trim().toUpperCase();
+                    const company = companyInput.value.trim().toUpperCase() || 'N/A';
+                    if(!name) return;
+                    team.push({ id: Date.now(), name, company });
+                    nameInput.value = ""; companyInput.value = "";
+                    save(); renderTeam();
+                }
+
+                function removeWorker(id) {
+                    if (id === 1) return;
+                    team = team.filter(w => w.id !== id);
+                    save(); renderTeam();
+                }
+
+                function renderTeam() {
+                    const list = document.getElementById('teamList');
+                    const search = document.getElementById('teamSearchInput').value.toLowerCase();
+                    const filteredTeam = team.filter(w => w.name.toLowerCase().includes(search) || w.company.toLowerCase().includes(search));
+                    list.innerHTML = filteredTeam.map(w => `
+                        <div class="flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-[10px] font-bold">${w.name.charAt(0)}</div>
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-xs text-slate-700">${w.name}</span>
+                                    <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest">${w.company}</span>
+                                </div>
+                            </div>
+                            ${w.id !== 1 ? `<button onclick="removeWorker(${w.id})" class="text-rose-400 border-none bg-transparent cursor-pointer"><i data-lucide="trash-2" size="16"></i></button>` : ''}
+                        </div>
+                    `).join('');
+                    lucide.createIcons();
+                }
+
+                // Funções de Imagem e Modais de Ferramenta
+                function previewImage(input) {
+                    if (input.files && input.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = e => {
+                            currentImageBase64 = e.target.result;
+                            document.getElementById('imagePreview').src = e.target.result;
+                            document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                            document.getElementById('uploadPlaceholder').classList.add('hidden');
+                        };
+                        reader.readAsDataURL(input.files[0]);
+                    }
+                }
+
+                function removeImage(event) {
+                    event.stopPropagation();
+                    currentImageBase64 = "";
+                    document.getElementById('fileInput').value = null;
+                    document.getElementById('imagePreview').src = "";
+                    document.getElementById('imagePreviewContainer').classList.add('hidden');
+                    document.getElementById('uploadPlaceholder').classList.remove('hidden');
+                    lucide.createIcons();
+                }
+
+                function openAddModal(s) { 
+                    pendingStatus = s; 
+                    currentImageBase64 = "";
+                    document.getElementById('fileInput').value = null;
+                    document.getElementById('addModalTitle').innerText = "Novo Equipamento";
+                    document.getElementById('toolCodeInput').value = "";
+                    document.getElementById('toolNameInput').value = "";
+                    document.getElementById('toolLocationInput').value = "";
+                    document.getElementById('toolValueInput').value = "";
+                    document.getElementById('toolQtyInput').value = "1";
+                    document.getElementById('imagePreview').src = "";
+                    document.getElementById('imagePreviewContainer').classList.add('hidden');
+                    document.getElementById('uploadPlaceholder').classList.remove('hidden');
+                    document.getElementById('btnSaveTool').onclick = addTool;
+                    openModal('addModal'); 
+                }
+
+                function addTool() {
+                    const name = document.getElementById('toolNameInput').value;
+                    if(!name) return;
+                    const qtyInput = document.getElementById('toolQtyInput');
+                    const tool = {
+                        id: Date.now(),
+                        name: name,
+                        code: document.getElementById('toolCodeInput').value,
+                        location: document.getElementById('toolLocationInput').value.toUpperCase(),
+                        value: parseFloat(document.getElementById('toolValueInput').value) || 0,
+                        img: currentImageBase64,
+                        status: pendingStatus,
+                        user: '-',
+                        maintenanceNote: ""
+                    };
+                    if (qtyInput.value && parseInt(qtyInput.value) > 0) {
+                        tool.qty = parseInt(qtyInput.value);
+                    }
+                    tools.unshift(tool);
+                    save(); closeModal('addModal');
+                }
+
+                function editTool(id) {
+                    const t = tools.find(x => x.id === id);
+                    if(!t) return;
+                    document.getElementById('addModalTitle').innerText = "Editar Equipamento";
+                    document.getElementById('toolCodeInput').value = t.code;
+                    document.getElementById('toolNameInput').value = t.name;
+                    document.getElementById('toolLocationInput').value = t.location || "";
+                    document.getElementById('toolValueInput').value = t.value;
+                    document.getElementById('toolQtyInput').value = t.qty || 0;
+                    if(t.img) {
+                        currentImageBase64 = t.img;
+                        document.getElementById('imagePreview').src = t.img;
+                        document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                        document.getElementById('uploadPlaceholder').classList.add('hidden');
+                    } else {
+                        removeImage({ stopPropagation: () => {} });
+                    }
+                    document.getElementById('btnSaveTool').onclick = () => {
+                        t.name = document.getElementById('toolNameInput').value;
+                        t.code = document.getElementById('toolCodeInput').value;
+                        t.location = document.getElementById('toolLocationInput').value.toUpperCase();
+                        t.value = parseFloat(document.getElementById('toolValueInput').value) || 0;
+                        t.qty = parseInt(document.getElementById('toolQtyInput').value) || 0;
+                        t.img = currentImageBase64;
+                        // A nota de manutenção só é alterada na tela de manutenção
+                        save(); closeModal('addModal');
+                    };
+                    openModal('addModal');
+                    lucide.createIcons();
+                }
+
+                function requestDelete(id) {
+                    itemToDeleteId = id;
+                    const modal = document.getElementById('deleteModal');
+                    modal.querySelector('h3').innerText = 'Excluir Item?';
+                    modal.querySelector('p').innerText = 'Você tem certeza que deseja remover este item? Esta ação não pode ser desfeita.';
+                    document.getElementById('confirmDeleteBtn').onclick = () => {
+                        tools = tools.filter(t => t.id !== itemToDeleteId);
+                        save(); closeModal('deleteModal');
+                    }; 
+                    openModal('deleteModal');
+                }
+                
+                function openZoom(src) { // --- FUNÇÃO DE ZOOM ATUALIZADA ---
+                    if (!src) return;
+
+                    const zoomModal = document.getElementById('zoomModal');
+                    const zoomContainer = document.getElementById('zoomContainer');
+                    const zoomImage = document.getElementById('zoomImage');
+
+                    // Reset state
+                    zoomState = { level: 1, isPanning: false, startX: 0, startY: 0, translateX: 0, translateY: 0 };
+                    
+                    zoomImage.src = src;
+                    zoomImage.style.transform = 'scale(1) translate(0px, 0px)';
+                    zoomImage.style.cursor = 'zoom-in';
+                    zoomImage.classList.add('max-w-full', 'max-h-full');
+
+                    const updateTransform = () => {
+                        zoomImage.style.transform = `scale(${zoomState.level}) translate(${zoomState.translateX}px, ${zoomState.translateY}px)`;
+                    };
+
+                    zoomContainer.onwheel = (e) => {
+                        e.preventDefault();
+                        const scaleAmount = 0.15;
+                        if (e.deltaY < 0) { // Zoom in
+                            zoomState.level = Math.min(8, zoomState.level + scaleAmount);
+                        } else { // Zoom out
+                            zoomState.level = Math.max(1, zoomState.level - scaleAmount);
+                        }
+
+                        if (zoomState.level > 1) {
+                            zoomImage.style.cursor = 'move';
+                            zoomImage.classList.remove('max-w-full', 'max-h-full');
+                        } else {
+                            zoomState.level = 1; // Snap to 1
+                            zoomImage.style.cursor = 'zoom-in';
+                            zoomImage.classList.add('max-w-full', 'max-h-full');
+                            zoomState.translateX = 0;
+                            zoomState.translateY = 0;
+                        }
+                        updateTransform();
+                    };
+
+                    zoomImage.onmousedown = (e) => {
+                        if (zoomState.level > 1) {
+                            e.preventDefault();
+                            zoomState.isPanning = true;
+                            zoomState.startX = e.clientX - zoomState.translateX;
+                            zoomState.startY = e.clientY - zoomState.translateY;
+                            zoomImage.style.cursor = 'grabbing';
+                        }
+                    };
+
+                    zoomModal.onmousemove = (e) => {
+                        if (zoomState.isPanning) {
+                            e.preventDefault();
+                            zoomState.translateX = e.clientX - zoomState.startX;
+                            zoomState.translateY = e.clientY - zoomState.startY;
+                            updateTransform();
+                        }
+                    };
+
+                    zoomModal.onmouseup = () => {
+                        if (zoomState.isPanning) {
+                            zoomState.isPanning = false;
+                            zoomImage.style.cursor = 'move';
+                        }
+                    };
+                    
+                    zoomModal.onmouseleave = zoomModal.onmouseup;
+
+                    openModal('zoomModal');
+                }
+
+                function setCatalogFilter(f) {
+                    catalogFilter = f;
+                    document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+                    document.getElementById('filter-' + (f === 'em uso' ? 'uso' : f)).classList.add('active');
+                    renderCatalog();
+                }
+
+                // --- RENDERIZAÇÃO DO CATÁLOGO ATUALIZADA ---
+                function renderCatalog() {
+                    const grid = document.getElementById('catalogGrid');
+                    const searchTerm = document.getElementById('catalogSearchInput').value.toLowerCase();
+
+                    let filteredTools = tools.filter(t => {
+                        const matchesFilter = catalogFilter === 'all' || t.status === catalogFilter;
+                        const matchesSearch = !searchTerm || 
+                                            t.name.toLowerCase().includes(searchTerm) ||
+                                            (t.code && t.code.toLowerCase().includes(searchTerm)) ||
+                                            (t.location && t.location.toLowerCase().includes(searchTerm));
+                        return matchesFilter && matchesSearch;
+                    });
+
+                    if(filteredTools.length === 0) {
+                        grid.innerHTML = `<p class="text-center text-sm text-slate-400 col-span-full py-10">Nenhum item encontrado para sua busca.</p>`;
+                        return;
+                    }
+                    grid.innerHTML = filteredTools.map(t => `
+                        <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-slate-100 flex flex-col group relative transition-all hover:shadow-2xl">
+                            <div class="absolute top-6 right-6 flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                ${t.status === 'disponivel' ? `<button onclick="openMaterialModal(false, ${t.id})" class="bg-blue-600 text-white p-2 rounded-lg shadow-sm border border-blue-600 cursor-pointer hover:bg-blue-700" title="Emprestar Ferramenta"><i data-lucide="arrow-right-left" size="14"></i></button>` : ''}
+                                ${t.status === 'em uso' ? `<button onclick="requestReturn(${t.id})" class="bg-orange-500 text-white p-2 rounded-lg shadow-sm border border-orange-500 cursor-pointer hover:bg-orange-600" title="Devolver"><i data-lucide="rotate-ccw" size="14"></i></button>` : ''}
+                                ${t.status === 'quebrado' ? `<button onclick="requestStockReturn(${t.id})" class="bg-emerald-500 text-white p-2 rounded-lg shadow-sm border border-emerald-500 cursor-pointer hover:bg-emerald-600" title="Finalizar Manutenção"><i data-lucide="check-circle" size="14"></i></button>` : ''}
+                                <button onclick="editTool(${t.id})" class="bg-white/90 p-2 rounded-lg text-slate-600 hover:text-blue-600 shadow-sm border border-slate-200 cursor-pointer backdrop-blur"><i data-lucide="pencil" size="14"></i></button>
+                                <button onclick="requestDelete(${t.id})" class="bg-white/90 p-2 rounded-lg text-rose-500 hover:bg-rose-50 shadow-sm border border-slate-200 cursor-pointer backdrop-blur"><i data-lucide="trash-2" size="14"></i></button>
+                            </div>
+                            <div onclick="openZoom('${t.img || ''}')" class="img-container relative w-full aspect-square bg-slate-50 rounded-2xl mb-4 flex items-center justify-center overflow-hidden border border-slate-50">
+                                ${t.img ? `<img src="${t.img}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">` : `<i data-lucide="wrench" class="text-slate-200" size="40"></i>`}
+                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
+                                    <i data-lucide="expand" class="text-white opacity-0 group-hover:opacity-100 transition-all transform scale-50 group-hover:scale-100" size="32"></i>
+                                </div>
+                            </div>
+                            <div class="px-2">
+                                <span class="text-[9px] font-black uppercase px-2 py-1 rounded-lg mb-2 inline-block ${t.status === 'disponivel' ? 'bg-emerald-50 text-emerald-600' : t.status === 'em uso' ? 'bg-orange-100 text-orange-600' : 'bg-red-50 text-red-600'}">${t.status === 'em uso' ? `Com ${t.user || 'N/A'}` : t.status}</span>
+                                <h3 class="font-black text-slate-900 uppercase text-xs truncate" title="${t.name}">${t.name}</h3>
+                                ${t.status === 'quebrado' && t.maintenanceNote ? 
+                                    `<p class="text-[9px] font-bold text-rose-500 mt-1 truncate" title="${t.maintenanceNote}"><i data-lucide="wrench" size="10" class="inline-block -mt-px"></i> ${t.maintenanceNote}</p>` :
+                                    `<p class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">${t.code || ''} ${t.location ? '<span class="text-indigo-500 font-black"> | ' + t.location + '</span>' : ''}</p>`}
+                                
+                                <div class="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
+                                    <div class="flex flex-col">
+                                        <span class="text-[8px] font-black text-slate-400 uppercase">Valor Estimado</span>
+                                        <span class="text-emerald-600 font-black text-sm">${formatBRL(t.value)}</span>
+                                    </div>
+                                    <div class="flex flex-col items-end">
+                                        <span class="text-[8px] font-black text-slate-400 uppercase">Estoque</span>
+                                        <div class="flex items-center gap-1 text-slate-900 font-black">
+                                            <i data-lucide="box" size="10"></i>
+                                            <span>${t.qty || 0}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`).join('');
+                    lucide.createIcons();
+                }
+
+                function render() {
+                    document.getElementById('totalCount').innerText = tools.length;
+                    document.getElementById('availCount').innerText = tools.filter(t => t.status === 'disponivel').length;
+                    document.getElementById('loanCount').innerText = tools.filter(t => t.status === 'em uso').length;
+                    document.getElementById('brokenCount').innerText = tools.filter(t => t.status === 'quebrado').length;
+                    document.getElementById('currentDateDisplay').innerText = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                    document.getElementById('toolList').innerHTML = tools.map(t => `
+                        <tr class="group hover:bg-slate-50">
+                            <td class="px-8 py-5">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden border">
+                                        ${t.img ? `<img src="${t.img}" class="w-full h-full object-cover">` : `<div class="flex items-center justify-center h-full text-slate-300 text-[8px]">FOTO</div>`}
+                                    </div>
+                                    <div><p class="font-black text-slate-800 uppercase text-xs">${t.name}</p><p class="text-[9px] font-bold text-slate-400">${t.code || ''} <span class="text-indigo-500 font-black">${t.location ? ' | ' + t.location : ''}</span></p></div>
+                                </div>
+                            </td>
+                            <td class="px-8 py-5">
+                                <div class="flex flex-col">
+                                    <span class="text-[9px] font-black uppercase px-2 py-1 rounded-lg w-fit ${t.status === 'disponivel' ? 'bg-emerald-50 text-emerald-600' : t.status === 'em uso' ? 'bg-orange-100 text-orange-600' : 'bg-red-50 text-red-600'}">${t.status}</span>
+                                    ${t.status === 'quebrado' ?
+                                        (t.maintenanceNote ? `<span class="text-[9px] text-rose-500 font-bold mt-1 block truncate" title="${t.maintenanceNote}">${t.maintenanceNote}</span>` : '') :
+                                        `<span class="text-[10px] font-bold text-slate-500 mt-1 uppercase">${t.user}</span>`
+                                    }
+                                </div>
+                            </td>
+                            <td class="px-8 py-5 text-right">
+                                <div class="flex justify-end gap-2">
+                                    ${t.status === 'em uso' ? 
+                                        `<button onclick="requestReturn(${t.id})" class="p-2 text-orange-500 hover:bg-orange-50 rounded-lg transition-colors" title="Devolver"><i data-lucide="rotate-ccw" size="16"></i></button>` :
+                                        '<div class="w-10 p-2"></div>'
+                                    }
+                                    <button onclick="editTool(${t.id})" class="p-2 text-slate-400 hover:text-blue-600 bg-transparent border-none cursor-pointer"><i data-lucide="pencil" size="16"></i></button>
+                                    <button onclick="requestDelete(${t.id})" class="p-2 text-slate-400 hover:text-rose-600 bg-transparent border-none cursor-pointer"><i data-lucide="trash-2" size="16"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                    lucide.createIcons();
+                }
+
+                // --- FUNÇÕES DE HISTÓRICO ---
+                function formatISODate(iso) {
+                    if (!iso) return '-';
+                    return new Date(iso).toLocaleString('pt-BR', {dateStyle: 'short', timeStyle: 'short'});
+                }
+
+                function formatDuration(start, end) {
+                    if (!end || !start) return '-';
+                    let diff = new Date(end) - new Date(start);
+                    const days = Math.floor(diff / 86400000);
+                    diff -= days * 86400000;
+                    const hours = Math.floor(diff / 3600000);
+                    diff -= hours * 3600000;
+                    const mins = Math.floor(diff / 60000);
+
+                    let result = '';
+                    if (days > 0) result += `${days}d `;
+                    if (hours > 0) result += `${hours}h `;
+                    if (mins >= 0) result += `${mins}m`;
+                    return result.trim() || '0m';
+                }
+
+                function requestDeleteHistory(id) {
+                    historyItemToDeleteId = id;
+                    const modal = document.getElementById('deleteModal');
+                    modal.querySelector('h3').innerText = 'Excluir Registro?';
+                    modal.querySelector('p').innerText = 'Deseja remover este registro do histórico? Esta ação não pode ser desfeita.';
+                    document.getElementById('confirmDeleteBtn').onclick = deleteHistoryEntry;
+                    openModal('deleteModal');
+                }
+
+                function deleteHistoryEntry() {
+                    history = history.filter(h => h.historyId !== historyItemToDeleteId);
+                    save();
+                    closeModal('deleteModal');
+                }
+
+                function renderHistory() {
+                    const grid = document.getElementById('historyGrid');
+                    const searchTerm = document.getElementById('historySearchInput').value.toLowerCase();
+
+                    const filteredHistory = history.filter(h => 
+                        (h.toolName && h.toolName.toLowerCase().includes(searchTerm)) ||
+                        (h.workerName && h.workerName.toLowerCase().includes(searchTerm))
+                    );
+
+                    if (filteredHistory.length === 0) {
+                        grid.innerHTML = `<p class="text-center text-sm text-slate-400 col-span-full py-20">Nenhum registro de histórico encontrado.</p>`;
+                        return;
+                    }
+
+                    grid.innerHTML = filteredHistory.map(h => {
+                        let typeLabel, typeColor;
+                        if (h.returnDate) {
+                            if (h.type === 'manutencao') {
+                                typeLabel = 'Finalizada';
+                                typeColor = 'bg-emerald-100 text-emerald-700';
+                            } else { // emprestimo
+                                if (h.condition === 'quebrado') {
+                                    typeLabel = 'Devolvido Quebrado';
+                                    typeColor = 'bg-rose-100 text-rose-700';
+                                } else {
+                                    typeLabel = 'Devolvido';
+                                    typeColor = 'bg-emerald-100 text-emerald-700';
+                                }
+                            }
+                        } else {
+                            typeLabel = h.type === 'manutencao' ? 'Em Manutenção' : 'Em Uso';
+                            typeColor = h.type === 'manutencao' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700';
+                        }
+                        const tool = tools.find(t => t.id === h.toolId) || {};
+                        const toolImg = h.toolImg || tool.img;
+
+                        return `
+                        <div class="bg-white rounded-2xl p-5 shadow-md border border-slate-100 flex flex-col gap-4 relative group">
+                            <div class="absolute top-4 right-4">
+                                <button onclick="requestDeleteHistory(${h.historyId})" class="p-2 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Excluir Registro"><i data-lucide="trash-2" size="16"></i></button>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-16 h-16 bg-slate-50 rounded-xl flex items-center justify-center overflow-hidden border border-slate-100">
+                                    ${toolImg ? `<img src="${toolImg}" class="w-full h-full object-cover">` : `<i data-lucide="wrench" class="text-slate-300" size="24"></i>`}
+                                </div>
+                                <div class="flex-1">
+                                    <span class="text-[10px] font-black uppercase px-2 py-1 rounded-md ${typeColor}">${typeLabel}</span>
+                                    <h3 class="font-black text-slate-800 uppercase mt-1">${h.toolName}</h3>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase">${tool.code || ''}</p>
+                                </div>
+                            </div>
+                            <div class="text-xs space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="font-bold text-slate-400">Responsável:</span>
+                                    <span class="font-black text-slate-700 uppercase">${h.workerName}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-bold text-slate-400">Quantidade:</span>
+                                    <span class="font-black text-slate-700">${h.qty}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-bold text-slate-400">Data da Retirada:</span>
+                                    <span class="font-semibold text-slate-600">${formatISODate(h.checkoutDate)}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-bold text-slate-400">Data da Devolução:</span>
+                                    <span class="font-semibold text-slate-600">${formatISODate(h.returnDate)}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-bold text-slate-400">Tempo de Posse:</span>
+                                    <span class="font-black text-blue-600">${formatDuration(h.checkoutDate, h.returnDate)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                    }).join('');
+                    lucide.createIcons();
+                }
+
+                window.onload = () => { render(); lucide.createIcons(); };
+
+                // --- FUNÇÕES DE BACKUP ---
+                function exportData() {
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ tools, team, history }));
+                const downloadAnchorNode = document.createElement('a');
+                    downloadAnchorNode.setAttribute("href", dataStr);
+                    downloadAnchorNode.setAttribute("download", "backup_ferramentaria_" + new Date().toISOString().split('T')[0] + ".json");
+                    document.body.appendChild(downloadAnchorNode);
+                    downloadAnchorNode.click();
+                    downloadAnchorNode.remove();
+                }
+
+                function importData(input) {
+                    const file = input.files[0];
+                    if(!file) return;
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            if(data.tools) tools = data.tools;
+                            if(data.team) team = data.team;
+                            if(data.history) history = data.history;
+                            save();
+                            alert("Dados importados com sucesso!");
+                        } catch(e) { alert("Erro ao importar arquivo."); }
+                    };
+                    reader.readAsText(file);
+                }
+
+                // --- FUNÇÕES DE CHECKOUT / DEVOLUÇÃO ---
+                function requestReturn(id) {
+                    itemToReturnId = id;
+                    const tool = tools.find(t => t.id === id);
+                    if (!tool) return;
+                    
+                    document.getElementById('returnModalTitle').innerText = `Devolver: ${tool.name}`;
+                    document.getElementById('returnModalText').innerText = `Qual o estado de devolução do item por ${tool.user}?`;
+                    openModal('returnModal');
+                }
+
+                function handleReturnCondition(condition) {
+                    closeModal('returnModal');
+                    const tool = tools.find(t => t.id === itemToReturnId);
+                    if (!tool) return;
+
+                    const historyEntry = history.find(h => h.toolId === tool.id && h.returnDate === null && h.type === 'emprestimo');
+
+                    if (condition === 'funcionando') {
+                        if (historyEntry) {
+                            historyEntry.returnDate = new Date().toISOString();
+                            historyEntry.condition = 'boa';
+                        }
+
+                        if (tool.original_id) { // It's a consumable part
+                            const originalTool = tools.find(ot => ot.id === tool.original_id);
+                            if (originalTool) {
+                                originalTool.qty = (originalTool.qty || 0) + (tool.qty || 1);
+                            }
+                            tools = tools.filter(t => t.id !== tool.id);
+                        } else { // It's a unique tool
+                            tool.status = 'disponivel';
+                            tool.user = '-';
+                        }
+                        save();
+                    } else if (condition === 'quebrado') {
+                        if (historyEntry) {
+                            historyEntry.returnDate = new Date().toISOString();
+                            historyEntry.condition = 'quebrado';
+                        }
+
+                        // Directly trigger the maintenance report flow
+                        maintenanceData.toolId = itemToReturnId;
+                        document.getElementById('step-selecionar-ferramenta').classList.add('hidden');
+                        document.getElementById('step-detalhes-manutencao').classList.remove('hidden');
+                        document.getElementById('selectedToolMaintenance').innerHTML = `<div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl mb-3">
+                            <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden">${tool.img ? `<img src="${tool.img}" class="w-full h-full object-cover">` : `<i data-lucide="image" class="text-slate-300"></i>`}</div>
+                            <div><p class="font-bold text-xs uppercase text-slate-800">${tool.name}</p><p class="text-[9px] font-black text-slate-400 uppercase">${tool.code}</p></div>
+                        </div>`;
+                        document.getElementById('maintenanceNoteInput').value = '';
+                        document.getElementById('btnFinalizeMaintenance').onclick = finalizeMaintenanceReport;
+                        openModal('maintenanceModal');
+                        lucide.createIcons();
+                        save(); // Save history update immediately
+                    }
+                }
+
+                function finalizeReturn() {
+                    // This function is now handled by handleReturnCondition
+                }
+
+                function requestStockReturn(id) {
+                    itemToReturnId = id;
+                    const tool = tools.find(t => t.id === id);
+                    if (!tool) return;
+                    
+                    document.getElementById('returnModalTitle').innerText = `Devolver: ${tool.name}`;
+                    document.getElementById('returnModalText').innerText = `Você confirma a devolução deste item por ${tool.user}?`;
+                    document.getElementById('confirmReturnBtn').onclick = finalizeReturn;
+                    openModal('returnModal');
+                }
+
+                function finalizeReturn() {
+                    const t = tools.find(x => x.id === itemToReturnId);
+                    if (t) {
+                        const historyEntry = history.find(h => h.toolId === t.id && h.returnDate === null);
+                        if (historyEntry) {
+                            historyEntry.returnDate = new Date().toISOString();
+                        }
+
+                        if (t.original_id) {
+                            const originalTool = tools.find(ot => ot.id === t.original_id);
+                            if (originalTool) {
+                                originalTool.qty = (originalTool.qty || 0) + (t.qty || 1);
+                            }
+                            tools = tools.filter(tool => tool.id !== t.id);
+                        } else {
+                            t.status = 'disponivel';
+                            t.user = '-';
+                        }
+                        save();
+                        closeModal('returnModal');
+                    }
+                }
+
+                function requestStockReturn(id) {
+                    itemToStockReturnId = id;
+                    const tool = tools.find(t => t.id === id);
+                    if (!tool) return;
+                    document.getElementById('stockReturnModalTitle').innerText = `Finalizar Manutenção: ${tool.name}`;
+                    document.getElementById('stockReturnModalText').innerText = `Confirmar que a manutenção de "${tool.name}" foi concluída?`;
+                    document.getElementById('confirmStockReturnBtn').onclick = finalizeStockReturn;
+                    openModal('stockReturnModal');
+                }
+
+                // --- FUNÇÕES DE MANUTENÇÃO ---
+                function openMaintenanceModal() {
+                    maintenanceData = { toolId: null };
+                    document.getElementById('step-selecionar-ferramenta').classList.remove('hidden');
+                    document.getElementById('step-detalhes-manutencao').classList.add('hidden');
+                    
+                    const list = document.getElementById('toolGridMaintenance');
+                    const availableTools = tools.filter(t => t.status !== 'quebrado');
+                    list.innerHTML = availableTools.map(t => {
+                        let stockInfo;
+                        if (t.status === 'disponivel') {
+                            stockInfo = `
+                                <span class="text-[8px] font-black text-slate-400 uppercase">Estoque</span>
+                                <div class="flex items-center justify-center gap-1 text-slate-900 font-black text-lg"><i data-lucide="box" size="12"></i><span>${t.qty || 0}</span></div>
+                            `;
+                        } else {
+                            stockInfo = `<span class="text-[8px] font-black uppercase text-slate-400 uppercase">Em Uso Por</span><p class="text-orange-600 font-black text-lg">${t.user}</p>`;
+                        }
+                        return `
+                        <div onclick="selectToolForMaintenance(${t.id})" class="bg-white rounded-2xl p-3 shadow-lg border border-slate-100 cursor-pointer hover:border-red-500 hover:shadow-xl transition-all flex flex-col text-center group">
+                            <div class="relative w-full aspect-square bg-white rounded-xl mb-3 flex items-center justify-center overflow-hidden border border-slate-100">
+                                ${t.img ? `<img src="${t.img}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">` : `<i data-lucide="wrench" class="text-slate-200" size="40"></i>`}
+                            </div>
+                            <div class="flex-1 flex flex-col justify-between"><h3 class="font-black text-slate-700 uppercase text-[10px] leading-tight h-8 flex items-center justify-center px-1" title="${t.name}">${t.name}</h3><div class="mt-2 pt-2 border-t border-slate-100">${stockInfo}</div></div>
+                        </div>`;
+                    }).join('');
+                    if(availableTools.length === 0) list.innerHTML = '<p class="text-center text-xs text-slate-400 col-span-full">Nenhuma ferramenta disponível para manutenção.</p>';
+                    lucide.createIcons();
+                    openModal('maintenanceModal');
+                }
+
+                function selectToolForMaintenance(id) {
+                    maintenanceData.toolId = id;
+                    const tool = tools.find(t => t.id === id);
+                    document.getElementById('step-selecionar-ferramenta').classList.add('hidden');
+                    document.getElementById('step-detalhes-manutencao').classList.remove('hidden');
+                    document.getElementById('selectedToolMaintenance').innerHTML = `<div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl mb-3">
+                        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden">${tool.img ? `<img src="${tool.img}" class="w-full h-full object-cover">` : `<i data-lucide="image" class="text-slate-300"></i>`}</div>
+                        <div><p class="font-bold text-xs uppercase text-slate-800">${tool.name}</p><p class="text-[9px] font-black text-slate-400 uppercase">${tool.code}</p></div>
+                    </div>`;
+                    document.getElementById('maintenanceNoteInput').value = tool.maintenanceNote || '';
+                    document.getElementById('btnFinalizeMaintenance').onclick = finalizeMaintenanceReport;
+                    lucide.createIcons();
+                    
+                }
+
+                function resetMaintenance() {
+                    document.getElementById('step-selecionar-ferramenta').classList.remove('hidden');
+                    document.getElementById('step-detalhes-manutencao').classList.add('hidden');
+                }
+
+                function finalizeMaintenanceReport() {
+                    const t = tools.find(x => x.id === maintenanceData.toolId);
+                    const note = document.getElementById('maintenanceNoteInput').value.trim();
+                    if (t && !note) {
+                        alert('Por favor, descreva o problema.');
+                        return;
+                    }
+                    if (t && note) {
+                        const responsibleUser = t.user !== '-' ? t.user : 'ALMOXARIFADO';
+                        t.status = 'quebrado';
+                        t.user = 'MANUTENÇÃO';
+                        t.maintenanceNote = note;
+                        history.unshift({
+                            historyId: Date.now(),
+                            toolId: t.id,
+                            toolName: t.name,
+                            toolImg: t.img,
+                            workerName: responsibleUser,
+                            qty: 1,
+                            checkoutDate: new Date().toISOString(),
+                            returnDate: null,
+                            type: 'manutencao'
+                        });
+                        save();
+                        closeModal('maintenanceModal');
+                    }
+                }
+
+                // --- FUNÇÕES DE SAÍDA DE MATERIAL ---
+                function openMaterialModal(isSearchUpdate = false, toolId = null) {
+                    if (!isSearchUpdate) {
+                        materialData = { toolId: null, workerId: null, qty: null };
+                        resetMaterial(0);
+                        document.getElementById('materialSearchInput').value = "";
+                        if (toolId) {
+                            selectToolForMaterial(toolId);
+                        return;
+                        }
+                    }
+
+                    document.getElementById('materialModalTitle').innerText = "Saída ou Empréstimo";
+                    document.getElementById('materialModalStep1').innerText = "1. Qual item será retirado?";
+                    
+                    const list = document.getElementById('toolGridMaterial');
+                    const searchInput = document.getElementById('materialSearchInput');
+                    const searchTerm = searchInput.value.toLowerCase();
+
+                    const availableItems = tools.filter(t => 
+                        t.status === 'disponivel' &&
+                        (!searchTerm || t.name.toLowerCase().includes(searchTerm) || (t.code && t.code.toLowerCase().includes(searchTerm)) || (t.location && t.location.toLowerCase().includes(searchTerm)))
+                    );
+
+                    list.innerHTML = availableItems.map(t => {
+                        const stockInfo = `
+                            <span class="text-[8px] font-black text-slate-400 uppercase">Estoque</span>
+                            <div class="flex items-center justify-center gap-1 text-slate-900 font-black text-lg"><i data-lucide="box" size="12"></i><span>${t.qty || 0}</span></div>
+                        `;
+
+                        return `
+                        <div onclick="selectToolForMaterial(${t.id})"
+                            class="bg-white rounded-2xl p-3 shadow-lg border border-slate-100 cursor-pointer hover:border-blue-500 hover:shadow-xl transition-all flex flex-col text-center group">
+                            <div class="relative w-full aspect-square bg-white rounded-xl mb-3 flex items-center justify-center overflow-hidden border border-slate-100">
+                                ${t.img ? `<img src="${t.img}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">` : `<i data-lucide="wrench" class="text-slate-200" size="40"></i>`}
+                            </div>
+                            <div class="flex-1 flex flex-col justify-between">
+                                <h3 class="font-black text-slate-700 uppercase text-[10px] leading-tight h-8 flex items-center justify-center px-1" title="${t.name}">${t.name}</h3>
+                                <div class="mt-2 pt-2 border-t border-slate-100">
+                                    ${stockInfo}
+                                </div>
+                            </div>
+                        </div>
+                    `}).join('');
+
+                    if(availableItems.length === 0) {
+                        list.innerHTML = `<p class="text-center text-xs text-slate-400 col-span-full py-10">${searchTerm ? 'Nenhum item encontrado para "' + searchTerm + '".' : 'Nenhum item disponível.'}</p>`;
+                    }
+                    lucide.createIcons();
+
+                    if (!isSearchUpdate) openModal('materialModal');
+                }
+
+                function selectToolForMaterial(id) {
+                    materialData.toolId = id;
+                    resetMaterial(1);
+                }
+
+                function processQtyStep() {
+                    const tool = tools.find(t => t.id === materialData.toolId);
+                    const qtyInput = document.getElementById('materialQtyInput');
+                    const qty = parseInt(qtyInput.value);
+
+                    if (!qty || qty <= 0) {
+                        alert("Por favor, insira uma quantidade válida.");
+                        return;
+                    }
+
+                    const isConsumable = tool.hasOwnProperty('qty') && tool.qty > 0;
+                    if (isConsumable && qty > tool.qty) {
+                        alert(`Quantidade indisponível. Máximo em estoque: ${tool.qty}`);
+                        return;
+                    }
+                    if (!isConsumable && qty > 1) { // Ferramenta única
+                        alert("Só é possível emprestar uma unidade desta ferramenta por vez.");
+                        return;
+                    }
+
+                    materialData.qty = qty;
+                    resetMaterial(2);
+                }
+
+                function selectWorkerForMaterial(workerId) {
+                    materialData.workerId = workerId;
+                    resetMaterial(3);
+                }
+
+                function resetMaterial(step) {
+                    document.getElementById('step-material-tool').classList.toggle('hidden', step !== 0);
+                    document.getElementById('step-material-qty').classList.toggle('hidden', step !== 1);
+                    document.getElementById('step-material-worker').classList.toggle('hidden', step !== 2);
+                    document.getElementById('step-material-confirm').classList.toggle('hidden', step !== 3);
+
+                    if (step === 1) { // Etapa de Quantidade
+                        const tool = tools.find(t => t.id === materialData.toolId);
+                        const isConsumable = tool.hasOwnProperty('qty') && tool.qty > 0;
+                        const stockInfo = isConsumable ? `EM ESTOQUE: ${tool.qty}` : 'FERRAMENTA';
+                        document.getElementById('selectedToolMaterial').innerHTML = `<div class="w-24 h-24 bg-slate-100 rounded-2xl mx-auto mb-4 overflow-hidden border border-slate-200">${tool.img ? `<img src="${tool.img}" class="w-full h-full object-cover">` : `<div class="flex items-center justify-center h-full text-slate-300"><i data-lucide="wrench"></i></div>`}</div><h3 class="font-black text-slate-900 uppercase text-sm">${tool.name}</h3><p class="text-slate-400 text-[10px] font-bold uppercase">${stockInfo}</p>`;
+                        const qtyInput = document.getElementById('materialQtyInput');
+                        qtyInput.value = 1;
+                        qtyInput.disabled = !isConsumable;
+                        if (isConsumable) qtyInput.max = tool.qty;
+                        lucide.createIcons();
+                    } else if (step === 2) { // Etapa de Colaborador
+                        const list = document.getElementById('teamGridMaterial');
+                        list.innerHTML = team.map(w => `
+                            <div onclick="selectWorkerForMaterial(${w.id})" class="bg-slate-50 p-4 rounded-xl border border-slate-100 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-2 text-center">
+                                <div class="w-10 h-10 bg-white text-blue-600 rounded-full flex items-center justify-center font-black shadow-sm">${w.name.charAt(0)}</div>
+                                <div><p class="font-bold text-[10px] uppercase text-slate-700">${w.name}</p><p class="text-[8px] font-black text-slate-400 uppercase">${w.company}</p></div>
+                            </div>
+                        `).join('');
+                        lucide.createIcons();
+                    } else if (step === 3) { // Etapa de Confirmação
+                        const tool = tools.find(t => t.id === materialData.toolId);
+                        const worker = team.find(w => w.id === materialData.workerId);
+                        const isTool = !tool.hasOwnProperty('qty') || tool.qty === 0;
+                        const operationType = isTool ? 'Empréstimo' : 'Retirada';
+
+                        document.getElementById('confirmationDetails').innerHTML = `
+                            <div class="w-24 h-24 bg-slate-100 rounded-2xl mx-auto mb-4 overflow-hidden border border-slate-200">${tool.img ? `<img src="${tool.img}" class="w-full h-full object-cover">` : `<div class="flex items-center justify-center h-full text-slate-300"><i data-lucide="wrench"></i></div>`}</div>
+                            <h3 class="font-black text-slate-900 uppercase text-sm">${tool.name}</h3>
+                            <p class="text-slate-500 text-xs font-bold">QTD: <span class="text-blue-600">${materialData.qty}</span> | RESPONSÁVEL: <span class="text-blue-600">${worker.name}</span></p>
+                        `;
+                        document.querySelector('#step-material-confirm h4').innerText = `Confirmar ${operationType}?`;
+                        document.getElementById('btnFinalizeMaterial').innerText = `Confirmar ${operationType}`;
+                        document.getElementById('btnFinalizeMaterial').onclick = finalizeMaterialCheckout;
+                        lucide.createIcons();
+                    }
+                }
+
+                function finalizeMaterialCheckout() {
+                    const t = tools.find(x => x.id === materialData.toolId);
+                    const w = team.find(x => x.id === materialData.workerId);
+                    const qty = materialData.qty;
+                    
+                    if (!t || !w || !qty) return;
+
+                    const isTool = !t.hasOwnProperty('qty') || t.qty === 0;
+                    const hasStock = t.hasOwnProperty('qty') && t.qty > 0;
+
+                    if (isTool) {
+                        t.status = 'em uso';
+                        t.user = w.name;
+                        history.unshift({ 
+                            historyId: Date.now(), 
+                            toolId: t.id, 
+                            toolName: t.name, 
+                            toolImg: t.img,
+                            workerName: w.name, 
+                            qty: 1, 
+                            checkoutDate: new Date().toISOString(), 
+                            returnDate: null,
+                            type: 'emprestimo' 
+                        });
+                    } else if (hasStock) {
+                        if (t.qty < qty) {
+                            alert(`Quantidade insuficiente em estoque. Disponível: ${t.qty}`);
+                            return;
+                        }
+                        t.qty -= qty;
+                        const newTool = { ...t, status: 'em uso', user: w.name, id: Date.now(), original_id: t.id, qty: qty };
+                        tools.unshift(newTool);
+                        history.unshift({ 
+                            historyId: Date.now() + 1, toolId: newTool.id, toolName: t.name, toolImg: t.img, workerName: w.name, qty: qty, 
+                            checkoutDate: new Date().toISOString(), returnDate: null, type: 'emprestimo' 
+                        });
+                    }
+                    
+                    save();
+                    closeModal('materialModal');
+                }
+
+                // --- FUNÇÕES DE CÓDIGO DE BARRAS E QR CODE ---
+                function focusBarcode() {
+                    document.getElementById('barcodeInput').focus();
+                }
+
+                function handleBarcodeScan(code) {
+                    if (!code) return;
+                    document.getElementById('materialSearchInput').value = code;
+                    openMaterialModal(true);
+                    document.getElementById('barcodeInput').value = ""; // Limpa para a próxima leitura
+                }
+
+                function startQrScanner() {
+                    document.getElementById('step-material-tool').style.display = 'none';
+                    document.getElementById('qrScannerContainer').style.display = 'block';
+
+                    qrScanner = new Html5Qrcode("qr-reader");
+                    const config = { fps: 10, qrbox: { width: 200, height: 200 } };
+                    
+                    qrScanner.start({ facingMode: "environment" }, config, 
+                        (decodedText, decodedResult) => {
+                            handleBarcodeScan(decodedText);
+                            stopQrScanner();
+                            closeModal('materialModal');
+                        },
+                        (errorMessage) => { /* ignore */ }
+                    ).catch(err => console.error("QR Scanner Error:", err));
+                }
+
+                function stopQrScanner() {
+                    if (qrScanner) {
+                        qrScanner.stop().then(() => {
+                            document.getElementById('step-material-tool').style.display = 'block';
+                            document.getElementById('qrScannerContainer').style.display = 'none';
+                            qrScanner = null;
+                        }).catch(err => console.error("QR Stop Error:", err));
+                    }
+                }
+            </script>
+        </body>
+        </html> 
