@@ -10,6 +10,13 @@
             <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
             <script src="https://unpkg.com/lucide@latest"></script>
 
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+            <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+            <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
                 
@@ -37,18 +44,67 @@
                 .nav-btn:hover { color: #F1F5F9; background-color: #1E293B; }
                 .nav-btn.active { background-color: var(--brand-action); color: white; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3); }
                 
-                .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #94A3B8; border-radius: 10px; }
                 
-                .status-quebrado { background-color: #FFF1F2 !important; color: #E11D48 !important; border: 1px solid #FDA4AF; }
+                .status-quebrado { background-color: #FFF1F2 !important; color: #E11D48 !important; border: 1px solid #FDA4AF; font-weight: 700; }
                 
-                .filter-pill { padding: 0.5rem 1.25rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; transition: all 0.2s; border: 2px solid transparent; cursor: pointer; }
+                .filter-pill { padding: 0.5rem 1.25rem; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; transition: all 0.2s; border: 1px solid transparent; cursor: pointer; }
                 .filter-pill.active { border-color: currentColor; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
 
                 .img-container { cursor: pointer !important; }
+
+                .dashboard-filter-btn {
+                    background-color: #e2e8f0;
+                    color: #475569;
+                    padding: 0.25rem 0.75rem;
+                    border-radius: 0.5rem;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    border: none;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+                .dashboard-filter-btn:hover { background-color: #cbd5e1; }
+                .dashboard-filter-btn.active { background-color: var(--brand-action); color: white; }
+
+                .soft-ui-panel {
+                    background: #F8FAFC;
+                    border-radius: 1.5rem;
+                    padding: 1.5rem;
+                    box-shadow: 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff;
+                }
+
+                /* Flatpickr Customization for Gray/Silver Theme */
+                .flatpickr-calendar {
+                    background: #F8FAFC;
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                    border: 1px solid #E2E8F0;
+                    border-radius: 1rem;
+                }
+                .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.selected.prevMonthDay, .flatpickr-day.startRange.prevMonthDay, .flatpickr-day.endRange.prevMonthDay, .flatpickr-day.selected.nextMonthDay, .flatpickr-day.startRange.nextMonthDay, .flatpickr-day.endRange.nextMonthDay {
+                    background: #64748B; /* Slate-500 */
+                    border-color: #64748B;
+                    color: #fff;
+                }
+                .flatpickr-day.today {
+                    border-color: #94A3B8; /* Slate-400 */
+                }
+                .flatpickr-day:hover {
+                    background: #E2E8F0;
+                }
+                .flatpickr-months .flatpickr-month, .flatpickr-current-month .flatpickr-monthDropdown-months, .flatpickr-weekdays {
+                    background: #F8FAFC;
+                    color: #1E293B;
+                    fill: #1E293B;
+                }
+                span.flatpickr-weekday {
+                    color: #64748B;
+                }
             </style>
         </head>
-        <body>
+        <body class="bg-slate-50">
 
             <aside id="sidebar" class="sidebar text-slate-400 flex flex-col sticky top-0 h-screen z-50">
                 <div class="p-6 flex items-center justify-between">
@@ -58,9 +114,11 @@
                 <nav class="flex-1 px-4 space-y-2 mt-4">
                     <button id="btn-main" onclick="showSection('main')" class="nav-btn active"><i data-lucide="layout-dashboard"></i> <span class="sidebar-text">Painel Principal</span></button>
                     <button id="btn-catalog" onclick="showSection('catalog')" class="nav-btn"><i data-lucide="archive"></i> <span class="sidebar-text">Estoque</span></button>
-                    <button id="btn-team" onclick="openModal('teamModal'); renderTeam();" class="nav-btn"><i data-lucide="users"></i> <span class="sidebar-text">Equipe</span></button>
+                    <button id="btn-team" onclick="showSection('team')" class="nav-btn"><i data-lucide="users"></i> <span class="sidebar-text">Equipe</span></button>
+                    <button id="btn-maintenance" onclick="showSection('maintenance')" class="nav-btn"><i data-lucide="wrench"></i> <span class="sidebar-text">FollowUp</span></button>
                     <button id="btn-logs" onclick="showSection('logs')" class="nav-btn"><i data-lucide="history"></i> <span class="sidebar-text">Histórico</span></button>
                     <button id="btn-database" onclick="showSection('database')" class="nav-btn"><i data-lucide="database"></i> <span class="sidebar-text">Backup</span></button>
+                            <button id="btn-tests" onclick="showSection('tests')" class="nav-btn"><i data-lucide="beaker"></i> <span class="sidebar-text">Testes</span></button>
                 </nav>
             </aside>
 
@@ -72,7 +130,11 @@
                             <p id="currentDateDisplay" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest"></p>
                         </div>
                         <div class="flex gap-3">
-                            <button onclick="openMaterialModal()" class="bg-indigo-600 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all border-none cursor-pointer"><i data-lucide="package-minus" size="16"></i> Saída de Material</button>
+                            <button onclick="openMaterialModal()" id="mainCheckoutBtn" class="relative bg-indigo-600 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all border-none cursor-pointer">
+                                <i data-lucide="package-minus" size="16"></i>
+                                <span>Saída de Ferramentas</span>
+                                <span id="mainOverdueBadge" class="hidden absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border-2 border-white"></span>
+                            </button>
                             <button onclick="openMaintenanceModal()" class="bg-red-600 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all border-none cursor-pointer"><i data-lucide="wrench" size="16"></i> Reportar Manutenção</button>
                             <button onclick="openAddModal('disponivel')" class="bg-emerald-600 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all border-none cursor-pointer"><i data-lucide="plus" size="16"></i> Novo Item</button>
                         </div>
@@ -81,7 +143,7 @@
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         <div class="lg:col-span-12 space-y-6">
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-slate-400 text-[10px] font-bold uppercase mb-1">Total Geral</p><h2 id="totalCount" class="text-2xl font-black">0</h2></div>
+                                <div class="soft-ui-panel"><p class="text-slate-400 text-[10px] font-bold uppercase mb-1">Total Geral</p><h2 id="totalCount" class="text-2xl font-black">0</h2></div>
                                 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-emerald-500 text-[10px] font-bold uppercase mb-1">Disponíveis</p><h2 id="availCount" class="text-2xl font-black text-emerald-600">0</h2></div>
                                 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-orange-500 text-[10px] font-bold uppercase mb-1">Em Uso</p><h2 id="loanCount" class="text-2xl font-black text-orange-500">0</h2></div>
                                 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-red-500 text-[10px] font-bold uppercase mb-1">Manutenção</p><h2 id="brokenCount" class="text-2xl font-black text-red-600">0</h2></div>
@@ -106,16 +168,33 @@
                         <div>
                             <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase">Estoque</h2>
                         </div>
-                        <div class="relative">
-                            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
-                            <input type="text" id="catalogSearchInput" onkeyup="renderCatalog()" placeholder="BUSCAR POR NOME, CÓDIGO OU LOCAL..." class="w-full md:w-80 bg-white border-2 border-slate-100 rounded-xl pl-12 pr-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                        <div class="flex items-center gap-4">
+                            <div class="relative w-full md:w-80">
+                                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
+                                <input type="text" id="catalogSearchInput" onkeyup="handleSearchInput(this, renderCatalog)" placeholder="BUSCAR POR NOME, CÓDIGO OU MARCA..." class="w-full bg-white border-2 border-slate-100 rounded-xl pl-12 pr-10 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                                <button onclick="clearSearch('catalogSearchInput', renderCatalog)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 hidden z-10"><i data-lucide="x-circle" size="16"></i></button>
+                            </div>
                         </div>
                     </div>
+                    <button id="overdueBtn" onclick="openOverdueModal()" class="hidden w-full mb-8 relative bg-rose-600 text-white px-6 py-4 rounded-2xl font-bold flex items-center gap-3 shadow-lg text-sm uppercase tracking-widest hover:bg-rose-700 transition-all border-none cursor-pointer">
+                        <i data-lucide="alert-triangle"></i>
+                        <span id="overdueCountBadge" class="font-black">0</span>
+                        <span>Ferramenta(s) com devolução atrasada. Clique para ver.</span>
+                    </button>
                     <div class="flex gap-4 mb-8">
                         <button onclick="setCatalogFilter('all')" id="filter-all" class="filter-pill active bg-slate-200 text-slate-700">Todos</button>
                         <button onclick="setCatalogFilter('disponivel')" id="filter-disponivel" class="filter-pill bg-emerald-100 text-emerald-600">Disponíveis</button>
                         <button onclick="setCatalogFilter('em uso')" id="filter-uso" class="filter-pill bg-orange-100 text-orange-600">Em Uso</button>
                         <button onclick="setCatalogFilter('quebrado')" id="filter-quebrado" class="filter-pill bg-red-100 text-red-600">Manutenção</button>
+                        <div class="flex-1 flex justify-end gap-4">
+                            <div class="bg-white p-3 px-5 rounded-xl border border-slate-100 shadow-sm text-right">
+                                <p class="text-slate-400 text-[8px] font-bold uppercase">Valor Total</p><h2 id="catalogTotalValue" class="text-lg font-black text-emerald-600">R$ 0,00</h2>
+                            </div>
+                            <div class="bg-white p-3 px-5 rounded-xl border border-slate-100 shadow-sm text-right">
+                                <p class="text-slate-400 text-[8px] font-bold uppercase">Peças Totais</p>
+                                <h2 class="text-lg font-black text-slate-800 flex items-center justify-end gap-2"><i data-lucide="box" size="20" class="text-slate-400"></i><span id="catalogTotalQty">0</span></h2>
+                            </div>
+                        </div>
                     </div>
                     <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"></div>
                 </div>
@@ -125,44 +204,79 @@
                 <div class="max-w-[1400px] mx-auto">
                     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                         <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase">Histórico</h2>
-                        <div class="relative">
-                            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
-                            <input type="text" id="historySearchInput" onkeyup="renderHistory()" placeholder="PESQUISAR POR FERRAMENTA OU RESPONSÁVEL..." class="w-full md:w-80 bg-white border-2 border-slate-100 rounded-xl pl-12 pr-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                        <div class="flex flex-col md:flex-row gap-2 items-center">
+                            <div class="relative w-full md:w-72">
+                                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
+                                <input type="text" id="historySearchInput" onkeyup="handleSearchInput(this, renderHistory)" placeholder="PESQUISAR..." class="w-full bg-white border-2 border-slate-100 rounded-xl pl-12 pr-10 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                                <button onclick="clearSearch('historySearchInput', renderHistory)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 hidden z-10"><i data-lucide="x-circle" size="16"></i></button>
+                            </div>
+                            <div class="relative">
+                                <i data-lucide="calendar-days" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
+                                <input type="text" id="historyDateInput" placeholder="FILTRAR POR DATA..." class="w-full md:w-56 bg-white border-2 border-slate-100 rounded-xl pl-12 pr-10 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all h-[47px] cursor-pointer">
+                                <button id="clearDateBtn" onclick="clearHistoryDateFilter()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 hidden z-10"><i data-lucide="x-circle" size="16"></i></button>
+                            </div>
                         </div>
                     </div>
                     <div id="historyGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 </div>
             </main>
 
-            <div id="teamModal" class="fixed inset-0 bg-slate-900/80 hidden z-[750] flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('teamModal')">
-                <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-md shadow-2xl" onclick="event.stopPropagation()">
-                    <h3 class="text-lg font-black mb-6 text-center uppercase tracking-tighter">Gestão de Equipe</h3>
-                    <div class="space-y-2 mb-6">
-                        <input type="text" id="workerNameInput" placeholder="NOME DO COLABORADOR" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
-                        <div class="flex gap-2">
-                            <input type="text" id="workerCompanyInput" placeholder="EMPRESA / DEPARTAMENTO" class="flex-1 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+            <main id="section-team" class="main-content p-4 md:p-8">
+                <div class="max-w-[1400px] mx-auto">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                        <div>
+                            <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase">Gestão de Equipe</h2>
+                        </div>
+                        <div class="flex-1 flex justify-end gap-2">
+                            <input type="text" id="workerNameInput" placeholder="NOME DO COLABORADOR" class="w-full md:w-48 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                            <input type="text" id="workerCompanyInput" placeholder="EMPRESA / DEPARTAMENTO" class="w-full md:w-48 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
                             <button onclick="addWorker()" class="bg-blue-600 text-white px-5 rounded-xl border-none cursor-pointer hover:bg-blue-700 transition-all shadow-md"><i data-lucide="plus"></i></button>
                         </div>
                     </div>
-                    <hr class="border-slate-100 mb-6">
-                    <div class="relative mb-4">
-                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size="14"></i>
-                        <input type="text" id="teamSearchInput" onkeyup="renderTeam()" placeholder="PESQUISAR NA EQUIPE..." class="w-full bg-slate-50 border-none rounded-xl pl-10 pr-4 py-2 font-bold uppercase text-[10px] outline-none">
+                    <div class="relative mb-8 w-full md:w-80">
+                        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
+                        <input type="text" id="teamSearchInput" onkeyup="handleSearchInput(this, renderTeam)" placeholder="PESQUISAR POR NOME OU EMPRESA..." class="w-full bg-white border-2 border-slate-100 rounded-xl pl-12 pr-10 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                        <button onclick="clearSearch('teamSearchInput', renderTeam)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 hidden z-10"><i data-lucide="x-circle" size="16"></i></button>
                     </div>
-                    <div id="teamList" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2"></div>
-                    <button onclick="closeModal('teamModal')" class="w-full mt-6 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black uppercase text-xs border-none cursor-pointer hover:bg-slate-200">Fechar</button>
+                    <div id="teamGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+                </div>
+            </main>
+
+            <main id="section-maintenance" class="main-content p-4 md:p-8">
+                <div class="max-w-[1400px] mx-auto">
+                    <div class="flex justify-between items-start mb-8">
+                        <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase">Follow-Up de Manutenção</h2>
+                        <div class="bg-white p-3 px-5 rounded-xl border border-slate-100 shadow-sm text-right">
+                            <p class="text-slate-400 text-[8px] font-bold uppercase">Total em Manutenção</p>
+                            <h2 class="text-lg font-black text-red-600 flex items-center justify-end gap-2"><i data-lucide="wrench" size="20" class="text-red-400"></i><span id="maintenanceTotalCount">0</span></h2>
+                        </div>
+                    </div>
+                    <div class="relative mb-8 w-full md:w-80">
+                        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
+                        <input type="text" id="maintenanceSearchInput" onkeyup="handleSearchInput(this, renderMaintenance)" placeholder="PESQUISAR POR NOME, CÓDIGO OU RESPONSÁVEL..." class="w-full bg-white border-2 border-slate-100 rounded-xl pl-12 pr-10 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                        <button onclick="clearSearch('maintenanceSearchInput', renderMaintenance)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 hidden z-10"><i data-lucide="x-circle" size="16"></i></button>
+                    </div>
+                    <div class="flex gap-2 mb-8">
+                        <button onclick="setMaintenanceFilter('all')" id="maint-filter-all" class="filter-pill active bg-slate-200 text-slate-700">Todos</button>
+                        <button onclick="setMaintenanceFilter('Aguardando Orçamento')" id="maint-filter-aguardando-orçamento" class="filter-pill bg-amber-100 text-amber-600">Aguardando Orçamento</button>
+                        <button onclick="setMaintenanceFilter('Aguardando Aprovação')" id="maint-filter-aguardando-aprovação" class="filter-pill bg-sky-100 text-sky-600">Aguardando Aprovação</button>
+                        <button onclick="setMaintenanceFilter('Em Conserto')" id="maint-filter-em-conserto" class="filter-pill bg-indigo-100 text-indigo-600">Em Conserto</button>
+                        <button onclick="setMaintenanceFilter('Finalizado')" id="maint-filter-finalizado" class="filter-pill bg-emerald-100 text-emerald-600">Finalizados</button>
+                    </div>
+                    <div id="maintenanceGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </div>
+            </main>
+
+            <div id="zoomModal" class="fixed inset-0 bg-black/90 hidden z-[950] flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('zoomModal')">
+
+                <button onclick="closeModal('zoomModal'); event.stopPropagation();" class="absolute top-5 right-5 text-white bg-transparent border-none cursor-pointer z-[951]"><i data-lucide="x" size="32"></i></button>
+                <div id="zoomContainer" class="w-full h-full flex items-center justify-center overflow-hidden">
+                    <img id="zoomImage" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl transition-transform duration-200 ease-out cursor-zoom-in" onclick="event.stopPropagation()">
+                    <iframe id="zoomIframe" class="w-full h-full max-w-5xl bg-white rounded-xl shadow-2xl hidden" onclick="event.stopPropagation()"></iframe>
                 </div>
             </div>
 
-            <div id="zoomModal" class="fixed inset-0 bg-black/90 hidden z-[600] flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('zoomModal')">
-
-                <button onclick="closeModal('zoomModal'); event.stopPropagation();" class="absolute top-5 right-5 text-white bg-transparent border-none cursor-pointer z-10"><i data-lucide="x" size="32"></i></button>
-                <div id="zoomContainer" class="w-full h-full flex items-center justify-center overflow-hidden" onclick="event.stopPropagation()">
-                    <img id="zoomImage" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl transition-transform duration-200 ease-out cursor-zoom-in">
-                </div>
-            </div>
-
-            <div id="deleteModal" class="fixed inset-0 bg-slate-900/80 hidden z-[700] flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('deleteModal')">
+            <div id="deleteModal" class="fixed inset-0 bg-slate-900/80 hidden z-[960] flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('deleteModal')">
                 <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm text-center shadow-2xl" onclick="event.stopPropagation()">
                     <div class="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="alert-circle" size="32"></i></div>
                     <h3 class="text-lg font-black text-slate-900 uppercase mb-2">Excluir Item?</h3>
@@ -174,28 +288,25 @@
                 </div>
             </div>
 
+            <div id="alertModal" class="fixed inset-0 bg-slate-900/80 hidden z-[900] flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('alertModal')">
+                <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm text-center shadow-2xl" onclick="event.stopPropagation()">
+                    <div class="w-16 h-16 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="alert-triangle" size="32"></i></div>
+                    <h3 id="alertModalTitle" class="text-lg font-black text-slate-900 uppercase mb-2">Atenção</h3>
+                    <p id="alertModalText" class="text-slate-500 text-sm mb-6">Mensagem de alerta.</p>
+                    <button onclick="closeModal('alertModal')" class="w-full py-3 bg-slate-100 text-slate-600 rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none hover:bg-slate-200 transition-all">Entendido</button>
+                </div>
+            </div>
+
             <div id="returnModal" class="fixed inset-0 bg-slate-900/80 hidden z-[700] flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('returnModal')">
                 <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm text-center shadow-2xl" onclick="event.stopPropagation()">
                     <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="activity" size="32"></i></div>
                     <h3 id="returnModalTitle" class="text-lg font-black text-slate-900 uppercase mb-2">Estado da Ferramenta</h3>
                     <p id="returnModalText" class="text-slate-500 text-sm mb-6">Qual o estado de devolução do item?</p>
                     <div class="flex gap-3">
-                        <button onclick="handleReturnCondition('quebrado')" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none shadow-lg hover:bg-rose-700">Quebrado</button>
-                        <button onclick="handleReturnCondition('funcionando')" class="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none shadow-lg hover:bg-emerald-600">Funcionando</button>
+                        <button id="btnReturnBroken" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none shadow-lg hover:bg-rose-700">Quebrado</button>
+                        <button id="btnReturnWorking" class="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none shadow-lg hover:bg-emerald-600">Funcionando</button>
                     </div>
                     <button onclick="closeModal('returnModal')" class="w-full mt-6 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black uppercase text-xs border-none cursor-pointer hover:bg-slate-200">Cancelar</button>
-                </div>
-            </div>
-
-            <div id="stockReturnModal" class="fixed inset-0 bg-slate-900/80 hidden z-[700] flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('stockReturnModal')">
-                <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-sm text-center shadow-2xl" onclick="event.stopPropagation()">
-                    <div class="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="check-circle" size="32"></i></div>
-                    <h3 id="stockReturnModalTitle" class="text-lg font-black text-slate-900 uppercase mb-2">Finalizar Manutenção?</h3>
-                    <p id="stockReturnModalText" class="text-slate-500 text-sm mb-6">Você confirma que a manutenção deste item foi concluída e ele pode voltar ao estoque?</p>
-                    <div class="flex gap-3">
-                        <button onclick="closeModal('stockReturnModal')" class="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none">Cancelar</button>
-                        <button id="confirmStockReturnBtn" class="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none shadow-lg">Sim, Finalizar</button>
-                    </div>
                 </div>
             </div>
 
@@ -224,8 +335,12 @@
                                 <input type="text" id="toolNameInput" placeholder="NOME DA FERRAMENTA" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-emerald-500 transition-all">
                             </div>
                             <div>
-                                <label for="toolLocationInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Localização no Estoque</label>
-                                <input type="text" id="toolLocationInput" placeholder="EX: GAVETA 01, PRATELEIRA C" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-emerald-500 transition-all">
+                                <label for="toolBrandInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Marca</label>
+                                <input type="text" id="toolBrandInput" placeholder="MARCA DA FERRAMENTA" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-emerald-500 transition-all">
+                            </div>
+                            <div>
+                                <label for="toolWeightInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Peso</label>
+                                <input type="number" id="toolWeightInput" placeholder="PESO (KG)" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-emerald-500 transition-all">
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
@@ -245,8 +360,16 @@
 
             <main id="section-database" class="main-content p-4 md:p-8">
                 <div class="max-w-4xl mx-auto mt-10">
-                    <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase mb-10">Backup do Sistema</h2>
+                    <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase mb-10 text-center">Backup e Relatórios</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div onclick="exportToolsToExcel()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-teal-500 text-center">
+                            <div class="w-16 h-16 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="sheet"></i></div>
+                            <h3 class="font-black uppercase text-slate-800">Exportar Excel</h3>
+                        </div>
+                        <div onclick="exportToPDF()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-rose-500 text-center">
+                            <div class="w-16 h-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="file-down"></i></div>
+                            <h3 class="font-black uppercase text-slate-800">Exportar PDF</h3>
+                        </div>
                         <div onclick="exportData()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-blue-500 text-center">
                             <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="download-cloud"></i></div>
                             <h3 class="font-black uppercase text-slate-800">Exportar Dados</h3>
@@ -255,6 +378,19 @@
                             <input type="file" id="importInput" class="hidden" accept=".json" onchange="importData(this)">
                             <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="upload-cloud"></i></div>
                             <h3 class="font-black uppercase text-slate-800">Importar Dados</h3>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <main id="section-tests" class="main-content p-4 md:p-8">
+                <div class="max-w-[1400px] mx-auto">
+                    <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase mb-8">Testes de Funcionalidade</h2>
+                    <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 space-y-4">
+                        <p class="text-slate-600">Use os botões abaixo para simular cenários específicos e testar as funcionalidades de alerta do sistema.</p>
+                        <div class="flex gap-4 pt-4">
+                            <button onclick="simulateOverdue()" class="bg-yellow-500 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-yellow-600 transition-all border-none cursor-pointer"><i data-lucide="clock" size="16"></i> Simular Atraso de 24h</button>
+                            <button onclick="stopSimulation()" class="bg-slate-500 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-slate-600 transition-all border-none cursor-pointer"><i data-lucide="x-circle" size="16"></i> Parar Simulação</button>
                         </div>
                     </div>
                 </div>
@@ -269,11 +405,20 @@
                     <div class="p-8">
                         <div id="step-selecionar-ferramenta">
                             <p class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">1. Qual ferramenta quebrou?</p>
+                            <div class="relative mb-4">
+                                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
+                                <input type="text" id="maintenanceToolSearchInput" onkeyup="handleSearchInput(this, () => openMaintenanceModal(true))" placeholder="BUSCAR POR NOME, CÓDIGO OU MARCA..." class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl pl-12 pr-10 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                                <button onclick="clearSearch('maintenanceToolSearchInput', () => openMaintenanceModal(true))" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 hidden z-10"><i data-lucide="x-circle" size="16"></i></button>
+                            </div>
                             <div id="toolGridMaintenance" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[55vh] overflow-y-auto p-1 custom-scrollbar"></div>
                         </div>
                         <div id="step-detalhes-manutencao" class="hidden">
                             <p class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">2. Detalhes do problema</p>
                             <div id="selectedToolMaintenance" class="mb-4"></div>
+                            <div id="maintenanceQtyContainer" class="hidden mb-4">
+                                <label for="maintenanceQtyInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Quantidade Quebrada</label>
+                                <input type="number" id="maintenanceQtyInput" value="1" min="1" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-xs outline-none focus:border-red-500 transition-all">
+                            </div>
                             <textarea id="maintenanceNoteInput" placeholder="Descreva o problema ou o motivo da manutenção..." class="w-full h-24 border-2 border-slate-100 rounded-xl p-3 font-medium text-sm outline-none focus:border-red-500 transition-all"></textarea>
                             <div class="flex gap-3 mt-4">
                                 <button onclick="resetMaintenance()" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase text-[10px] cursor-pointer border-none">Voltar</button>
@@ -287,7 +432,7 @@
             <div id="materialModal" class="fixed inset-0 bg-slate-900/90 hidden z-[800] flex items-center justify-center p-4 backdrop-blur-md" onclick="closeModal('materialModal')">
                 <div class="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
                     <div class="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center gap-4">
-                        <h3 id="materialModalTitle" class="font-black uppercase tracking-tighter text-slate-900">Saída de Material</h3>
+                        <h3 id="materialModalTitle" class="font-black uppercase tracking-tighter text-slate-900">Saída de Ferramentas</h3>
                         <div class="flex-1 flex justify-end gap-2">
                             <input type="text" id="barcodeInput" class="absolute -left-[9999px]" onchange="handleBarcodeScan(this.value)">
                             <button onclick="focusBarcode()" class="bg-white border-2 border-slate-200 text-slate-500 px-3 py-2 rounded-lg font-bold flex items-center gap-2 text-[10px] uppercase hover:bg-slate-100 transition-all"><i data-lucide="barcode" size="14"></i> Bipar</button>
@@ -303,7 +448,8 @@
                             <p id="materialModalStep1" class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">1. Qual item será retirado?</p>
                             <div class="relative mb-4">
                                 <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
-                                <input type="text" id="materialSearchInput" onkeyup="openMaterialModal(true)" placeholder="BUSCAR POR NOME, CÓDIGO OU LOCAL..." class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl pl-12 pr-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                                <input type="text" id="materialSearchInput" onkeyup="handleSearchInput(this, () => openMaterialModal(true))" placeholder="BUSCAR POR NOME, CÓDIGO OU MARCA..." class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl pl-12 pr-10 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                                <button onclick="clearSearch('materialSearchInput', () => openMaterialModal(true))" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 hidden z-10"><i data-lucide="x-circle" size="16"></i></button>
                             </div>
                             <div id="toolGridMaterial" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[55vh] overflow-y-auto p-1 custom-scrollbar"></div>
                         </div>
@@ -313,7 +459,7 @@
                             <input type="number" id="materialQtyInput" placeholder="QTD" class="w-32 text-center border-2 border-slate-200 rounded-xl px-4 py-3 font-black text-lg outline-none focus:border-blue-500 transition-all">
                             <div class="flex gap-3 mt-6">
                                 <button onclick="resetMaterial(0)" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase text-[10px] cursor-pointer border-none">Voltar</button>
-                                <button onclick="processQtyStep()" class="flex-1 py-4 bg-slate-700 text-white rounded-2xl font-black uppercase text-[10px] shadow-lg border-none cursor-pointer hover:bg-slate-800">Avançar</button>
+                                <button onclick="processQtyStep()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-[10px] shadow-lg border-none cursor-pointer hover:bg-blue-700">Avançar</button>
                             </div>
                         </div>
                         <div id="step-material-worker" class="hidden">
@@ -333,6 +479,131 @@
                 </div>
             </div>
 
+            <div id="manageMaintenanceModal" class="fixed inset-0 bg-slate-900/90 hidden z-[850] flex items-center justify-center p-4 backdrop-blur-md" onclick="closeModal('manageMaintenanceModal')">
+                <div class="bg-white rounded-[2.5rem] w-full max-w-3xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
+                    <div class="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-black uppercase tracking-tighter text-slate-900">Gerenciar Manutenção</h3>
+                            <p id="maintenanceToolName" class="text-xs font-bold text-slate-500 uppercase"></p>
+                        </div>
+                        <button onclick="closeModal('manageMaintenanceModal');" class="text-slate-400 hover:text-rose-500 bg-transparent border-none cursor-pointer"><i data-lucide="x"></i></button>
+                    </div>
+                    <div class="p-8 max-h-[80vh] overflow-y-auto custom-scrollbar">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <!-- Coluna de Informações -->
+                            <div class="md:col-span-1">
+                                <div id="maintenanceToolInfo" class="text-center"></div>
+                                <div id="maintenanceStatusTimeline" class="mt-8">
+                                    <!-- Stepper Timeline -->
+                                    <ol class="relative border-l-2 border-slate-100 ml-4">                  
+                                        <li id="timeline-step-1" class="mb-5 ml-8">            
+                                            <span class="absolute flex items-center justify-center w-8 h-8 bg-slate-100 rounded-full -left-4"><i data-lucide="flag" size="16" class="text-slate-500"></i></span>
+                                            <h3 class="font-black text-slate-700">Reportado</h3>
+                                        </li>
+                                        <li id="timeline-step-2" class="mb-5 ml-8">
+                                            <span class="absolute flex items-center justify-center w-8 h-8 bg-slate-100 rounded-full -left-4"><i data-lucide="clipboard-list" size="16" class="text-slate-500"></i></span>
+                                            <h3 class="font-black text-slate-700">Orçamento</h3>
+                                        </li>
+                                        <li id="timeline-step-3" class="mb-5 ml-8">
+                                            <span class="absolute flex items-center justify-center w-8 h-8 bg-slate-100 rounded-full -left-4"><i data-lucide="check-check" size="16" class="text-slate-500"></i></span>
+                                            <h3 class="font-black text-slate-700">em conserto</h3>
+                                        </li>
+                                        <li id="timeline-step-4" class="ml-8">
+                                            <span class="absolute flex items-center justify-center w-8 h-8 bg-slate-100 rounded-full -left-4"><i data-lucide="package-check" size="16" class="text-slate-500"></i></span>
+                                            <h3 class="font-black text-slate-700">finalizado</h3>
+                                        </li>
+                                    </ol>
+                                </div>
+                            </div>
+
+                            <!-- Coluna de Ações -->
+                            <div id="maintenanceActions" class="md:col-span-2 space-y-6">
+                                <!-- Passo 1: Registrar Orçamento -->
+                                <div id="maintenance-step-quote" class="hidden">
+                                    <h4 class="font-black uppercase text-slate-600 mb-3">Registrar Orçamento</h4>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label for="quoteProviderInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Fornecedor</label>
+                                            <input type="text" id="quoteProviderInput" placeholder="NOME DA EMPRESA/FORNECEDOR" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 h-[47px]">
+                                        </div>
+                                        <div>
+                                            <label for="quoteCostInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Custo (R$)</label>
+                                            <input type="number" id="quoteCostInput" placeholder="350,00" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-xs outline-none focus:border-blue-500">
+                                        </div>
+                                        <div>
+                                            <label for="quoteNoteInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Detalhes do Orçamento</label>
+                                            <textarea id="quoteNoteInput" placeholder="Descreva os detalhes do orçamento..." class="w-full h-20 border-2 border-slate-100 rounded-xl p-3 font-medium text-sm outline-none focus:border-blue-500"></textarea>
+                                        </div>
+                                        <button id="btnSaveQuote" class="w-full mt-4 py-3 bg-blue-600 text-white rounded-xl font-black uppercase text-xs shadow-lg hover:bg-blue-700">Salvar Orçamento</button>
+                                    </div>
+                                </div>
+
+                                <!-- Passo 2: Aprovar Orçamento -->
+                                <div id="maintenance-step-approval" class="hidden">
+                                    <h4 class="font-black uppercase text-slate-600 mb-3">Aprovação do Orçamento</h4>
+                                    <div id="quoteDetailsDisplay" class="bg-slate-50 p-4 rounded-xl space-y-3 mb-4"></div>
+                                    <div class="flex gap-3">
+                                        <button id="btnRejectRepair" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold uppercase text-[10px] shadow-lg hover:bg-rose-700">Recusar</button>
+                                        <button id="btnApproveRepair" class="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold uppercase text-[10px] shadow-lg hover:bg-emerald-600">Aprovar Conserto</button>
+                                    </div>
+                                </div>
+
+                                <!-- Passo 3: Finalizar Conserto -->
+                                <div id="maintenance-step-finish" class="hidden">
+                                    <h4 class="font-black uppercase text-slate-600 mb-3">Finalizar Conserto</h4>
+                                    <div class="space-y-4">                                        
+                                        <div class="mt-1">
+                                            <label class="text-[10px] font-black uppercase text-slate-400 ml-4">Anexar Nota Fiscal (PDF/Imagem)</label>
+                                            <label for="invoiceFileInput" id="drop-area" class="mt-1 flex justify-center w-full h-32 px-4 transition bg-white border-2 border-slate-200 border-dashed rounded-xl appearance-none cursor-pointer hover:border-blue-400 focus:outline-none">
+                                                <span class="flex items-center space-x-2">
+                                                    <i data-lucide="upload-cloud" class="text-slate-500"></i>
+                                                    <span class="font-medium text-slate-600">
+                                                        <span id="drop-area-text">Arraste o arquivo ou <span class="text-blue-600 underline">clique para selecionar</span></span>
+                                                        <span id="file-name-display" class="hidden font-bold text-emerald-600"></span>
+                                                    </span>
+                                                </span>
+                                                <input type="file" id="invoiceFileInput" name="file_upload" class="hidden" accept="image/*,application/pdf">
+                                            </label>
+                                        </div>
+                                        <p class="text-sm text-slate-500">A manutenção foi concluída e o item pode voltar ao estoque como "Disponível"?</p>
+                                    </div>
+                                    <div class="flex gap-3 mt-4">
+                                        <button id="btnBackToQuote" class="flex-1 py-3 bg-amber-500 text-white rounded-xl font-bold uppercase text-[10px] shadow-lg hover:bg-amber-600">Não, refazer orçamento</button>
+                                        <button id="btnFinishRepair" class="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold uppercase text-[10px] shadow-lg hover:bg-emerald-600">Sim, Finalizar</button>
+                                    </div>
+                                </div>
+                                <!-- Passo 4: Concluir Manutenção -->
+                                <div id="maintenance-step-conclude" class="hidden">
+                                    <h4 class="font-black uppercase text-slate-600 mb-3">Conclusão</h4>
+                                    <div class="space-y-4">
+                                        <div id="invoiceDisplay" class="hidden">
+                                            <!-- Invoice link will be inserted here -->
+                                        </div>
+                                        <p class="text-sm text-slate-500">O processo de manutenção foi finalizado. O item está pronto para retornar ao estoque?</p>
+                                        <button id="btnConcludeMaintenance" class="w-full py-3 bg-blue-600 text-white rounded-xl font-black uppercase text-[10px] shadow-lg hover:bg-blue-700">Retornar ao Estoque</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="overdueModal" class="fixed inset-0 bg-slate-900/90 hidden z-[800] flex items-center justify-center p-4 backdrop-blur-md" onclick="closeModal('overdueModal')">
+                <div class="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
+                    <div class="bg-rose-50 p-6 border-b border-rose-100 flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="alert-triangle" class="text-rose-600"></i>
+                            <h3 class="font-black uppercase tracking-tighter text-rose-900">Ferramentas com Devolução Atrasada</h3>
+                        </div>
+                        <button onclick="closeModal('overdueModal'); event.stopPropagation();" class="text-rose-400 hover:text-rose-600 bg-transparent border-none cursor-pointer"><i data-lucide="x"></i></button>
+                    </div>
+                    <div id="overdueList" class="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                        <!-- Overdue items will be rendered here -->
+                    </div>
+                </div>
+            </div>
+
             <script>
                 let tools = JSON.parse(localStorage.getItem('ldc_pro_db')) || [];
                 let team = JSON.parse(localStorage.getItem('ldc_team_db')) || [{id: 1, name: 'ALMOXARIFADO', company: 'LDC'}];
@@ -341,25 +612,50 @@
                 let currentImageBase64 = "";
                 let pendingStatus = "disponivel";
                 let catalogFilter = 'all';
+                let maintenanceFilter = 'all';
                 let itemToDeleteId = null;
                 let itemToReturnId = null;
-                let itemToStockReturnId = null;
+                let itemToManageMaintenanceId = null;
                 let historyItemToDeleteId = null;
                 let maintenanceData = { toolId: null };
                 let materialData = { toolId: null, workerId: null, qty: null };
                 let zoomState = { level: 1, isPanning: false, startX: 0, startY: 0, translateX: 0, translateY: 0 };
                 let qrScanner = null;
+                let historyDatePicker = null;
 
                 const formatBRL = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+                const capitalize = (s) => {
+                    if (typeof s !== 'string' || !s) return '';
+                    return s.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+                };
 
                 function save() { 
                     localStorage.setItem('ldc_pro_db', JSON.stringify(tools)); 
                     localStorage.setItem('ldc_team_db', JSON.stringify(team));
                     localStorage.setItem('ldc_history_db', JSON.stringify(history));
-                    render();
-                    renderCatalog();
-                    if (document.getElementById('section-logs').classList.contains('active-section')) {
-                        renderHistory();
+                    render(); 
+                    renderCatalog(); 
+                    renderHistory(); 
+                    renderMaintenance(); 
+                    renderOverdueAlert();
+                    renderTeam(); 
+                }
+
+                function handleSearchInput(input, renderCallback) {
+                    const clearBtn = input.nextElementSibling;
+                    if (clearBtn && clearBtn.tagName === 'BUTTON') {
+                        clearBtn.classList.toggle('hidden', !input.value);
+                    }
+                    renderCallback();
+                }
+
+                function clearSearch(inputId, renderCallback) {
+                    const input = document.getElementById(inputId);
+                    if (input) {
+                        input.value = '';
+                        input.nextElementSibling.classList.add('hidden');
+                        renderCallback();
+                        input.focus();
                     }
                 }
 
@@ -372,8 +668,13 @@
                         if (qrScanner) stopQrScanner();
                         section.classList.add('active-section');
                     }
-                    if (s === 'catalog') renderCatalog();
+                    if (s === 'catalog') {
+                        renderCatalog();
+                        renderOverdueAlert();
+                    }
                     if (s === 'logs') renderHistory();
+                    if (s === 'maintenance') renderMaintenance();
+                    if (s === 'team') renderTeam();
                     render();
                 }
 
@@ -409,41 +710,97 @@
                 }
 
                 function removeWorker(id) {
-                    if (id === 1) return;
-                    team = team.filter(w => w.id !== id);
-                    save(); renderTeam();
+                    if (id === 1) { // Proteção para não remover o Almoxarifado
+                        document.getElementById('alertModalTitle').innerText = "Ação Bloqueada";
+                        document.getElementById('alertModalText').innerText = "Não é possível remover o Almoxarifado.";
+                        openModal('alertModal');
+                        return;
+                    }
+                    const worker = team.find(w => w.id === id);
+                    if (worker) {
+                        const toolsInPossession = tools.filter(t => t.user === worker.name).length;
+                        if (toolsInPossession > 0) {
+                            document.getElementById('alertModalTitle').innerText = "Ação Bloqueada";
+                            document.getElementById('alertModalText').innerText = `Não é possível remover ${worker.name}. Este colaborador ainda possui ${toolsInPossession} ferramenta(s) em sua posse.`;
+                            openModal('alertModal');
+                            return;
+                        }
+                        const modal = document.getElementById('deleteModal');
+                        modal.querySelector('h3').innerText = `Remover ${worker.name}?`;
+                        modal.querySelector('p').innerText = 'Você tem certeza que deseja remover este colaborador da equipe?';
+                        document.getElementById('confirmDeleteBtn').onclick = () => {
+                        team = team.filter(w => w.id !== id);
+                            closeModal('deleteModal');
+                        save();
+                        };
+                        openModal('deleteModal');
+                    }
                 }
 
                 function renderTeam() {
-                    const list = document.getElementById('teamList');
+                    const grid = document.getElementById('teamGrid');
+                    if (!grid) return;
                     const search = document.getElementById('teamSearchInput').value.toLowerCase();
+
                     const filteredTeam = team.filter(w => w.name.toLowerCase().includes(search) || w.company.toLowerCase().includes(search));
-                    list.innerHTML = filteredTeam.map(w => `
-                        <div class="flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-100">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-[10px] font-bold">${w.name.charAt(0)}</div>
-                                <div class="flex flex-col">
-                                    <span class="font-bold text-xs text-slate-700">${w.name}</span>
-                                    <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest">${w.company}</span>
-                                </div>
-                            </div>
-                            ${w.id !== 1 ? `<button onclick="removeWorker(${w.id})" class="text-rose-400 border-none bg-transparent cursor-pointer"><i data-lucide="trash-2" size="16"></i></button>` : ''}
+                    
+                    if (filteredTeam.length === 0) {
+                        grid.innerHTML = `<p class="text-center text-sm text-slate-400 col-span-full py-20">Nenhum colaborador encontrado.</p>`;
+                        return;
+                    }
+
+                    grid.innerHTML = filteredTeam.map(w => {
+                        const toolsInPossession = tools.filter(t => t.user === w.name).length;
+                        const historyCount = history.filter(h => h.workerName === w.name).length;
+                        return `
+                        <div class="bg-white rounded-2xl p-5 shadow-md border border-slate-100 flex flex-col relative group">
+                            <div class="absolute top-4 right-4">${w.id !== 1 ? `<button onclick="removeWorker(${w.id})" class="p-2 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Excluir Colaborador"><i data-lucide="trash-2" size="16"></i></button>` : ''}</div>
+                            <div class="flex items-center gap-4 mb-4"><div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-black">${w.name.charAt(0)}</div><div class="flex-1"><h3 class="font-black text-slate-800 uppercase truncate" title="${w.name}">${w.name}</h3><p class="text-xs font-bold text-slate-400 uppercase truncate" title="${w.company}">${w.company}</p></div></div>
+                            <div class="mt-auto pt-4 border-t border-slate-100 grid grid-cols-2 gap-4 text-center"><div><p class="text-[9px] font-black text-slate-400 uppercase">Em Posse</p><p class="text-2xl font-black ${toolsInPossession > 0 ? 'text-orange-500' : 'text-slate-600'}">${toolsInPossession}</p></div><div><p class="text-[9px] font-black text-slate-400 uppercase">Movimentações</p><p class="text-2xl font-black text-slate-600">${historyCount}</p></div></div>
                         </div>
-                    `).join('');
+                    `}).join('');
                     lucide.createIcons();
                 }
 
                 // Funções de Imagem e Modais de Ferramenta
                 function previewImage(input) {
                     if (input.files && input.files[0]) {
+                        const file = input.files[0];
                         const reader = new FileReader();
                         reader.onload = e => {
-                            currentImageBase64 = e.target.result;
-                            document.getElementById('imagePreview').src = e.target.result;
-                            document.getElementById('imagePreviewContainer').classList.remove('hidden');
-                            document.getElementById('uploadPlaceholder').classList.add('hidden');
+                            const img = new Image();
+                            img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                const ctx = canvas.getContext('2d');
+                                const maxWidth = 800; // Redimensiona para max 800px para economizar espaço
+                                const maxHeight = 800;
+                                let width = img.width;
+                                let height = img.height;
+
+                                if (width > height) {
+                                    if (width > maxWidth) {
+                                        height *= maxWidth / width;
+                                        width = maxWidth;
+                                    }
+                                } else {
+                                    if (height > maxHeight) {
+                                        width *= maxHeight / height;
+                                        height = maxHeight;
+                                    }
+                                }
+                                canvas.width = width;
+                                canvas.height = height;
+                                ctx.drawImage(img, 0, 0, width, height);
+                                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7); // Qualidade 70%
+                                
+                                currentImageBase64 = compressedBase64;
+                                document.getElementById('imagePreview').src = compressedBase64;
+                                document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                                document.getElementById('uploadPlaceholder').classList.add('hidden');
+                            };
+                            img.src = e.target.result;
                         };
-                        reader.readAsDataURL(input.files[0]);
+                        reader.readAsDataURL(file);
                     }
                 }
 
@@ -464,7 +821,8 @@
                     document.getElementById('addModalTitle').innerText = "Novo Equipamento";
                     document.getElementById('toolCodeInput').value = "";
                     document.getElementById('toolNameInput').value = "";
-                    document.getElementById('toolLocationInput').value = "";
+                    document.getElementById('toolBrandInput').value = "";
+                    document.getElementById('toolWeightInput').value = "";
                     document.getElementById('toolValueInput').value = "";
                     document.getElementById('toolQtyInput').value = "1";
                     document.getElementById('imagePreview').src = "";
@@ -475,25 +833,44 @@
                 }
 
                 function addTool() {
+                    if (document.getElementById('addModal').classList.contains('hidden')) return;
                     const name = document.getElementById('toolNameInput').value;
                     if(!name) return;
+
+                    const code = document.getElementById('toolCodeInput').value.trim();
+                    if (code && tools.some(t => t.code === code)) {
+                        document.getElementById('alertModalTitle').innerText = "Código Duplicado";
+                        document.getElementById('alertModalText').innerText = `O código/tag "${code}" já está cadastrado no sistema.`;
+                        openModal('alertModal');
+                        return;
+                    }
+
                     const qtyInput = document.getElementById('toolQtyInput');
+
+                    let newId = Date.now();
+                    while(tools.some(t => t.id === newId)) {
+                        newId++;
+                    }
+
                     const tool = {
-                        id: Date.now(),
+                        id: newId,
                         name: name,
-                        code: document.getElementById('toolCodeInput').value,
-                        location: document.getElementById('toolLocationInput').value.toUpperCase(),
+                        code: code,
+                        brand: document.getElementById('toolBrandInput').value.toUpperCase(),
+                        weight: document.getElementById('toolWeightInput').value,
                         value: parseFloat(document.getElementById('toolValueInput').value) || 0,
                         img: currentImageBase64,
                         status: pendingStatus,
                         user: '-',
-                        maintenanceNote: ""
+                        maintenanceNote: "",
+                        maintenanceInfo: null
                     };
                     if (qtyInput.value && parseInt(qtyInput.value) > 0) {
                         tool.qty = parseInt(qtyInput.value);
                     }
                     tools.unshift(tool);
-                    save(); closeModal('addModal');
+                    closeModal('addModal');
+                    save();
                 }
 
                 function editTool(id) {
@@ -502,7 +879,8 @@
                     document.getElementById('addModalTitle').innerText = "Editar Equipamento";
                     document.getElementById('toolCodeInput').value = t.code;
                     document.getElementById('toolNameInput').value = t.name;
-                    document.getElementById('toolLocationInput').value = t.location || "";
+                    document.getElementById('toolBrandInput').value = t.brand || "";
+                    document.getElementById('toolWeightInput').value = t.weight || "";
                     document.getElementById('toolValueInput').value = t.value;
                     document.getElementById('toolQtyInput').value = t.qty || 0;
                     if(t.img) {
@@ -516,7 +894,8 @@
                     document.getElementById('btnSaveTool').onclick = () => {
                         t.name = document.getElementById('toolNameInput').value;
                         t.code = document.getElementById('toolCodeInput').value;
-                        t.location = document.getElementById('toolLocationInput').value.toUpperCase();
+                        t.brand = document.getElementById('toolBrandInput').value.toUpperCase();
+                        t.weight = document.getElementById('toolWeightInput').value;
                         t.value = parseFloat(document.getElementById('toolValueInput').value) || 0;
                         t.qty = parseInt(document.getElementById('toolQtyInput').value) || 0;
                         t.img = currentImageBase64;
@@ -528,13 +907,21 @@
                 }
 
                 function requestDelete(id) {
+                    const tool = tools.find(t => t.id === id);
+                    if (tool && tool.status === 'em uso') {
+                        document.getElementById('alertModalTitle').innerText = "Ação Bloqueada";
+                        document.getElementById('alertModalText').innerText = "Não é possível excluir um item que está 'Em Uso'. Realize a devolução primeiro.";
+                        openModal('alertModal');
+                        return;
+                    }
                     itemToDeleteId = id;
                     const modal = document.getElementById('deleteModal');
                     modal.querySelector('h3').innerText = 'Excluir Item?';
                     modal.querySelector('p').innerText = 'Você tem certeza que deseja remover este item? Esta ação não pode ser desfeita.';
                     document.getElementById('confirmDeleteBtn').onclick = () => {
                         tools = tools.filter(t => t.id !== itemToDeleteId);
-                        save(); closeModal('deleteModal');
+                        closeModal('deleteModal');
+                        save();
                     }; 
                     openModal('deleteModal');
                 }
@@ -545,17 +932,32 @@
                     const zoomModal = document.getElementById('zoomModal');
                     const zoomContainer = document.getElementById('zoomContainer');
                     const zoomImage = document.getElementById('zoomImage');
+                    const zoomIframe = document.getElementById('zoomIframe');
+                    let zoomTarget;
 
                     // Reset state
                     zoomState = { level: 1, isPanning: false, startX: 0, startY: 0, translateX: 0, translateY: 0 };
                     
-                    zoomImage.src = src;
-                    zoomImage.style.transform = 'scale(1) translate(0px, 0px)';
-                    zoomImage.style.cursor = 'zoom-in';
-                    zoomImage.classList.add('max-w-full', 'max-h-full');
+                    if (src.startsWith('data:application/pdf')) {
+                        zoomImage.classList.add('hidden');
+                        zoomImage.src = "";
+                        zoomIframe.classList.remove('hidden');
+                        zoomIframe.src = src;
+                        zoomTarget = zoomIframe;
+                    } else {
+                        zoomIframe.classList.add('hidden');
+                        zoomIframe.src = "";
+                        zoomImage.classList.remove('hidden');
+                        zoomImage.src = src;
+                        zoomTarget = zoomImage;
+                    }
+                    
+                    zoomTarget.style.transform = 'scale(1) translate(0px, 0px)';
+                    zoomTarget.style.cursor = 'default';
+                    zoomTarget.classList.add('max-w-full', 'max-h-full');
 
                     const updateTransform = () => {
-                        zoomImage.style.transform = `scale(${zoomState.level}) translate(${zoomState.translateX}px, ${zoomState.translateY}px)`;
+                        zoomTarget.style.transform = `scale(${zoomState.level}) translate(${zoomState.translateX}px, ${zoomState.translateY}px)`;
                     };
 
                     zoomContainer.onwheel = (e) => {
@@ -568,25 +970,25 @@
                         }
 
                         if (zoomState.level > 1) {
-                            zoomImage.style.cursor = 'move';
-                            zoomImage.classList.remove('max-w-full', 'max-h-full');
+                            zoomTarget.style.cursor = 'move';
+                            zoomTarget.classList.remove('max-w-full', 'max-h-full');
                         } else {
                             zoomState.level = 1; // Snap to 1
-                            zoomImage.style.cursor = 'zoom-in';
-                            zoomImage.classList.add('max-w-full', 'max-h-full');
+                            zoomTarget.style.cursor = 'default';
+                            zoomTarget.classList.add('max-w-full', 'max-h-full');
                             zoomState.translateX = 0;
                             zoomState.translateY = 0;
                         }
                         updateTransform();
                     };
 
-                    zoomImage.onmousedown = (e) => {
+                    zoomContainer.onmousedown = (e) => {
                         if (zoomState.level > 1) {
                             e.preventDefault();
                             zoomState.isPanning = true;
                             zoomState.startX = e.clientX - zoomState.translateX;
                             zoomState.startY = e.clientY - zoomState.translateY;
-                            zoomImage.style.cursor = 'grabbing';
+                            zoomTarget.style.cursor = 'grabbing';
                         }
                     };
 
@@ -602,7 +1004,7 @@
                     zoomModal.onmouseup = () => {
                         if (zoomState.isPanning) {
                             zoomState.isPanning = false;
-                            zoomImage.style.cursor = 'move';
+                            zoomTarget.style.cursor = 'move';
                         }
                     };
                     
@@ -613,37 +1015,33 @@
 
                 function setCatalogFilter(f) {
                     catalogFilter = f;
-                    document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('#section-catalog .filter-pill').forEach(b => b.classList.remove('active'));
                     document.getElementById('filter-' + (f === 'em uso' ? 'uso' : f)).classList.add('active');
                     renderCatalog();
                 }
 
-                // --- RENDERIZAÇÃO DO CATÁLOGO ATUALIZADA ---
-                function renderCatalog() {
-                    const grid = document.getElementById('catalogGrid');
-                    const searchTerm = document.getElementById('catalogSearchInput').value.toLowerCase();
-
-                    let filteredTools = tools.filter(t => {
-                        const matchesFilter = catalogFilter === 'all' || t.status === catalogFilter;
-                        const matchesSearch = !searchTerm || 
-                                            t.name.toLowerCase().includes(searchTerm) ||
-                                            (t.code && t.code.toLowerCase().includes(searchTerm)) ||
-                                            (t.location && t.location.toLowerCase().includes(searchTerm));
-                        return matchesFilter && matchesSearch;
-                    });
-
-                    if(filteredTools.length === 0) {
-                        grid.innerHTML = `<p class="text-center text-sm text-slate-400 col-span-full py-10">Nenhum item encontrado para sua busca.</p>`;
-                        return;
+                function createCatalogCardHTML(t) {
+                    const statusInfo = {
+                        disponivel: { class: 'bg-emerald-50 text-emerald-600', text: t.status },
+                        'em uso': { class: 'bg-orange-100 text-orange-600', text: `Com ${t.user || 'N/A'}` },
+                        quebrado: { class: 'bg-red-50 text-red-600', text: t.maintenanceInfo ? t.maintenanceInfo.status : 'Manutenção' }
+                    };
+                    if (t.status === 'quebrado' && t.maintenanceInfo && t.maintenanceInfo.status === 'Em Conserto') {
+                        statusInfo.quebrado.class = 'bg-indigo-100 text-indigo-600';
                     }
-                    grid.innerHTML = filteredTools.map(t => `
-                        <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-slate-100 flex flex-col group relative transition-all hover:shadow-2xl">
+                    const currentStatus = statusInfo[t.status] || { class: 'bg-slate-100 text-slate-600', text: t.status };
+
+                    let qtyDisplay = t.qty || 0;
+                    if (qtyDisplay >= 1000) {
+                        qtyDisplay = (qtyDisplay / 1000).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' TON';
+                    }
+
+                    return `
+                        <div id="tool-card-${t.id}" class="bg-white rounded-[2rem] p-4 shadow-lg border border-slate-100 flex flex-col group relative transition-all hover:shadow-2xl hover:-translate-y-1">
                             <div class="absolute top-6 right-6 flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                                ${t.status === 'disponivel' ? `<button onclick="openMaterialModal(false, ${t.id})" class="bg-blue-600 text-white p-2 rounded-lg shadow-sm border border-blue-600 cursor-pointer hover:bg-blue-700" title="Emprestar Ferramenta"><i data-lucide="arrow-right-left" size="14"></i></button>` : ''}
-                                ${t.status === 'em uso' ? `<button onclick="requestReturn(${t.id})" class="bg-orange-500 text-white p-2 rounded-lg shadow-sm border border-orange-500 cursor-pointer hover:bg-orange-600" title="Devolver"><i data-lucide="rotate-ccw" size="14"></i></button>` : ''}
-                                ${t.status === 'quebrado' ? `<button onclick="requestStockReturn(${t.id})" class="bg-emerald-500 text-white p-2 rounded-lg shadow-sm border border-emerald-500 cursor-pointer hover:bg-emerald-600" title="Finalizar Manutenção"><i data-lucide="check-circle" size="14"></i></button>` : ''}
-                                <button onclick="editTool(${t.id})" class="bg-white/90 p-2 rounded-lg text-slate-600 hover:text-blue-600 shadow-sm border border-slate-200 cursor-pointer backdrop-blur"><i data-lucide="pencil" size="14"></i></button>
-                                <button onclick="requestDelete(${t.id})" class="bg-white/90 p-2 rounded-lg text-rose-500 hover:bg-rose-50 shadow-sm border border-slate-200 cursor-pointer backdrop-blur"><i data-lucide="trash-2" size="14"></i></button>
+                                ${t.status === 'em uso' ? `<button onclick="requestReturn(${t.id}); event.stopPropagation();" class="bg-orange-500 text-white p-2 rounded-lg shadow-sm border border-orange-500 cursor-pointer hover:bg-orange-600" title="Devolver"><i data-lucide="rotate-ccw" size="14"></i></button>` : ''}
+                                <button onclick="editTool(${t.id}); event.stopPropagation();" class="bg-white/90 p-2 rounded-lg text-slate-600 hover:text-blue-600 shadow-sm border border-slate-200 cursor-pointer backdrop-blur" title="Editar"><i data-lucide="pencil" size="14"></i></button>
+                                <button onclick="requestDelete(${t.id}); event.stopPropagation();" class="bg-white/90 p-2 rounded-lg text-rose-500 hover:bg-rose-50 shadow-sm border border-slate-200 cursor-pointer backdrop-blur" title="Excluir"><i data-lucide="trash-2" size="14"></i></button>
                             </div>
                             <div onclick="openZoom('${t.img || ''}')" class="img-container relative w-full aspect-square bg-slate-50 rounded-2xl mb-4 flex items-center justify-center overflow-hidden border border-slate-50">
                                 ${t.img ? `<img src="${t.img}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">` : `<i data-lucide="wrench" class="text-slate-200" size="40"></i>`}
@@ -652,11 +1050,15 @@
                                 </div>
                             </div>
                             <div class="px-2">
-                                <span class="text-[9px] font-black uppercase px-2 py-1 rounded-lg mb-2 inline-block ${t.status === 'disponivel' ? 'bg-emerald-50 text-emerald-600' : t.status === 'em uso' ? 'bg-orange-100 text-orange-600' : 'bg-red-50 text-red-600'}">${t.status === 'em uso' ? `Com ${t.user || 'N/A'}` : t.status}</span>
+                                <span class="text-[9px] font-black uppercase px-2 py-1 rounded-lg mb-2 inline-block ${currentStatus.class}">${currentStatus.text}</span>
                                 <h3 class="font-black text-slate-900 uppercase text-xs truncate" title="${t.name}">${t.name}</h3>
                                 ${t.status === 'quebrado' && t.maintenanceNote ? 
                                     `<p class="text-[9px] font-bold text-rose-500 mt-1 truncate" title="${t.maintenanceNote}"><i data-lucide="wrench" size="10" class="inline-block -mt-px"></i> ${t.maintenanceNote}</p>` :
-                                    `<p class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">${t.code || ''} ${t.location ? '<span class="text-indigo-500 font-black"> | ' + t.location + '</span>' : ''}</p>`}
+                                    `<p class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">
+                                        ${t.code || ''} 
+                                        ${t.brand ? '<span class="text-indigo-500 font-black"> | ' + t.brand + '</span>' : ''}
+                                        ${t.weight ? '<span class="text-slate-500 font-black"> | ' + t.weight + ' KG <i data-lucide="weight" width="10" height="15" class="inline-block -mt-px"></i></span>' : ''}
+                                    </p>`}
                                 
                                 <div class="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
                                     <div class="flex flex-col">
@@ -667,16 +1069,47 @@
                                         <span class="text-[8px] font-black text-slate-400 uppercase">Estoque</span>
                                         <div class="flex items-center gap-1 text-slate-900 font-black">
                                             <i data-lucide="box" size="10"></i>
-                                            <span>${t.qty || 0}</span>
+                                            <span>${qtyDisplay}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>`).join('');
+                        </div>
+                    `;
+                }
+
+                // --- RENDERIZAÇÃO DO CATÁLOGO ATUALIZADA ---
+                function renderCatalog() {
+                    const grid = document.getElementById('catalogGrid');
+                    if (!grid) return;
+                    const searchTerm = document.getElementById('catalogSearchInput').value.toLowerCase();
+
+                    let filteredTools = tools.filter(t => {
+                        const matchesFilter = catalogFilter === 'all' || t.status === catalogFilter;
+                        const matchesSearch = !searchTerm || 
+                                            t.name.toLowerCase().includes(searchTerm) ||
+                                            (t.code && t.code.toLowerCase().includes(searchTerm)) ||
+                                            (t.brand && t.brand.toLowerCase().includes(searchTerm));
+                        return matchesFilter && matchesSearch;
+                    });
+
+                    const totalValue = filteredTools.reduce((sum, tool) => sum + ((tool.value || 0) * (tool.qty || 1)), 0);
+                    const totalQty = filteredTools.reduce((sum, tool) => sum + (tool.qty || 1), 0);
+
+                    document.getElementById('catalogTotalValue').innerText = formatBRL(totalValue);
+                    document.getElementById('catalogTotalQty').innerText = totalQty;
+
+                    if(filteredTools.length === 0) {
+                        grid.innerHTML = `<p class="text-center text-sm text-slate-400 col-span-full py-10">Nenhum item encontrado para sua busca.</p>`;
+                        return;
+                    }
+                    grid.innerHTML = filteredTools.map(t => createCatalogCardHTML(t)).join('');
                     lucide.createIcons();
                 }
 
                 function render() {
+                    const toolListEl = document.getElementById('toolList');
+                    if (!toolListEl) return;
                     document.getElementById('totalCount').innerText = tools.length;
                     document.getElementById('availCount').innerText = tools.filter(t => t.status === 'disponivel').length;
                     document.getElementById('loanCount').innerText = tools.filter(t => t.status === 'em uso').length;
@@ -690,16 +1123,20 @@
                                     <div class="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden border">
                                         ${t.img ? `<img src="${t.img}" class="w-full h-full object-cover">` : `<div class="flex items-center justify-center h-full text-slate-300 text-[8px]">FOTO</div>`}
                                     </div>
-                                    <div><p class="font-black text-slate-800 uppercase text-xs">${t.name}</p><p class="text-[9px] font-bold text-slate-400">${t.code || ''} <span class="text-indigo-500 font-black">${t.location ? ' | ' + t.location : ''}</span></p></div>
+                                    <div><p class="font-black text-slate-800 uppercase text-xs">${t.name}</p><p class="text-[9px] font-bold text-slate-400">${t.code || ''} <span class="text-indigo-500 font-black">${t.brand ? ' | ' + t.brand + '</span>' : ''}</span></p></div>
                                 </div>
                             </td>
                             <td class="px-8 py-5">
                                 <div class="flex flex-col">
-                                    <span class="text-[9px] font-black uppercase px-2 py-1 rounded-lg w-fit ${t.status === 'disponivel' ? 'bg-emerald-50 text-emerald-600' : t.status === 'em uso' ? 'bg-orange-100 text-orange-600' : 'bg-red-50 text-red-600'}">${t.status}</span>
-                                    ${t.status === 'quebrado' ?
-                                        (t.maintenanceNote ? `<span class="text-[9px] text-rose-500 font-bold mt-1 block truncate" title="${t.maintenanceNote}">${t.maintenanceNote}</span>` : '') :
-                                        `<span class="text-[10px] font-bold text-slate-500 mt-1 uppercase">${t.user}</span>`
-                                    }
+                                    <span class="text-[9px] font-black uppercase px-2 py-1 rounded-lg w-fit ${
+                                        t.status === 'disponivel' ? 'bg-emerald-50 text-emerald-600' :
+                                        t.status === 'em uso' ? 'bg-orange-100 text-orange-600' :
+                                        t.status === 'quebrado' && t.maintenanceInfo && t.maintenanceInfo.status === 'Em Conserto' ? 'bg-indigo-100 text-indigo-600' :
+                                        'bg-red-50 text-red-600'
+                                    }">
+                                        ${t.status === 'quebrado' ? (t.maintenanceInfo ? t.maintenanceInfo.status : 'Manutenção') : (t.status === 'em uso' ? `Com ${t.user || 'N/A'}` : t.status)}
+                                    </span>
+                                    ${t.status === 'quebrado' && t.maintenanceNote ? `<span class="text-[9px] text-rose-500 font-bold mt-1 block truncate" title="${t.maintenanceNote}">${t.maintenanceNote}</span>` : ''}
                                 </div>
                             </td>
                             <td class="px-8 py-5 text-right">
@@ -733,10 +1170,10 @@
                     const mins = Math.floor(diff / 60000);
 
                     let result = '';
-                    if (days > 0) result += `${days}d `;
-                    if (hours > 0) result += `${hours}h `;
-                    if (mins >= 0) result += `${mins}m`;
-                    return result.trim() || '0m';
+                    if (days > 0) result += `${days}d`;
+                    if (hours > 0) result += `${hours}h`;
+                    if (mins > 0 || (days === 0 && hours === 0)) result += `${mins}min`;
+                    return result || '0min';
                 }
 
                 function requestDeleteHistory(id) {
@@ -754,14 +1191,32 @@
                     closeModal('deleteModal');
                 }
 
+                function clearHistoryDateFilter() {
+                    if (historyDatePicker) {
+                        historyDatePicker.clear();
+                    }
+                }
+
                 function renderHistory() {
                     const grid = document.getElementById('historyGrid');
+                    if (!grid) return;
                     const searchTerm = document.getElementById('historySearchInput').value.toLowerCase();
+                    const dateInput = document.getElementById('historyDateInput');
+                    const dateStr = dateInput.value;
 
-                    const filteredHistory = history.filter(h => 
-                        (h.toolName && h.toolName.toLowerCase().includes(searchTerm)) ||
-                        (h.workerName && h.workerName.toLowerCase().includes(searchTerm))
-                    );
+                    let dateFilter = null;
+                    if (dateStr) {
+                        const parts = dateStr.split('/');
+                        if (parts.length === 3) {
+                            dateFilter = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                        }
+                    }
+
+                    const filteredHistory = history.filter(h => {
+                        const matchesSearch = !searchTerm || (h.toolName && h.toolName.toLowerCase().includes(searchTerm)) || (h.workerName && h.workerName.toLowerCase().includes(searchTerm));
+                        const matchesDate = !dateFilter || (h.checkoutDate && h.checkoutDate.startsWith(dateFilter)) || (h.returnDate && h.returnDate.startsWith(dateFilter));
+                        return matchesSearch && matchesDate;
+                    });
 
                     if (filteredHistory.length === 0) {
                         grid.innerHTML = `<p class="text-center text-sm text-slate-400 col-span-full py-20">Nenhum registro de histórico encontrado.</p>`;
@@ -833,7 +1288,118 @@
                     lucide.createIcons();
                 }
 
-                window.onload = () => { render(); lucide.createIcons(); };
+                // --- FUNÇÃO DE SIMULAÇÃO DE ATRASO ---
+                function simulateOverdue() {
+                    // Encontra a primeira ferramenta de item único que esteja disponível
+                    const availableTool = tools.find(t => t.status === 'disponivel' && (!t.hasOwnProperty('qty') || t.qty === 0));
+                    
+                    if (!availableTool) {
+                        document.getElementById('alertModalTitle').innerText = "Simulação Falhou";
+                        document.getElementById('alertModalText').innerText = "Nenhuma ferramenta de item único (não consumível) está disponível para simular o atraso.";
+                        openModal('alertModal');
+                        return;
+                    }
+
+                    // Altera o status da ferramenta para "em uso" por um usuário de teste
+                    availableTool.status = 'em uso';
+                    availableTool.user = 'SIMULAÇÃO';
+
+                    // Cria um registro de histórico com data de retirada de 25 horas atrás
+                    const now = new Date();
+                    const twentyFiveHoursAgo = new Date(now.getTime() - (25 * 60 * 60 * 1000));
+
+                    const historyEntry = {
+                        historyId: Date.now(),
+                        toolId: availableTool.id,
+                        toolName: availableTool.name,
+                        toolImg: availableTool.img,
+                        workerName: 'SIMULAÇÃO',
+                        qty: 1,
+                        checkoutDate: twentyFiveHoursAgo.toISOString(),
+                        returnDate: null,
+                        type: 'emprestimo'
+                    };
+                    history.unshift(historyEntry);
+
+                    // Salva os dados e atualiza a interface, mostrando o alerta
+                    save();
+                    openOverdueModal();
+                }
+
+                // --- FUNÇÃO DE PARAR SIMULAÇÃO DE ATRASO ---
+                function stopSimulation() {
+                    const simulatedTool = tools.find(t => t.status === 'em uso' && t.user === 'SIMULAÇÃO');
+                    
+                    if (!simulatedTool) {
+                        document.getElementById('alertModalTitle').innerText = "Simulação Não Ativa";
+                        document.getElementById('alertModalText').innerText = "Nenhuma simulação de atraso está ativa no momento para ser interrompida.";
+                        openModal('alertModal');
+                        return;
+                    }
+
+                    simulatedTool.status = 'disponivel';
+                    simulatedTool.user = '-';
+
+                    const historyIndex = history.findIndex(h => h.toolId === simulatedTool.id && h.workerName === 'SIMULAÇÃO' && h.returnDate === null);
+                    if (historyIndex > -1) {
+                        history.splice(historyIndex, 1);
+                    }
+
+                    save();
+                    document.getElementById('alertModalTitle').innerText = "Simulação Finalizada";
+                    document.getElementById('alertModalText').innerText = "A simulação de atraso foi revertida com sucesso.";
+                    openModal('alertModal');
+                }
+
+                window.onload = () => { 
+                    render(); 
+                    renderOverdueAlert();
+                    lucide.createIcons(); 
+
+                    historyDatePicker = flatpickr("#historyDateInput", {
+                        locale: "pt",
+                        dateFormat: "d/m/Y",
+                        onChange: function(selectedDates, dateStr, instance) {
+                            document.getElementById('clearDateBtn').classList.toggle('hidden', !dateStr);
+                            renderHistory();
+                        }
+                    });
+
+                    setInterval(renderOverdueAlert, 30000); // Verifica atrasos a cada 30 segundos
+
+                    // Configuração de tecla Enter para salvar/confirmar
+                    const setupEnter = (inputId, action) => {
+                        const el = document.getElementById(inputId);
+                        if (el) {
+                            el.addEventListener('keydown', (e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    action();
+                                }
+                            });
+                        }
+                    };
+
+                    // Equipe
+                    setupEnter('workerNameInput', addWorker);
+                    setupEnter('workerCompanyInput', addWorker);
+
+                    // Ferramentas (Adicionar/Editar)
+                    const saveToolAction = () => document.getElementById('btnSaveTool').click();
+                    setupEnter('toolCodeInput', saveToolAction);
+                    setupEnter('toolNameInput', saveToolAction);
+                    setupEnter('toolBrandInput', saveToolAction);
+                    setupEnter('toolWeightInput', saveToolAction);
+                    setupEnter('toolValueInput', saveToolAction);
+                    setupEnter('toolQtyInput', saveToolAction);
+
+                    // Saída de Materiais (Quantidade)
+                    setupEnter('materialQtyInput', processQtyStep);
+
+                    // Manutenção (Orçamento)
+                    setupEnter('quoteProviderInput', () => saveQuote(itemToManageMaintenanceId));
+                    setupEnter('quoteCostInput', () => saveQuote(itemToManageMaintenanceId));
+                };
 
                 // --- FUNÇÕES DE BACKUP ---
                 function exportData() {
@@ -853,30 +1419,41 @@
                     reader.onload = function(e) {
                         try {
                             const data = JSON.parse(e.target.result);
-                            if(data.tools) tools = data.tools;
-                            if(data.team) team = data.team;
-                            if(data.history) history = data.history;
+                            if (data.tools) tools = data.tools;
+                            if (data.team) team = data.team;
+                            if (data.history) history = data.history;
                             save();
-                            alert("Dados importados com sucesso!");
-                        } catch(e) { alert("Erro ao importar arquivo."); }
+                            document.getElementById('alertModalTitle').innerText = "Sucesso";
+                            document.getElementById('alertModalText').innerText = "Dados importados com sucesso!";
+                            openModal('alertModal');
+                        } catch(e) { 
+                            document.getElementById('alertModalTitle').innerText = "Erro";
+                            document.getElementById('alertModalText').innerText = "Erro ao importar arquivo. Verifique se o arquivo é um backup válido.";
+                            openModal('alertModal');
+                        } finally {
+                            // Reseta o título do modal de alerta para o padrão depois de usar
+                            setTimeout(() => {
+                                document.getElementById('alertModalTitle').innerText = "Atenção";
+                            }, 500);
+                        }
                     };
                     reader.readAsText(file);
                 }
 
                 // --- FUNÇÕES DE CHECKOUT / DEVOLUÇÃO ---
                 function requestReturn(id) {
-                    itemToReturnId = id;
+                    itemToReturnId = id; // This is used by handleReturnCondition
                     const tool = tools.find(t => t.id === id);
                     if (!tool) return;
                     
                     document.getElementById('returnModalTitle').innerText = `Devolver: ${tool.name}`;
                     document.getElementById('returnModalText').innerText = `Qual o estado de devolução do item por ${tool.user}?`;
+                    document.getElementById('btnReturnBroken').onclick = () => handleReturnCondition(id, 'quebrado');
+                    document.getElementById('btnReturnWorking').onclick = () => handleReturnCondition(id, 'funcionando');
                     openModal('returnModal');
                 }
-
-                function handleReturnCondition(condition) {
-                    closeModal('returnModal');
-                    const tool = tools.find(t => t.id === itemToReturnId);
+                function handleReturnCondition(id, condition) {
+                    const tool = tools.find(t => t.id === id);
                     if (!tool) return;
 
                     const historyEntry = history.find(h => h.toolId === tool.id && h.returnDate === null && h.type === 'emprestimo');
@@ -897,85 +1474,103 @@
                             tool.status = 'disponivel';
                             tool.user = '-';
                         }
+                        closeModal('returnModal');
+                        document.getElementById(`tool-card-${id}`)?.remove();
                         save();
                     } else if (condition === 'quebrado') {
                         if (historyEntry) {
                             historyEntry.returnDate = new Date().toISOString();
                             historyEntry.condition = 'quebrado';
                         }
+            
+            if (tool.original_id) { // É um item consumível que quebrou/se perdeu
+                tools = tools.filter(t => t.id !== tool.id); // Remove o item "emprestado" da lista principal
+            } else {
+                // Para ferramentas normais, inicia o fluxo de manutenção
+                maintenanceData.toolId = itemToReturnId;
+                document.getElementById('step-selecionar-ferramenta').classList.add('hidden');
+                document.getElementById('step-detalhes-manutencao').classList.remove('hidden');
+                document.getElementById('selectedToolMaintenance').innerHTML = `<div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl mb-3">
+                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden">${tool.img ? `<img src="${tool.img}" class="w-full h-full object-cover">` : `<i data-lucide="image" class="text-slate-300"></i>`}</div>
+                    <div><p class="font-bold text-xs uppercase text-slate-800">${tool.name}</p><p class="text-[9px] font-black text-slate-400 uppercase">${tool.code}</p></div>
+                </div>`;
+                document.getElementById('maintenanceNoteInput').value = '';
+                document.getElementById('btnFinalizeMaintenance').onclick = finalizeMaintenanceReport;
+                openModal('maintenanceModal');
+            }
+            closeModal('returnModal');
+                        document.getElementById(`tool-card-${id}`)?.remove();
+                        save();
+                    }
+                }
+                function finishRepair(id) {
+                    const tool = tools.find(t => t.id === id);
+                    if (!tool || !tool.maintenanceInfo) return;
 
-                        // Directly trigger the maintenance report flow
-                        maintenanceData.toolId = itemToReturnId;
-                        document.getElementById('step-selecionar-ferramenta').classList.add('hidden');
-                        document.getElementById('step-detalhes-manutencao').classList.remove('hidden');
-                        document.getElementById('selectedToolMaintenance').innerHTML = `<div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl mb-3">
-                            <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden">${tool.img ? `<img src="${tool.img}" class="w-full h-full object-cover">` : `<i data-lucide="image" class="text-slate-300"></i>`}</div>
-                            <div><p class="font-bold text-xs uppercase text-slate-800">${tool.name}</p><p class="text-[9px] font-black text-slate-400 uppercase">${tool.code}</p></div>
-                        </div>`;
-                        document.getElementById('maintenanceNoteInput').value = '';
-                        document.getElementById('btnFinalizeMaintenance').onclick = finalizeMaintenanceReport;
-                        openModal('maintenanceModal');
-                        lucide.createIcons();
-                        save(); // Save history update immediately
+                    const fileInput = document.getElementById('invoiceFileInput');
+                    const file = fileInput.files[0];
+
+                    const processAndSave = (invoiceData) => {
+                        tool.maintenanceInfo.invoiceFile = invoiceData;
+                        tool.maintenanceInfo.status = 'Finalizado';
+                        closeModal('manageMaintenanceModal');
+                        setTimeout(save, 50);
+                    };
+
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => processAndSave(e.target.result);
+                        reader.readAsDataURL(file);
+                    } else {
+                        processAndSave(tool.maintenanceInfo.invoiceFile || null);
                     }
                 }
 
-                function finalizeReturn() {
-                    // This function is now handled by handleReturnCondition
-                }
-
-                function requestStockReturn(id) {
-                    itemToReturnId = id;
-                    const tool = tools.find(t => t.id === id);
-                    if (!tool) return;
-                    
-                    document.getElementById('returnModalTitle').innerText = `Devolver: ${tool.name}`;
-                    document.getElementById('returnModalText').innerText = `Você confirma a devolução deste item por ${tool.user}?`;
-                    document.getElementById('confirmReturnBtn').onclick = finalizeReturn;
-                    openModal('returnModal');
-                }
-
-                function finalizeReturn() {
-                    const t = tools.find(x => x.id === itemToReturnId);
+                function concludeAndMoveToStock(id) {
+                    closeModal('manageMaintenanceModal');
+                    const t = tools.find(x => x.id === id);
                     if (t) {
-                        const historyEntry = history.find(h => h.toolId === t.id && h.returnDate === null);
+                        // Atualiza histórico de manutenção se existir
+                        const historyEntry = history.find(h => h.toolId === t.id && h.returnDate === null && h.type === 'manutencao');
                         if (historyEntry) {
                             historyEntry.returnDate = new Date().toISOString();
                         }
-
-                        if (t.original_id) {
-                            const originalTool = tools.find(ot => ot.id === t.original_id);
-                            if (originalTool) {
-                                originalTool.qty = (originalTool.qty || 0) + (t.qty || 1);
-                            }
-                            tools = tools.filter(tool => tool.id !== t.id);
-                        } else {
-                            t.status = 'disponivel';
-                            t.user = '-';
-                        }
+                        t.status = 'disponivel';
+                        t.user = '-';
+                        t.maintenanceNote = "";
+                        t.maintenanceInfo = null;
+                        document.getElementById(`tool-card-${id}`)?.remove();
                         save();
-                        closeModal('returnModal');
                     }
                 }
 
-                function requestStockReturn(id) {
-                    itemToStockReturnId = id;
-                    const tool = tools.find(t => t.id === id);
-                    if (!tool) return;
-                    document.getElementById('stockReturnModalTitle').innerText = `Finalizar Manutenção: ${tool.name}`;
-                    document.getElementById('stockReturnModalText').innerText = `Confirmar que a manutenção de "${tool.name}" foi concluída?`;
-                    document.getElementById('confirmStockReturnBtn').onclick = finalizeStockReturn;
-                    openModal('stockReturnModal');
-                }
-
                 // --- FUNÇÕES DE MANUTENÇÃO ---
-                function openMaintenanceModal() {
-                    maintenanceData = { toolId: null };
-                    document.getElementById('step-selecionar-ferramenta').classList.remove('hidden');
-                    document.getElementById('step-detalhes-manutencao').classList.add('hidden');
+                function openMaintenanceModal(isSearchUpdate = false) {
+                    if (!isSearchUpdate) {
+                        maintenanceData = { toolId: null };
+                        const searchInput = document.getElementById('maintenanceToolSearchInput');
+                        if (searchInput) {
+                            searchInput.value = "";
+                            searchInput.nextElementSibling.classList.add('hidden');
+                        }
+                        document.getElementById('step-selecionar-ferramenta').classList.remove('hidden');
+                        document.getElementById('step-detalhes-manutencao').classList.add('hidden');
+                        openModal('maintenanceModal');
+                    }
                     
                     const list = document.getElementById('toolGridMaintenance');
-                    const availableTools = tools.filter(t => t.status !== 'quebrado');
+                    const searchInput = document.getElementById('maintenanceToolSearchInput');
+                    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+
+                    const availableTools = tools.filter(t => {
+                        const notBroken = t.status !== 'quebrado';
+                        const matchesSearch = !searchTerm || 
+                                            t.name.toLowerCase().includes(searchTerm) ||
+                                            (t.code && t.code.toLowerCase().includes(searchTerm)) ||
+                                            (t.brand && t.brand.toLowerCase().includes(searchTerm));
+                        return notBroken && matchesSearch;
+                    });
+
                     list.innerHTML = availableTools.map(t => {
                         let stockInfo;
                         if (t.status === 'disponivel') {
@@ -994,9 +1589,10 @@
                             <div class="flex-1 flex flex-col justify-between"><h3 class="font-black text-slate-700 uppercase text-[10px] leading-tight h-8 flex items-center justify-center px-1" title="${t.name}">${t.name}</h3><div class="mt-2 pt-2 border-t border-slate-100">${stockInfo}</div></div>
                         </div>`;
                     }).join('');
-                    if(availableTools.length === 0) list.innerHTML = '<p class="text-center text-xs text-slate-400 col-span-full">Nenhuma ferramenta disponível para manutenção.</p>';
+                    if(availableTools.length === 0) {
+                        list.innerHTML = `<p class="text-center text-xs text-slate-400 col-span-full">${searchTerm ? 'Nenhuma ferramenta encontrada.' : 'Nenhuma ferramenta disponível para manutenção.'}</p>`;
+                    }
                     lucide.createIcons();
-                    openModal('maintenanceModal');
                 }
 
                 function selectToolForMaintenance(id) {
@@ -1008,6 +1604,21 @@
                         <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden">${tool.img ? `<img src="${tool.img}" class="w-full h-full object-cover">` : `<i data-lucide="image" class="text-slate-300"></i>`}</div>
                         <div><p class="font-bold text-xs uppercase text-slate-800">${tool.name}</p><p class="text-[9px] font-black text-slate-400 uppercase">${tool.code}</p></div>
                     </div>`;
+                    
+                    // Configuração do campo de quantidade
+                    const qtyContainer = document.getElementById('maintenanceQtyContainer');
+                    const qtyInput = document.getElementById('maintenanceQtyInput');
+                    const isBulk = tool.hasOwnProperty('qty') && tool.qty > 1;
+                    
+                    if (isBulk) {
+                        qtyContainer.classList.remove('hidden');
+                        qtyInput.max = tool.qty;
+                        qtyInput.value = 1;
+                    } else {
+                        qtyContainer.classList.add('hidden');
+                        qtyInput.value = 1;
+                    }
+
                     document.getElementById('maintenanceNoteInput').value = tool.maintenanceNote || '';
                     document.getElementById('btnFinalizeMaintenance').onclick = finalizeMaintenanceReport;
                     lucide.createIcons();
@@ -1022,29 +1633,102 @@
                 function finalizeMaintenanceReport() {
                     const t = tools.find(x => x.id === maintenanceData.toolId);
                     const note = document.getElementById('maintenanceNoteInput').value.trim();
-                    if (t && !note) {
-                        alert('Por favor, descreva o problema.');
+                    const qtyInput = document.getElementById('maintenanceQtyInput');
+                    let qtyToMaintenance = parseInt(qtyInput.value);
+                    
+                    if (!qtyToMaintenance || qtyToMaintenance < 1) qtyToMaintenance = 1;
+
+                    if (t && !note) { // Validação para nota de manutenção
+                        document.getElementById('alertModalText').innerText = 'Por favor, descreva o problema para registrar a manutenção.';
+                        openModal('alertModal');
                         return;
                     }
-                    if (t && note) {
+                    
+                    if (!t) return;
+
+                    // Verifica se é necessário dividir o item (quantidade parcial)
+                    const isBulk = t.hasOwnProperty('qty') && t.qty > 0;
+                    
+                    if (isBulk && qtyToMaintenance < t.qty) {
+                        // Lógica de divisão: reduz a quantidade do item original
+                        t.qty -= qtyToMaintenance;
+                        
+                        // Cria novo item para manutenção com a quantidade especificada
+                        const maintenanceTool = {
+                            ...t,
+                            id: Date.now(),
+                            qty: qtyToMaintenance,
+                            status: 'quebrado',
+                            user: 'MANUTENÇÃO',
+                            maintenanceNote: note,
+                            original_id: t.original_id || t.id, // Se t já é clone, mantém. Se é original, aponta para t.
+                            maintenanceInfo: {
+                                status: 'Aguardando Orçamento',
+                                provider: '',
+                                cost: 0,
+                                quoteNote: '',
+                                reportDate: new Date().toISOString(),
+                                reportedBy: t.user !== '-' ? t.user : 'ALMOXARIFADO',
+                                approvalDate: null,
+                                invoiceFile: null
+                            }
+                        };
+                        
+                        // Adiciona histórico de manutenção para o novo item
+                        history.unshift({
+                            historyId: Date.now() + 1,
+                            toolId: maintenanceTool.id,
+                            toolName: maintenanceTool.name,
+                            toolImg: maintenanceTool.img,
+                            workerName: t.user !== '-' ? t.user : 'ALMOXARIFADO', // Quem reportou
+                            qty: qtyToMaintenance,
+                            checkoutDate: new Date().toISOString(),
+                            returnDate: null,
+                            type: 'manutencao'
+                        });
+                        
+                        tools.unshift(maintenanceTool);
+
+                    } else {
+                        // Quantidade total ou item único (comportamento padrão)
+                        
+                        // Se a ferramenta já estava em uso, primeiro finaliza o histórico de empréstimo
+                        const activeLoan = history.find(h => h.toolId === t.id && h.returnDate === null && h.type === 'emprestimo');
+                        if (activeLoan) {
+                            activeLoan.returnDate = new Date().toISOString();
+                            activeLoan.condition = 'quebrado';
+                        }
+
                         const responsibleUser = t.user !== '-' ? t.user : 'ALMOXARIFADO';
                         t.status = 'quebrado';
                         t.user = 'MANUTENÇÃO';
                         t.maintenanceNote = note;
+                        
                         history.unshift({
                             historyId: Date.now(),
                             toolId: t.id,
                             toolName: t.name,
                             toolImg: t.img,
                             workerName: responsibleUser,
-                            qty: 1,
+                            qty: t.qty || 1,
                             checkoutDate: new Date().toISOString(),
                             returnDate: null,
                             type: 'manutencao'
                         });
-                        save();
-                        closeModal('maintenanceModal');
+                        t.maintenanceInfo = {
+                            status: 'Aguardando Orçamento',
+                            provider: '',
+                            cost: 0,
+                            quoteNote: '',
+                            reportDate: new Date().toISOString(),
+                            reportedBy: responsibleUser,
+                            approvalDate: null,
+                            invoiceFile: null
+                        };
                     }
+
+                    closeModal('maintenanceModal');
+                    setTimeout(save, 50);
                 }
 
                 // --- FUNÇÕES DE SAÍDA DE MATERIAL ---
@@ -1059,7 +1743,7 @@
                         }
                     }
 
-                    document.getElementById('materialModalTitle').innerText = "Saída ou Empréstimo";
+                    document.getElementById('materialModalTitle').innerText = "Saída de Ferramentas";
                     document.getElementById('materialModalStep1').innerText = "1. Qual item será retirado?";
                     
                     const list = document.getElementById('toolGridMaterial');
@@ -1068,7 +1752,7 @@
 
                     const availableItems = tools.filter(t => 
                         t.status === 'disponivel' &&
-                        (!searchTerm || t.name.toLowerCase().includes(searchTerm) || (t.code && t.code.toLowerCase().includes(searchTerm)) || (t.location && t.location.toLowerCase().includes(searchTerm)))
+                        (!searchTerm || t.name.toLowerCase().includes(searchTerm) || (t.code && t.code.toLowerCase().includes(searchTerm)) || (t.brand && t.brand.toLowerCase().includes(searchTerm)))
                     );
 
                     list.innerHTML = availableItems.map(t => {
@@ -1110,18 +1794,21 @@
                     const qtyInput = document.getElementById('materialQtyInput');
                     const qty = parseInt(qtyInput.value);
 
-                    if (!qty || qty <= 0) {
-                        alert("Por favor, insira uma quantidade válida.");
+                    if (!qty || qty <= 0) { // Validação de quantidade
+                        document.getElementById('alertModalText').innerText = "Por favor, insira uma quantidade válida.";
+                        openModal('alertModal');
                         return;
                     }
 
                     const isConsumable = tool.hasOwnProperty('qty') && tool.qty > 0;
-                    if (isConsumable && qty > tool.qty) {
-                        alert(`Quantidade indisponível. Máximo em estoque: ${tool.qty}`);
+                    if (isConsumable && qty > tool.qty) { // Validação de estoque
+                        document.getElementById('alertModalText').innerText = `Quantidade indisponível. Máximo em estoque: ${tool.qty}`;
+                        openModal('alertModal');
                         return;
                     }
-                    if (!isConsumable && qty > 1) { // Ferramenta única
-                        alert("Só é possível emprestar uma unidade desta ferramenta por vez.");
+                    if (!isConsumable && qty > 1) { // Validação para item único
+                        document.getElementById('alertModalText').innerText = "Só é possível emprestar uma unidade desta ferramenta por vez.";
+                        openModal('alertModal');
                         return;
                     }
 
@@ -1214,9 +1901,8 @@
                             checkoutDate: new Date().toISOString(), returnDate: null, type: 'emprestimo' 
                         });
                     }
-                    
-                    save();
                     closeModal('materialModal');
+                    save();
                 }
 
                 // --- FUNÇÕES DE CÓDIGO DE BARRAS E QR CODE ---
@@ -1255,6 +1941,612 @@
                             document.getElementById('qrScannerContainer').style.display = 'none';
                             qrScanner = null;
                         }).catch(err => console.error("QR Stop Error:", err));
+                    }
+                }
+
+                // --- FUNÇÕES DE ALERTA DE ATRASO ---
+                function checkOverdueTools() {
+                    const now = new Date();
+                    const overdueTools = history.filter(h => {
+                        if (h.returnDate || h.type !== 'emprestimo') {
+                            return false;
+                        }
+                        const checkoutDate = new Date(h.checkoutDate);
+                        const diffHours = (now - checkoutDate) / (1000 * 60 * 60);
+                        return diffHours > 24;
+                    });
+                    return overdueTools;
+                }
+
+                function renderOverdueAlert() {
+                    const overdueTools = checkOverdueTools();
+                    const overdueBtn = document.getElementById('overdueBtn');
+                    const overdueBadge = document.getElementById('overdueCountBadge');
+
+                    if (overdueBtn && overdueBadge) {
+                        if (overdueTools.length > 0) {
+                            overdueBtn.classList.remove('hidden');
+                            overdueBadge.innerText = overdueTools.length;
+                            const textSpan = overdueBtn.querySelector('span:last-child');
+                            if (textSpan) {
+                                textSpan.innerText = `Ferramenta${overdueTools.length > 1 ? 's' : ''} com devolução atrasada. Clique para ver.`;
+                            }
+                        } else {
+                            overdueBtn.classList.add('hidden');
+                        }
+                    }
+
+                    // Bolinha de alerta no botão do Painel Principal
+                    const mainOverdueBadge = document.getElementById('mainOverdueBadge');
+                    if (mainOverdueBadge) {
+                        mainOverdueBadge.classList.toggle('hidden', overdueTools.length === 0);
+                    }
+                }
+
+                function openOverdueModal() {
+                    const overdueTools = checkOverdueTools();
+                    const listEl = document.getElementById('overdueList');
+                    
+                    if (overdueTools.length === 0) {
+                        listEl.innerHTML = '<p class="text-center text-slate-500 py-8">Nenhuma ferramenta com devolução atrasada.</p>';
+                    } else {
+                        listEl.innerHTML = overdueTools.map(h => {
+                            const checkoutDate = new Date(h.checkoutDate);
+                            const now = new Date();
+                            const diffHours = Math.floor((now - checkoutDate) / (1000 * 60 * 60));
+                            const diffDays = Math.floor(diffHours / 24);
+                            const remainingHours = diffHours % 24;
+                            let timeString = `${diffDays}d ${remainingHours}h`;
+                            
+                            const tool = tools.find(t => t.id === h.toolId) || {};
+                            const toolImg = h.toolImg || tool.img;
+
+                            return `<div class="flex items-center gap-4 p-4 mb-3 bg-slate-50 rounded-xl border border-slate-100"><div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center overflow-hidden border">${toolImg ? `<img src="${toolImg}" class="w-full h-full object-cover">` : `<i data-lucide="wrench" class="text-slate-300"></i>`}</div><div class="flex-1"><p class="font-bold text-xs uppercase text-slate-800">${h.toolName}</p><p class="text-[10px] font-bold text-slate-400">COM: <span class="text-orange-600">${h.workerName}</span></p></div><div class="text-right"><p class="text-xs font-bold text-rose-600">Atrasado há</p><p class="text-lg font-black text-rose-600">${timeString.trim()}</p></div></div>`;
+                        }).join('');
+                    }
+
+                    openModal('overdueModal');
+                    lucide.createIcons();
+                }
+
+                // --- FUNÇÕES DE RELATÓRIO ---
+                function exportToolsToExcel() {
+                    // --- 0. Common Styles ---
+                    const headerStyle = {
+                        font: { bold: true, color: { rgb: "FFFFFF" }, sz: 12 },
+                        fill: { fgColor: { rgb: "107C41" } }, // Green Header
+                        alignment: { horizontal: "center", vertical: "center" }
+                    };
+                    const centerAlign = { alignment: { horizontal: "center", vertical: "center" } };
+                    const currencyFormat = { numFmt: 'R$ #,##0.00' };
+                    const borderAll = {
+                        border: {
+                            top: { style: "thin", color: { rgb: "E2E8F0" } },
+                            bottom: { style: "thin", color: { rgb: "E2E8F0" } },
+                            left: { style: "thin", color: { rgb: "E2E8F0" } },
+                            right: { style: "thin", color: { rgb: "E2E8F0" } }
+                        }
+                    };
+
+                    const workbook = XLSX.utils.book_new();
+
+                    // --- 1. GUIA ESTOQUE ---
+                    (() => {
+                        const statusStyles = {
+                            disponivel: { fill: { fgColor: { rgb: "D1FAE5" } } },
+                            'em uso':   { fill: { fgColor: { rgb: "FFEDD5" } } },
+                            quebrado:   { fill: { fgColor: { rgb: "FEE2E2" } } }
+                        };
+                        const sortedTools = [...tools].sort((a, b) => (a.code || '').localeCompare(b.code || '', undefined, { numeric: true, sensitivity: 'base' }));
+                        const headers = ['Nome', 'Código', 'Local', 'Status', 'Responsável', 'Valor', 'Quantidade'];
+                        const data = sortedTools.map(t => [
+                            capitalize(t.name), t.code, t.location, capitalize(t.status), capitalize(t.user), t.value || 0, t.qty || 0
+                        ]);
+                        const worksheetData = [headers, ...data];
+                        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+                        worksheetData.forEach((row, r) => {
+                            row.forEach((cell, c) => {
+                                const cellRef = XLSX.utils.encode_cell({ r, c });
+                                if (!worksheet[cellRef]) return;
+                                worksheet[cellRef].s = { ...borderAll };
+                                if (r === 0) {
+                                    worksheet[cellRef].s = { ...headerStyle, ...borderAll };
+                                } else {
+                                    if (c === 5 || c === 6) { // Valor & Quantidade
+                                        worksheet[cellRef].t = 'n';
+                                    }
+                                    if ([1, 2, 3, 4, 6].includes(c)) worksheet[cellRef].s.alignment = centerAlign.alignment;
+                                    if (c === 5) { worksheet[cellRef].s.numFmt = currencyFormat.numFmt; } // Valor
+
+                                    if (c === 3) {
+                                        const status = (typeof cell === 'string' ? cell.toLowerCase() : '');
+                                        if (statusStyles[status]) worksheet[cellRef].s.fill = statusStyles[status].fill;
+                                    }
+                                }
+                            });
+                        });
+
+                        worksheet['!cols'] = [ { wch: 40 }, { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 12 } ];
+                        worksheet['!autofilter'] = { ref: `A1:G${data.length + 1}` };
+                        XLSX.utils.book_append_sheet(workbook, worksheet, "Estoque");
+                    })();
+
+                    // --- 2. GUIA FOLLOW-UP ---
+                    (() => {
+                        const maintenanceTools = tools.filter(t => t.status === 'quebrado' && t.maintenanceInfo);
+                        const headers = ['Equipamento', 'Código', 'Problema', 'Status Atual', 'Fornecedor', 'Custo Orçado', 'Reportado Por', 'Data Reporte'];
+                        const data = maintenanceTools.map(t => {
+                            const info = t.maintenanceInfo || {};
+                            return [ t.name, t.code, t.maintenanceNote, info.status, info.provider, info.cost || 0, info.reportedBy, formatISODate(info.reportDate) ];
+                        });
+                        const worksheetData = [headers, ...data];
+                        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+                        worksheetData.forEach((row, r) => {
+                            row.forEach((cell, c) => {
+                                const cellRef = XLSX.utils.encode_cell({ r, c });
+                                if (!worksheet[cellRef]) return;
+                                worksheet[cellRef].s = { ...borderAll };
+                                if (r === 0) {
+                                    worksheet[cellRef].s = { ...headerStyle, ...borderAll };
+                                } else {
+                                    if ([1, 3, 4, 6, 7].includes(c)) worksheet[cellRef].s.alignment = centerAlign.alignment;
+                                    if (c === 5) { worksheet[cellRef].t = 'n'; worksheet[cellRef].s.numFmt = currencyFormat.numFmt; }
+                                }
+                            });
+                        });
+
+                        worksheet['!cols'] = [ { wch: 40 }, { wch: 15 }, { wch: 50 }, { wch: 20 }, { wch: 25 }, { wch: 15 }, { wch: 25 }, { wch: 20 } ];
+                        worksheet['!autofilter'] = { ref: `A1:H${data.length + 1}` };
+                        XLSX.utils.book_append_sheet(workbook, worksheet, "FollowUp");
+                    })();
+
+                    // --- 3. GUIA HISTÓRICO ---
+                    (() => {
+                        const headers = ['Ferramenta', 'Responsável', 'Qtd', 'Data Retirada', 'Data Devolução', 'Status', 'Tempo de Posse'];
+                        const data = history.sort((a,b) => new Date(b.checkoutDate) - new Date(a.checkoutDate)).map(h => {
+                            let statusLabel;
+                            if (h.returnDate) {
+                                statusLabel = h.condition === 'quebrado' ? 'Devolvido (Quebrado)' : 'Devolvido';
+                            } else {
+                                statusLabel = h.type === 'manutencao' ? 'Em Manutenção' : 'Em Uso';
+                            }
+                            return [ h.toolName, h.workerName, h.qty, formatISODate(h.checkoutDate), formatISODate(h.returnDate), statusLabel, formatDuration(h.checkoutDate, h.returnDate) ];
+                        });
+                        const worksheetData = [headers, ...data];
+                        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+                        worksheetData.forEach((row, r) => {
+                            row.forEach((cell, c) => {
+                                const cellRef = XLSX.utils.encode_cell({ r, c });
+                                if (!worksheet[cellRef]) return;
+                                worksheet[cellRef].s = { ...borderAll };
+                                if (r === 0) {
+                                    worksheet[cellRef].s = { ...headerStyle, ...borderAll };
+                                } else {
+                                    if (c === 2) { // Qtd column
+                                        worksheet[cellRef].t = 'n';
+                                    }
+                                    if ([2, 3, 4, 5, 6].includes(c)) worksheet[cellRef].s.alignment = centerAlign.alignment;
+                                }
+                            });
+                        });
+                        worksheet['!cols'] = [ { wch: 40 }, { wch: 25 }, { wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 15 } ];
+                        worksheet['!autofilter'] = { ref: `A1:G${data.length + 1}` };
+                        XLSX.utils.book_append_sheet(workbook, worksheet, "Historico");
+                    })();
+
+                    // --- Download Workbook ---
+                    XLSX.writeFile(workbook, "Relatorio_Completo_Ferramentaria.xlsx");
+                }
+
+                function exportToPDF() {
+                    try {
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF({ orientation: 'landscape' });
+
+                        // --- 1. GUIA ESTOQUE ---
+                        doc.text("Relatório de Estoque", 14, 16);
+                        const estoqueHead = [['Nome', 'Código', 'Local', 'Status', 'Responsável', 'Valor', 'Quantidade']];
+                        const sortedTools = [...tools].sort((a, b) => (a.code || '').localeCompare(b.code || '', undefined, { numeric: true, sensitivity: 'base' }));
+                        const estoqueBody = sortedTools.map(t => [
+                            capitalize(t.name),
+                            t.code || '',
+                            t.location || '',
+                            capitalize(t.status),
+                            capitalize(t.user),
+                            formatBRL(t.value || 0),
+                            t.qty || 0
+                        ]);
+                        doc.autoTable({
+                            head: estoqueHead,
+                            body: estoqueBody,
+                            startY: 22,
+                            theme: 'grid',
+                            headStyles: { fillColor: [16, 124, 65] }
+                        });
+
+                        // --- 2. GUIA FOLLOW-UP ---
+                        doc.addPage();
+                        doc.text("Relatório de Follow-Up de Manutenção", 14, 16);
+                        const maintHead = [['Equipamento', 'Código', 'Problema', 'Status Atual', 'Fornecedor', 'Custo Orçado', 'Reportado Por', 'Data Reporte']];
+                        const maintenanceTools = tools.filter(t => t.status === 'quebrado' && t.maintenanceInfo);
+                        const maintBody = maintenanceTools.map(t => {
+                            const info = t.maintenanceInfo || {};
+                            return [
+                                t.name,
+                                t.code || '',
+                                t.maintenanceNote || '',
+                                info.status || '',
+                                info.provider || '',
+                                formatBRL(info.cost || 0),
+                                info.reportedBy || '',
+                                formatISODate(info.reportDate)
+                            ];
+                        });
+                        doc.autoTable({
+                            head: maintHead,
+                            body: maintBody,
+                            startY: 22,
+                            theme: 'grid',
+                            headStyles: { fillColor: [16, 124, 65] }
+                        });
+
+                        // --- 3. GUIA HISTÓRICO ---
+                        doc.addPage();
+                        doc.text("Relatório de Histórico de Movimentações", 14, 16);
+                        const historyHead = [['Ferramenta', 'Responsável', 'Qtd', 'Data Retirada', 'Data Devolução', 'Status', 'Tempo de Posse']];
+                        const historyBody = history.sort((a, b) => new Date(b.checkoutDate) - new Date(a.checkoutDate)).map(h => {
+                            let statusLabel;
+                            if (h.returnDate) {
+                                statusLabel = h.condition === 'quebrado' ? 'Devolvido (Quebrado)' : 'Devolvido';
+                            } else {
+                                statusLabel = h.type === 'manutencao' ? 'Em Manutenção' : 'Em Uso';
+                            }
+                            return [h.toolName, h.workerName, h.qty, formatISODate(h.checkoutDate), formatISODate(h.returnDate), statusLabel, formatDuration(h.checkoutDate, h.returnDate)];
+                        });
+                        doc.autoTable({
+                            head: historyHead,
+                            body: historyBody,
+                            startY: 22,
+                            theme: 'grid',
+                            headStyles: { fillColor: [16, 124, 65] }
+                        });
+
+                        doc.save("Relatorio_Completo_Ferramentaria.pdf");
+                    } catch (e) {
+                        console.error("Erro ao gerar PDF:", e);
+                        alert("Ocorreu um erro ao gerar o PDF. Verifique o console para mais detalhes.");
+                    }
+                }
+            </script>
+            <script>
+                // --- FUNÇÕES DE GESTÃO DE MANUTENÇÃO ---
+
+                function setMaintenanceFilter(f) {
+                    maintenanceFilter = f;
+                    document.querySelectorAll('#section-maintenance .filter-pill').forEach(b => b.classList.remove('active'));
+                    document.getElementById(`maint-filter-${f.toLowerCase().replace(/ /g, '-')}`).classList.add('active');
+                    renderMaintenance();
+                }
+
+                function renderMaintenance() {
+                    const grid = document.getElementById('maintenanceGrid');
+                    if (!grid) return;
+                    const searchTerm = document.getElementById('maintenanceSearchInput').value.toLowerCase();
+
+                    const allMaintenanceTools = tools.filter(t => t.status === 'quebrado' && t.maintenanceInfo);
+                    document.getElementById('maintenanceTotalCount').innerText = allMaintenanceTools.length;
+
+                    const maintenanceTools = tools.filter(t => {
+                        const hasMaintInfo = t.status === 'quebrado' && t.maintenanceInfo;
+                        if (!hasMaintInfo) return false;
+
+                        const matchesFilter = maintenanceFilter === 'all' || (t.maintenanceInfo && t.maintenanceInfo.status === maintenanceFilter);
+
+                        const info = t.maintenanceInfo || {};
+                        const matchesSearch = !searchTerm || 
+                                              (t.name && t.name.toLowerCase().includes(searchTerm)) ||
+                                              (t.code && t.code.toLowerCase().includes(searchTerm)) ||
+                                              (info.reportedBy && info.reportedBy.toLowerCase().includes(searchTerm));
+                        
+                        return matchesFilter && matchesSearch;
+                    });
+
+                    if (maintenanceTools.length === 0) {
+                        grid.innerHTML = `<p class="text-center text-sm text-slate-400 col-span-full py-20">Nenhum item em manutenção encontrado.</p>`;
+                        return;
+                    }
+
+                    grid.innerHTML = maintenanceTools.map(t => {
+                        const info = t.maintenanceInfo || {};
+                        return `
+                        <div class="bg-white rounded-2xl p-5 shadow-lg border border-slate-100 flex flex-col gap-4 group cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all relative" onclick="openManageMaintenanceModal(${t.id})">
+                            <div class="absolute top-4 right-4 z-10">
+                                <button onclick="requestDeleteMaintenance(${t.id}, event)" class="p-2 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Excluir Manutenção"><i data-lucide="trash-2" size="16"></i></button>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-16 h-16 bg-slate-50 rounded-xl flex items-center justify-center overflow-hidden border border-slate-100 shadow-sm">
+                                    ${t.img ? `<img src="${t.img}" class="w-full h-full object-cover">` : `<i data-lucide="wrench" class="text-slate-300" size="24"></i>`}
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="font-black text-slate-800 uppercase leading-tight">${t.name}</h3>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase">${t.code || 'S/CÓDIGO'}</p>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="bg-amber-50/50 border border-amber-200/50 rounded-lg p-3 text-center">
+                                    <div class="flex items-center justify-center gap-1">
+                                        <i data-lucide="alert-circle" class="text-amber-500" size="14"></i>
+                                        <p class="text-[9px] font-black text-amber-700 uppercase">Problema Reportado</p>
+                                    </div>
+                                    <p class="text-xs font-semibold text-amber-900 mt-1 truncate" title="${t.maintenanceNote || ''}">${t.maintenanceNote || 'N/A'}</p>
+                                </div>
+                                ${info.provider ? `
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="bg-blue-50/50 border border-blue-200/50 rounded-lg p-3 text-center">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <i data-lucide="building-2" class="text-blue-600" size="14"></i>
+                                            <p class="text-[9px] font-black text-blue-700 uppercase">Empresa</p>
+                                        </div>
+                                        <p class="text-xs font-bold text-blue-900 mt-1 truncate" title="${info.provider}">${info.provider}</p>
+                                    </div>
+                                    <div class="bg-rose-50/50 border border-rose-200/50 rounded-lg p-3 text-center">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <i data-lucide="dollar-sign" class="text-rose-600" size="14"></i>
+                                            <p class="text-[9px] font-black text-rose-700 uppercase">Orçamento</p>
+                                        </div>
+                                        <p class="text-sm font-black text-rose-900 mt-1">${formatBRL(info.cost)}</p>
+                                    </div>
+                                </div>
+                                ` : ''}
+                            </div>
+                             <!-- Mini Timeline -->
+                            <div class="mt-auto pt-4">
+                                <p class="text-[9px] font-bold text-slate-400 uppercase mb-2">Status</p>
+                                <div class="flex items-center gap-1"><div class="flex-1 h-1.5 rounded-full ${info.status === 'Aguardando Orçamento' || info.status === 'Aguardando Aprovação' || info.status === 'Em Conserto' || info.status === 'Finalizado' ? 'bg-amber-400' : 'bg-slate-200'}"></div><div class="flex-1 h-1.5 rounded-full ${info.status === 'Aguardando Aprovação' || info.status === 'Em Conserto' || info.status === 'Finalizado' ? 'bg-sky-400' : 'bg-slate-200'}"></div><div class="flex-1 h-1.5 rounded-full ${info.status === 'Em Conserto' || info.status === 'Finalizado' ? 'bg-indigo-400' : 'bg-slate-200'}"></div><div class="flex-1 h-1.5 rounded-full ${info.status === 'Finalizado' ? 'bg-emerald-400' : 'bg-slate-200'}"></div></div>
+                                <p class="text-center text-xs font-black uppercase mt-2 ${info.status === 'Aguardando Orçamento' ? 'text-amber-600' : info.status === 'Aguardando Aprovação' ? 'text-sky-600' : info.status === 'Em Conserto' ? 'text-indigo-600' : info.status === 'Finalizado' ? 'text-emerald-600' : 'text-red-600'}">${info.status}</p>
+                            </div>
+                        </div>
+                        `
+                    }).join('');
+                    lucide.createIcons();
+                }
+
+            function updateMaintenanceTimeline(status) {
+                const statusOrder = ['Aguardando Orçamento', 'Aguardando Aprovação', 'Em Conserto', 'Finalizado'];
+                const currentStatusIndex = statusOrder.indexOf(status);
+
+                for (let i = 1; i <= 4; i++) {
+                    const stepEl = document.getElementById(`timeline-step-${i}`);
+                    if (stepEl) {
+                        const iconContainer = stepEl.querySelector('span');
+                        const title = stepEl.querySelector('h3');
+                        
+                        iconContainer.className = 'absolute flex items-center justify-center w-8 h-8 bg-slate-100 rounded-full -left-4';
+                        title.className = 'font-black text-slate-700';
+
+                        if (i - 1 < currentStatusIndex || (status === 'Finalizado' && i <= 4)) {
+                            iconContainer.classList.add('bg-emerald-100', 'text-emerald-700');
+                            title.classList.add('text-emerald-700');
+                        }
+                        if (i - 1 === currentStatusIndex && status !== 'Finalizado') {
+                            iconContainer.classList.add('bg-blue-100', 'text-blue-700');
+                            title.classList.add('text-blue-700');
+                        }
+                    }
+                }
+            }
+
+                function openManageMaintenanceModal(id) {
+                    itemToManageMaintenanceId = id;
+                    const tool = tools.find(t => t.id === id);
+                    if (!tool || !tool.maintenanceInfo) return;
+
+                    const info = tool.maintenanceInfo;
+
+                updateMaintenanceTimeline(info.status);
+
+                    // Preenche informações gerais
+                    document.getElementById('maintenanceToolName').innerText = `${tool.name} (#${tool.code || 'S/C'})`;
+                    document.getElementById('maintenanceToolInfo').innerHTML = `
+                        <div class="w-24 h-24 bg-slate-100 rounded-2xl mx-auto mb-4 overflow-hidden border border-slate-200">
+                            ${tool.img ? `<img src="${tool.img}" class="w-full h-full object-cover">` : `<i data-lucide="wrench" class="text-slate-300" size="40"></i>`}
+                        </div>
+                        <p class="text-xs text-slate-500 font-bold">Reportado por: <span class="text-blue-600">${info.reportedBy}</span></p>
+                        <p class="text-xs text-slate-500 font-bold">Data: <span class="text-blue-600">${formatISODate(info.reportDate)}</span></p>
+                    `;
+
+                    // Esconde todos os passos de ação
+                    document.querySelectorAll('#maintenanceActions > div').forEach(div => div.classList.add('hidden'));
+
+                    // Mostra o passo correto
+                    switch (info.status) {
+                        case 'Aguardando Orçamento':
+                            document.getElementById('maintenance-step-quote').classList.remove('hidden');
+                            document.getElementById('quoteProviderInput').value = info.provider || '';
+                            document.getElementById('quoteCostInput').value = info.cost || '';
+                            document.getElementById('quoteNoteInput').value = info.quoteNote || '';
+                            document.getElementById('btnSaveQuote').onclick = () => saveQuote(id);
+                            break;
+                        case 'Aguardando Aprovação':
+                            document.getElementById('maintenance-step-approval').classList.remove('hidden');
+                            document.getElementById('quoteDetailsDisplay').innerHTML = `
+                                <p class="text-xs font-bold text-slate-500">Fornecedor: <span class="font-semibold text-slate-700">${info.provider}</span></p>
+                                <p class="text-xs font-bold text-slate-500">Custo: <span class="font-semibold text-emerald-600">${formatBRL(info.cost)}</span></p>
+                                <p class="text-xs font-bold text-slate-500">Detalhes: <span class="font-semibold text-slate-700">${info.quoteNote || 'N/A'}</span></p>
+                            `;
+                            document.getElementById('btnApproveRepair').onclick = () => approveRepair(id);
+                            document.getElementById('btnRejectRepair').onclick = () => rejectRepair(id);
+                            break;
+                        case 'Em Conserto':
+                            document.getElementById('maintenance-step-finish').classList.remove('hidden');
+                            const fileInput = document.getElementById('invoiceFileInput');
+                            const dropAreaText = document.getElementById('drop-area-text');
+                            const fileNameDisplay = document.getElementById('file-name-display');
+                            fileInput.value = null;
+                            dropAreaText.classList.remove('hidden');
+                            fileNameDisplay.classList.add('hidden');
+                            document.getElementById('btnFinishRepair').onclick = () => finishRepair(id);
+                            document.getElementById('btnBackToQuote').onclick = () => sendBackToQuote(id);
+                            break;
+                        case 'Finalizado':
+                            document.getElementById('maintenance-step-conclude').classList.remove('hidden');
+                            const invoiceDisplay = document.getElementById('invoiceDisplay');
+                            if (info.invoiceFile) {
+                                invoiceDisplay.classList.remove('hidden');
+                                invoiceDisplay.innerHTML = `
+                                    <div class="flex gap-2 items-center bg-slate-100 p-3 rounded-xl border border-slate-200">
+                                        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-slate-400 border border-slate-200">
+                                            <i data-lucide="${info.invoiceFile.startsWith('data:application/pdf') ? 'file-text' : 'image'}" size="20"></i>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs font-bold text-slate-700 truncate">Nota Fiscal Anexada</p>
+                                            <p class="text-[10px] text-slate-400 uppercase">Clique para visualizar</p>
+                                        </div>
+                                        <button onclick="openZoom('${info.invoiceFile}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Visualizar"><i data-lucide="eye" size="18"></i></button>
+                                        <button onclick="deleteInvoice(${id})" class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" title="Excluir Nota"><i data-lucide="trash-2" size="18"></i></button>
+                                    </div>
+                                `;
+                            } else {
+                                invoiceDisplay.classList.add('hidden');
+                            }
+                            document.getElementById('btnConcludeMaintenance').onclick = () => concludeAndMoveToStock(id);
+                            break;
+                    }
+
+                    openModal('manageMaintenanceModal');
+                    lucide.createIcons();
+                }
+
+                function saveQuote(id) {
+                    const tool = tools.find(t => t.id === id);
+                    if (!tool || !tool.maintenanceInfo) return;
+
+                    tool.maintenanceInfo.provider = document.getElementById('quoteProviderInput').value.toUpperCase();
+                    tool.maintenanceInfo.cost = parseFloat(document.getElementById('quoteCostInput').value) || 0;
+                    tool.maintenanceInfo.quoteNote = document.getElementById('quoteNoteInput').value;
+                    tool.maintenanceInfo.status = 'Aguardando Aprovação';
+
+                    closeModal('manageMaintenanceModal');
+                    setTimeout(save, 50);
+                }
+
+                function approveRepair(id) {
+                    const tool = tools.find(t => t.id === id);
+                    if (!tool || !tool.maintenanceInfo) return;
+
+                    tool.maintenanceInfo.status = 'Em Conserto';
+                    tool.maintenanceInfo.approvalDate = new Date().toISOString();
+                    closeModal('manageMaintenanceModal');
+                    setTimeout(save, 50);
+                }
+
+                function sendBackToQuote(id) {
+                    const tool = tools.find(t => t.id === id);
+                    if (!tool || !tool.maintenanceInfo) return;
+                    tool.maintenanceInfo.status = 'Aguardando Orçamento';
+                    tool.maintenanceInfo.provider = '';
+                    tool.maintenanceInfo.cost = 0;
+                    tool.maintenanceInfo.quoteNote = '';
+                    tool.maintenanceInfo.approvalDate = null;
+                    tool.maintenanceInfo.invoiceFile = null;
+                    closeModal('manageMaintenanceModal');
+                    setTimeout(save, 50);
+                }
+
+                function rejectRepair(id) {
+                    const tool = tools.find(t => t.id === id);
+                    if (!tool || !tool.maintenanceInfo) return;
+                    tool.maintenanceInfo.status = 'Aguardando Orçamento';
+                    tool.maintenanceInfo.provider = '';
+                    tool.maintenanceInfo.cost = 0;
+                    tool.maintenanceInfo.quoteNote = '';
+                    tool.maintenanceInfo.approvalDate = null;
+                    tool.maintenanceInfo.invoiceFile = null;
+                    closeModal('manageMaintenanceModal');
+                    setTimeout(save, 50);
+                }
+
+                function requestDeleteMaintenance(id, event) {
+                    event.stopPropagation();
+                    const tool = tools.find(t => t.id === id);
+                    if (!tool) return;
+
+                    const modal = document.getElementById('deleteModal');
+                    modal.querySelector('h3').innerText = 'Cancelar Manutenção?';
+                    modal.querySelector('p').innerText = `Você tem certeza que deseja cancelar a manutenção para "${tool.name}"? O item retornará ao status "Disponível".`;
+                    document.getElementById('confirmDeleteBtn').onclick = () => {
+                        deleteMaintenance(id);
+                    };
+                    openModal('deleteModal');
+                }
+
+                function deleteInvoice(id) {
+                    const tool = tools.find(t => t.id === id);
+                    if (!tool || !tool.maintenanceInfo) return;
+
+                    const modal = document.getElementById('deleteModal');
+                    modal.querySelector('h3').innerText = 'Excluir Nota Fiscal?';
+                    modal.querySelector('p').innerText = 'Deseja realmente excluir a nota fiscal? O status do item será revertido para "Em Conserto".';
+                    document.getElementById('confirmDeleteBtn').onclick = () => {
+                        tool.maintenanceInfo.invoiceFile = null;
+                        tool.maintenanceInfo.status = 'Em Conserto';
+                        closeModal('deleteModal');
+                        setTimeout(() => {
+                            save();
+                            openManageMaintenanceModal(id);
+                        }, 50);
+                    };
+                    openModal('deleteModal');
+                }
+
+                function deleteMaintenance(id) {
+                    const tool = tools.find(t => t.id === id);
+                    if (tool && tool.status === 'quebrado') {
+                        tool.status = 'disponivel';
+                        tool.user = '-';
+                        tool.maintenanceNote = '';
+                        tool.maintenanceInfo = null;
+                        history = history.filter(h => !(h.toolId === id && h.type === 'manutencao' && h.returnDate === null));
+                        closeModal('deleteModal');
+                        setTimeout(save, 50);
+                    }
+                }
+
+                const dropArea = document.getElementById('drop-area');
+                if (dropArea) {
+                    const fileInput = document.getElementById('invoiceFileInput');
+                    const dropAreaText = document.getElementById('drop-area-text');
+                    const fileNameDisplay = document.getElementById('file-name-display');
+
+                    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                        dropArea.addEventListener(eventName, preventDefaults, false);
+                    });
+
+                    function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+                    ['dragenter', 'dragover'].forEach(eventName => {
+                        dropArea.addEventListener(eventName, () => dropArea.classList.add('border-blue-500', 'bg-blue-50'), false);
+                    });
+
+                    ['dragleave', 'drop'].forEach(eventName => {
+                        dropArea.addEventListener(eventName, () => dropArea.classList.remove('border-blue-500', 'bg-blue-50'), false);
+                    });
+
+                    dropArea.addEventListener('drop', handleDrop, false);
+                    fileInput.addEventListener('change', (e) => handleFiles(e.target.files), false);
+
+                    function handleDrop(e) {
+                        fileInput.files = e.dataTransfer.files;
+                        handleFiles(fileInput.files);
+                    }
+
+                    function handleFiles(files) {
+                        fileNameDisplay.textContent = files.length > 0 ? files[0].name : '';
+                        dropAreaText.classList.toggle('hidden', files.length > 0);
+                        fileNameDisplay.classList.toggle('hidden', files.length === 0);
                     }
                 }
             </script>
