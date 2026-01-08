@@ -16,7 +16,6 @@
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
@@ -381,21 +380,6 @@
                             <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="upload-cloud"></i></div>
                             <h3 class="font-black uppercase text-slate-800">Importar Dados</h3>
                         </div>
-
-                        <!-- --- Botões para Exportar/Importar (Apenas Para Testes) --- -->
-                        <!-- REMOVER ANTES DE PRODUÇÃO -->
-                        
-
-                        
-                            
-                        
-                    
-                    
-                        
-                            
-                        
-                    
-
                     </div>
                 </div>
             </main>
@@ -625,15 +609,6 @@
                 let tools = JSON.parse(localStorage.getItem('ldc_pro_db')) || [];
                 let team = JSON.parse(localStorage.getItem('ldc_team_db')) || [{id: 1, name: 'ALMOXARIFADO', company: 'LDC'}];
                 let history = JSON.parse(localStorage.getItem('ldc_history_db')) || [];
-                // --- CONFIGURAÇÃO DO BANCO DE DADOS (SUPABASE) ---
-                // Substitua os valores abaixo pelos do seu projeto no Supabase
-                const SUPABASE_URL = 'SUA_URL_DO_SUPABASE_AQUI';
-                const SUPABASE_KEY = 'SUA_CHAVE_ANONIMA_AQUI';
-                const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-                let tools = [];
-                let team = [{id: 1, name: 'ALMOXARIFADO', company: 'LDC'}];
-                let history = [];
                 
                 let currentImageBase64 = "";
                 let pendingStatus = "disponivel";
@@ -659,57 +634,12 @@
                     localStorage.setItem('ldc_pro_db', JSON.stringify(tools)); 
                     localStorage.setItem('ldc_team_db', JSON.stringify(team));
                     localStorage.setItem('ldc_history_db', JSON.stringify(history));
-                // --- FUNÇÃO PARA CARREGAR DADOS DO BANCO ---
-                async function loadData() {
-                    const { data, error } = await supabase
-                        .from('app_state')
-                        .select('*')
-                        .eq('id', 1)
-                        .single();
-
-                    if (error) {
-                        console.error('Erro ao carregar dados:', error);
-                        return;
-                    }
-
-                    if (data) {
-                        tools = data.tools || [];
-                        team = data.team || [{id: 1, name: 'ALMOXARIFADO', company: 'LDC'}];
-                        history = data.history || [];
-                        
-                        // Atualiza toda a interface com os dados novos
-                        render(); 
-                        renderCatalog(); 
-                        renderHistory(); 
-                        renderMaintenance(); 
-                        renderOverdueAlert();
-                        renderTeam(); 
-                    }
-                }
-
-                async function save() { 
-                    // Atualiza a interface imediatamente (para parecer rápido)
                     render(); 
                     renderCatalog(); 
                     renderHistory(); 
                     renderMaintenance(); 
                     renderOverdueAlert();
                     renderTeam(); 
-
-                    // Salva no Banco de Dados em segundo plano
-                    const { error } = await supabase
-                        .from('app_state')
-                        .upsert({ 
-                            id: 1, 
-                            tools: tools, 
-                            team: team, 
-                            history: history 
-                        });
-                    
-                    if (error) {
-                        console.error('Erro ao salvar no banco:', error);
-                        alert('Atenção: Erro ao salvar dados na nuvem. Verifique sua conexão.');
-                    }
                 }
 
                 function handleSearchInput(input, renderCallback) {
@@ -738,7 +668,6 @@
                     if (section) {
                         if (qrScanner) stopQrScanner();
                         section.classList.add('active-section');
-
                     }
                     if (s === 'catalog') {
                         renderCatalog();
@@ -763,7 +692,6 @@
                     
                     if (id === 'zoomModal') {
                         const zoomModal = document.getElementById('zoomModal');
-
                         zoomModal.onmousemove = null;
                         zoomModal.onmouseup = null;
                         zoomModal.onmouseleave = null;
@@ -1425,7 +1353,6 @@
                 }
 
                 window.onload = () => { 
-                    loadData(); // Carrega os dados da nuvem ao iniciar
                     render(); 
                     renderOverdueAlert();
                     lucide.createIcons(); 
@@ -1485,8 +1412,6 @@
                     downloadAnchorNode.click();
                     downloadAnchorNode.remove();
                 }
-
-
 
                 function importData(input) {
                     const file = input.files[0];
