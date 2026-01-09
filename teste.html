@@ -16,7 +16,6 @@
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
@@ -30,16 +29,15 @@
                 body { 
                     font-family: 'Plus Jakarta Sans', sans-serif; 
                     background-color: var(--bg-main); 
-                    display: flex;
-                    height: 100vh;
-                    overflow-y: hidden;
+                    display: flex; 
+                    min-height: 100vh; 
                     color: #1E293B;
                 }
 
                 .sidebar { width: 280px; transition: all 0.3s ease; background-color: #0B1120; border-right: 1px solid #1E293B; }
                 .sidebar.collapsed { width: 80px; }
                 
-                .main-content { flex: 1; display: none; opacity: 0; transform: translateY(10px); transition: all 0.4s ease; overflow-y: auto; }
+                .main-content { flex: 1; display: none; opacity: 0; transform: translateY(10px); transition: all 0.4s ease; }
                 .main-content.active-section { display: block; opacity: 1; transform: translateY(0); }
                 
                 .nav-btn { width: 100%; display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: 0.75rem; font-weight: 700; color: #64748B; transition: all 0.2s; border: none; cursor: pointer; background: transparent; }
@@ -108,7 +106,7 @@
         </head>
         <body class="bg-slate-50">
 
-            <aside id="sidebar" class="sidebar text-slate-400 flex flex-col h-screen z-50">
+            <aside id="sidebar" class="sidebar text-slate-400 flex flex-col sticky top-0 h-screen z-50">
                 <div class="p-6 flex items-center justify-between">
                     <h1 class="text-white font-black text-xl sidebar-text uppercase tracking-tighter">LDC PRO</h1>
                     <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white bg-transparent border-none cursor-pointer"><i data-lucide="menu"></i></button>
@@ -131,7 +129,7 @@
                             <h2 class="text-2xl font-black text-slate-900 uppercase tracking-tighter">Inventário Operacional</h2>
                             <p id="currentDateDisplay" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest"></p>
                         </div>
-                        <div class="flex flex-col md:flex-row gap-3 flex-wrap">
+                        <div class="flex gap-3">
                             <button onclick="openMaterialModal()" id="mainCheckoutBtn" class="relative bg-indigo-600 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all border-none cursor-pointer">
                                 <i data-lucide="package-minus" size="16"></i>
                                 <span>Saída de Ferramentas</span>
@@ -183,7 +181,7 @@
                         <span id="overdueCountBadge" class="font-black">0</span>
                         <span>Ferramenta(s) com devolução atrasada. Clique para ver.</span>
                     </button>
-                    <div class="flex gap-4 mb-8 flex-wrap">
+                    <div class="flex gap-4 mb-8">
                         <button onclick="setCatalogFilter('all')" id="filter-all" class="filter-pill active bg-slate-200 text-slate-700">Todos</button>
                         <button onclick="setCatalogFilter('disponivel')" id="filter-disponivel" class="filter-pill bg-emerald-100 text-emerald-600">Disponíveis</button>
                         <button onclick="setCatalogFilter('em uso')" id="filter-uso" class="filter-pill bg-orange-100 text-orange-600">Em Uso</button>
@@ -206,7 +204,7 @@
                 <div class="max-w-[1400px] mx-auto">
                     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                         <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase">Histórico</h2>
-                        <div class="flex flex-col md:flex-row gap-2 items-center flex-wrap">
+                        <div class="flex flex-col md:flex-row gap-2 items-center">
                             <div class="relative w-full md:w-72">
                                 <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
                                 <input type="text" id="historySearchInput" onkeyup="handleSearchInput(this, renderHistory)" placeholder="PESQUISAR..." class="w-full bg-white border-2 border-slate-100 rounded-xl pl-12 pr-10 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
@@ -229,7 +227,7 @@
                         <div>
                             <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase">Gestão de Equipe</h2>
                         </div>
-                        <div class="flex-1 flex justify-end gap-2 flex-wrap">
+                        <div class="flex-1 flex justify-end gap-2">
                             <input type="text" id="workerNameInput" placeholder="NOME DO COLABORADOR" class="w-full md:w-48 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
                             <input type="text" id="workerCompanyInput" placeholder="EMPRESA / DEPARTAMENTO" class="w-full md:w-48 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
                             <button onclick="addWorker()" class="bg-blue-600 text-white px-5 rounded-xl border-none cursor-pointer hover:bg-blue-700 transition-all shadow-md"><i data-lucide="plus"></i></button>
@@ -258,7 +256,7 @@
                         <input type="text" id="maintenanceSearchInput" onkeyup="handleSearchInput(this, renderMaintenance)" placeholder="PESQUISAR POR NOME, CÓDIGO OU RESPONSÁVEL..." class="w-full bg-white border-2 border-slate-100 rounded-xl pl-12 pr-10 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
                         <button onclick="clearSearch('maintenanceSearchInput', renderMaintenance)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 hidden z-10"><i data-lucide="x-circle" size="16"></i></button>
                     </div>
-                    <div class="flex gap-2 mb-8 flex-wrap">
+                    <div class="flex gap-2 mb-8">
                         <button onclick="setMaintenanceFilter('all')" id="maint-filter-all" class="filter-pill active bg-slate-200 text-slate-700">Todos</button>
                         <button onclick="setMaintenanceFilter('Aguardando Orçamento')" id="maint-filter-aguardando-orçamento" class="filter-pill bg-amber-100 text-amber-600">Aguardando Orçamento</button>
                         <button onclick="setMaintenanceFilter('Aguardando Aprovação')" id="maint-filter-aguardando-aprovação" class="filter-pill bg-sky-100 text-sky-600">Aguardando Aprovação</button>
@@ -381,21 +379,6 @@
                             <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="upload-cloud"></i></div>
                             <h3 class="font-black uppercase text-slate-800">Importar Dados</h3>
                         </div>
-
-                        <!-- --- Botões para Exportar/Importar (Apenas Para Testes) --- -->
-                        <!-- REMOVER ANTES DE PRODUÇÃO -->
-                        
-
-                        
-                            
-                        
-                    
-                    
-                        
-                            
-                        
-                    
-
                     </div>
                 </div>
             </main>
@@ -405,7 +388,7 @@
                     <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase mb-8">Testes de Funcionalidade</h2>
                     <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 space-y-4">
                         <p class="text-slate-600">Use os botões abaixo para simular cenários específicos e testar as funcionalidades de alerta do sistema.</p>
-                        <div class="flex gap-4 pt-4 flex-wrap">
+                        <div class="flex gap-4 pt-4">
                             <button onclick="simulateOverdue()" class="bg-yellow-500 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-yellow-600 transition-all border-none cursor-pointer"><i data-lucide="clock" size="16"></i> Simular Atraso de 24h</button>
                             <button onclick="stopSimulation()" class="bg-slate-500 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-slate-600 transition-all border-none cursor-pointer"><i data-lucide="x-circle" size="16"></i> Parar Simulação</button>
                         </div>
@@ -625,15 +608,6 @@
                 let tools = JSON.parse(localStorage.getItem('ldc_pro_db')) || [];
                 let team = JSON.parse(localStorage.getItem('ldc_team_db')) || [{id: 1, name: 'ALMOXARIFADO', company: 'LDC'}];
                 let history = JSON.parse(localStorage.getItem('ldc_history_db')) || [];
-                // --- CONFIGURAÇÃO DO BANCO DE DADOS (SUPABASE) ---
-                // Substitua os valores abaixo pelos do seu projeto no Supabase
-                const SUPABASE_URL = 'SUA_URL_DO_SUPABASE_AQUI';
-                const SUPABASE_KEY = 'SUA_CHAVE_ANONIMA_AQUI';
-                const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-                let tools = [];
-                let team = [{id: 1, name: 'ALMOXARIFADO', company: 'LDC'}];
-                let history = [];
                 
                 let currentImageBase64 = "";
                 let pendingStatus = "disponivel";
@@ -659,57 +633,12 @@
                     localStorage.setItem('ldc_pro_db', JSON.stringify(tools)); 
                     localStorage.setItem('ldc_team_db', JSON.stringify(team));
                     localStorage.setItem('ldc_history_db', JSON.stringify(history));
-                // --- FUNÇÃO PARA CARREGAR DADOS DO BANCO ---
-                async function loadData() {
-                    const { data, error } = await supabase
-                        .from('app_state')
-                        .select('*')
-                        .eq('id', 1)
-                        .single();
-
-                    if (error) {
-                        console.error('Erro ao carregar dados:', error);
-                        return;
-                    }
-
-                    if (data) {
-                        tools = data.tools || [];
-                        team = data.team || [{id: 1, name: 'ALMOXARIFADO', company: 'LDC'}];
-                        history = data.history || [];
-                        
-                        // Atualiza toda a interface com os dados novos
-                        render(); 
-                        renderCatalog(); 
-                        renderHistory(); 
-                        renderMaintenance(); 
-                        renderOverdueAlert();
-                        renderTeam(); 
-                    }
-                }
-
-                async function save() { 
-                    // Atualiza a interface imediatamente (para parecer rápido)
                     render(); 
                     renderCatalog(); 
                     renderHistory(); 
                     renderMaintenance(); 
                     renderOverdueAlert();
                     renderTeam(); 
-
-                    // Salva no Banco de Dados em segundo plano
-                    const { error } = await supabase
-                        .from('app_state')
-                        .upsert({ 
-                            id: 1, 
-                            tools: tools, 
-                            team: team, 
-                            history: history 
-                        });
-                    
-                    if (error) {
-                        console.error('Erro ao salvar no banco:', error);
-                        alert('Atenção: Erro ao salvar dados na nuvem. Verifique sua conexão.');
-                    }
                 }
 
                 function handleSearchInput(input, renderCallback) {
@@ -738,7 +667,6 @@
                     if (section) {
                         if (qrScanner) stopQrScanner();
                         section.classList.add('active-section');
-
                     }
                     if (s === 'catalog') {
                         renderCatalog();
@@ -763,7 +691,6 @@
                     
                     if (id === 'zoomModal') {
                         const zoomModal = document.getElementById('zoomModal');
-
                         zoomModal.onmousemove = null;
                         zoomModal.onmouseup = null;
                         zoomModal.onmouseleave = null;
@@ -1425,7 +1352,6 @@
                 }
 
                 window.onload = () => { 
-                    loadData(); // Carrega os dados da nuvem ao iniciar
                     render(); 
                     renderOverdueAlert();
                     lucide.createIcons(); 
@@ -1485,8 +1411,6 @@
                     downloadAnchorNode.click();
                     downloadAnchorNode.remove();
                 }
-
-
 
                 function importData(input) {
                     const file = input.files[0];
