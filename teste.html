@@ -16,6 +16,7 @@
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
@@ -114,11 +115,17 @@
                 </div>
                 <nav class="flex-1 px-4 space-y-2 mt-4">
                     <button id="btn-main" onclick="showSection('main')" class="nav-btn active"><i data-lucide="layout-dashboard"></i> <span class="sidebar-text">Painel Principal</span></button>
+                    <button id="btn-actions" onclick="showSection('actions')" class="nav-btn relative">
+                        <i data-lucide="zap"></i> 
+                        <span class="sidebar-text">Operações</span>
+                        <span id="actionsOverdueBadge" class="hidden absolute top-3 right-3 w-2 h-2 bg-rose-500 rounded-full"></span>
+                    </button>
                     <button id="btn-catalog" onclick="showSection('catalog')" class="nav-btn"><i data-lucide="archive"></i> <span class="sidebar-text">Estoque</span></button>
                     <button id="btn-team" onclick="showSection('team')" class="nav-btn"><i data-lucide="users"></i> <span class="sidebar-text">Equipe</span></button>
                     <button id="btn-maintenance" onclick="showSection('maintenance')" class="nav-btn"><i data-lucide="wrench"></i> <span class="sidebar-text">FollowUp</span></button>
                     <button id="btn-logs" onclick="showSection('logs')" class="nav-btn"><i data-lucide="history"></i> <span class="sidebar-text">Histórico</span></button>
                     <button id="btn-database" onclick="showSection('database')" class="nav-btn"><i data-lucide="database"></i> <span class="sidebar-text">Backup</span></button>
+                    <button id="btn-settings" onclick="showSection('settings')" class="nav-btn"><i data-lucide="settings"></i> <span class="sidebar-text">Configurações</span></button>
                             <button id="btn-tests" onclick="showSection('tests')" class="nav-btn"><i data-lucide="beaker"></i> <span class="sidebar-text">Testes</span></button>
                 </nav>
             </aside>
@@ -157,6 +164,68 @@
                                     </thead>
                                     <tbody id="toolList" class="divide-y divide-slate-50"></tbody>
                                 </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <main id="section-actions" class="main-content p-4 md:p-8">
+                <div class="max-w-[1400px] mx-auto">
+                    <div class="bg-[#0B1120] rounded-[2.5rem] p-8 mb-10 shadow-2xl relative overflow-hidden border border-slate-800">
+                        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none"></div>
+                        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-600/10 rounded-full blur-[80px] -ml-20 -mb-20 pointer-events-none"></div>
+                        <div class="relative z-10 flex items-center gap-4">
+                            <div class="p-3 bg-blue-600/20 rounded-2xl border border-blue-500/30 text-blue-400">
+                                <i data-lucide="zap" size="28"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-none">Central de Operações</h2>
+                                <p class="text-slate-400 text-sm font-medium mt-1">Acesso rápido às principais ações</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div onclick="openMaterialModal()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-indigo-500 transition-all group relative overflow-hidden md:col-span-2">
+                            <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10 flex flex-col items-center text-center gap-6">
+                                <div class="w-24 h-24 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                    <i data-lucide="package-minus" size="48"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-2">Saída de Materiais</h3>
+                                    <p class="text-slate-500 font-medium">Registrar empréstimo ou consumo de itens do estoque.</p>
+                                </div>
+                                <span class="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-indigo-200 group-hover:shadow-indigo-300 transition-all mt-2">Iniciar Saída</span>
+                            </div>
+                        </div>
+
+                        <div onclick="openMaintenanceModal()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-red-500 transition-all group relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10 flex flex-col items-center text-center gap-6">
+                                <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                    <i data-lucide="package-check" size="48"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-2">Devolução</h3>
+                                    <p class="text-slate-500 font-medium">Registrar retorno de ferramentas e equipamentos.</p>
+                                </div>
+                                <span class="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-emerald-200 group-hover:shadow-emerald-300 transition-all mt-2">Iniciar Devolução</span>
+                            </div>
+                        </div>
+
+                        <div onclick="openAuditModal()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-amber-500 transition-all group relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-64 h-64 bg-amber-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10 flex flex-col items-center text-center gap-6">
+                                <div class="w-24 h-24 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                    <i data-lucide="clipboard-check" size="48"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-2">Auditoria</h3>
+                                    <p class="text-slate-500 font-medium">Conferência física do estoque disponível.</p>
+                                </div>
+                                <span class="px-6 py-3 bg-amber-500 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-amber-200 group-hover:shadow-amber-300 transition-all mt-2">Iniciar Auditoria</span>
                             </div>
                         </div>
                     </div>
@@ -375,10 +444,26 @@
                             <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="download-cloud"></i></div>
                             <h3 class="font-black uppercase text-slate-800">Exportar Dados</h3>
                         </div>
+                        <div onclick="generateQRCodesPDF()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-indigo-500 text-center">
+                            <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="qr-code"></i></div>
+                            <h3 class="font-black uppercase text-slate-800">Gerar Etiquetas QR</h3>
+                        </div>
                         <div onclick="document.getElementById('importInput').click()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-emerald-500 text-center">
                             <input type="file" id="importInput" class="hidden" accept=".json" onchange="importData(this)">
                             <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="upload-cloud"></i></div>
                             <h3 class="font-black uppercase text-slate-800">Importar Dados</h3>
+                        </div>
+                        <div onclick="generateLiabilityForm()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-slate-500 text-center">
+                            <div class="w-16 h-16 bg-slate-50 text-slate-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="file-signature"></i></div>
+                            <h3 class="font-black uppercase text-slate-800">Termo de Entrega</h3>
+                        </div>
+                        <div onclick="generateChecklistPDF()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-pink-500 text-center">
+                            <div class="w-16 h-16 bg-pink-50 text-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="list-checks"></i></div>
+                            <h3 class="font-black uppercase text-slate-800">Checklist Manual</h3>
+                        </div>
+                        <div onclick="confirmResetSystem()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-red-500 text-center">
+                            <div class="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="trash-2"></i></div>
+                            <h3 class="font-black uppercase text-slate-800">Resetar Sistema</h3>
                         </div>
                     </div>
                 </div>
@@ -392,6 +477,45 @@
                         <div class="flex gap-4 pt-4 flex-wrap">
                             <button onclick="simulateOverdue()" class="bg-yellow-500 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-yellow-600 transition-all border-none cursor-pointer"><i data-lucide="clock" size="16"></i> Simular Atraso de 24h</button>
                             <button onclick="stopSimulation()" class="bg-slate-500 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-slate-600 transition-all border-none cursor-pointer"><i data-lucide="x-circle" size="16"></i> Parar Simulação</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <main id="section-settings" class="main-content p-4 md:p-8">
+                <div class="max-w-[1400px] mx-auto">
+                    <div class="bg-[#0B1120] rounded-[2.5rem] p-8 mb-10 shadow-2xl relative overflow-hidden border border-slate-800">
+                        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none"></div>
+                        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-600/10 rounded-full blur-[80px] -ml-20 -mb-20 pointer-events-none"></div>
+                        <div class="relative z-10 flex items-center gap-4">
+                            <div class="p-3 bg-blue-600/20 rounded-2xl border border-blue-500/30 text-blue-400">
+                                <i data-lucide="settings" size="28"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-none">Configurações</h2>
+                                <p class="text-slate-400 text-sm font-medium mt-1">Ajustes do sistema</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-100">
+                        <h3 class="font-black text-slate-800 uppercase text-lg tracking-tight mb-6">Parâmetros Gerais</h3>
+                        <div class="space-y-6 max-w-md">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Tempo para Alerta de Atraso</label>
+                                <div class="relative mt-2">
+                                    <i data-lucide="clock" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="18"></i>
+                                    <select id="settingOverdueHours" onchange="saveSettings()" class="w-full bg-white border-2 border-slate-100 rounded-xl pl-12 pr-10 py-3 font-bold text-slate-700 outline-none focus:border-blue-500 transition-all appearance-none cursor-pointer">
+                                        <option value="24">24 Horas (1 Dia)</option>
+                                        <option value="48">48 Horas (2 Dias)</option>
+                                        <option value="72">72 Horas (3 Dias)</option>
+                                        <option value="168">168 Horas (1 Semana)</option>
+                                        <option value="336">336 Horas (2 Semanas)</option>
+                                    </select>
+                                    <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size="18"></i>
+                                </div>
+                                <p class="text-[10px] text-slate-400 mt-2 font-medium ml-2">Selecione o período máximo de empréstimo.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -607,6 +731,41 @@
                 </div>
             </div>
 
+            <div id="auditModal" class="fixed inset-0 bg-slate-900/90 hidden z-[800] flex items-center justify-center p-4 backdrop-blur-md" onclick="closeModal('auditModal')">
+                <div class="bg-white rounded-[2.5rem] w-full max-w-4xl h-[80vh] overflow-hidden shadow-2xl flex flex-col" onclick="event.stopPropagation()">
+                    <div class="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center">
+                        <h3 class="font-black uppercase tracking-tighter text-slate-900">Auditoria de Estoque</h3>
+                        <button onclick="closeModal('auditModal');" class="text-slate-400 hover:text-rose-500 bg-transparent border-none cursor-pointer"><i data-lucide="x"></i></button>
+                    </div>
+                    <div class="p-6 bg-slate-100 border-b border-slate-200 flex gap-4 items-center">
+                        <input type="text" id="auditInput" onchange="handleAuditScan(this.value)" placeholder="BIPAR CÓDIGO..." class="flex-1 bg-white border-2 border-slate-200 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-amber-500 transition-all">
+                        <button onclick="finishAudit()" class="bg-amber-500 text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg hover:bg-amber-600 transition-all">Finalizar</button>
+                    </div>
+                    <div class="flex-1 overflow-hidden flex flex-col md:flex-row">
+                        <div class="flex-1 p-6 overflow-y-auto custom-scrollbar border-r border-slate-100 bg-rose-50/30">
+                            <h4 class="font-black text-rose-500 uppercase text-xs mb-4 flex justify-between">Itens Faltantes <span id="auditMissingCount" class="bg-rose-100 px-2 py-0.5 rounded-full">0</span></h4>
+                            <div id="auditMissingList" class="space-y-2"></div>
+                        </div>
+                        <div class="flex-1 p-6 overflow-y-auto custom-scrollbar bg-emerald-50/30">
+                            <h4 class="font-black text-emerald-600 uppercase text-xs mb-4 flex justify-between">Itens Encontrados <span id="auditFoundCount" class="bg-emerald-100 px-2 py-0.5 rounded-full">0</span></h4>
+                            <div id="auditFoundList" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="itemHistoryModal" class="fixed inset-0 bg-slate-900/90 hidden z-[850] flex items-center justify-center p-4 backdrop-blur-md" onclick="closeModal('itemHistoryModal')">
+                <div class="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
+                    <div class="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center">
+                        <h3 class="font-black uppercase tracking-tighter text-slate-900">Histórico do Item</h3>
+                        <button onclick="closeModal('itemHistoryModal');" class="text-slate-400 hover:text-rose-500 bg-transparent border-none cursor-pointer"><i data-lucide="x"></i></button>
+                    </div>
+                    <div class="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar" id="itemHistoryContent">
+                        <!-- Content will be injected here -->
+                    </div>
+                </div>
+            </div>
+
             <!--
                 [PROMPT_SUGGESTION]Como posso adicionar um campo de "localização" para cada ferramenta e exibi-lo nos relatórios?[/PROMPT_SUGGESTION]
                 [PROMPT_SUGGESTION]Poderia me ajudar a melhorar a responsividade da interface para telas de celular?[/PROMPT_SUGGESTION]
@@ -616,6 +775,8 @@
                 let tools = JSON.parse(localStorage.getItem('ldc_pro_db')) || [];
                 let team = JSON.parse(localStorage.getItem('ldc_team_db')) || [{id: 1, name: 'ALMOXARIFADO', company: 'LDC'}];
                 let history = JSON.parse(localStorage.getItem('ldc_history_db')) || [];
+                let appSettings = JSON.parse(localStorage.getItem('ldc_settings_db')) || { overdueHours: 24 };
+                let auditSession = { missing: [], found: [] };
                 
                 let currentImageBase64 = "";
                 let pendingStatus = "disponivel";
@@ -645,6 +806,7 @@
                     localStorage.setItem('ldc_pro_db', JSON.stringify(tools)); 
                     localStorage.setItem('ldc_team_db', JSON.stringify(team));
                     localStorage.setItem('ldc_history_db', JSON.stringify(history));
+                    localStorage.setItem('ldc_settings_db', JSON.stringify(appSettings));
                     render(); 
                     renderCatalog(); 
                     renderHistory(); 
@@ -687,6 +849,7 @@
                     if (s === 'logs') renderHistory();
                     if (s === 'maintenance') renderMaintenance();
                     if (s === 'team') renderTeam();
+                    if (s === 'settings') loadSettingsUI();
                     render();
                 }
 
@@ -842,6 +1005,24 @@
                     document.getElementById('uploadPlaceholder').classList.remove('hidden');
                     document.getElementById('btnSaveTool').onclick = addTool;
                     openModal('addModal'); 
+                }
+
+                function duplicateTool(id) {
+                    const t = tools.find(x => x.id === id);
+                    if(!t) return;
+                    openAddModal('disponivel');
+                    document.getElementById('addModalTitle').innerText = "Duplicar Equipamento";
+                    document.getElementById('toolCodeInput').value = ""; // Código deve ser novo
+                    document.getElementById('toolNameInput').value = t.name;
+                    document.getElementById('toolBrandInput').value = t.brand || "";
+                    document.getElementById('toolWeightInput').value = t.weight || "";
+                    document.getElementById('toolValueInput').value = t.value;
+                    if(t.img) {
+                        currentImageBase64 = t.img;
+                        document.getElementById('imagePreview').src = t.img;
+                        document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                        document.getElementById('uploadPlaceholder').classList.add('hidden');
+                    }
                 }
 
                 function addTool() {
@@ -1057,6 +1238,8 @@
                     return `
                         <div id="tool-card-${t.id}" class="bg-white rounded-[2rem] p-4 shadow-lg border border-slate-100 flex flex-col group relative transition-all hover:shadow-2xl hover:-translate-y-1">
                             <div class="absolute top-6 right-6 flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="openItemHistory(${t.id}); event.stopPropagation();" class="bg-white/90 p-2 rounded-lg text-slate-600 hover:text-blue-600 shadow-sm border border-slate-200 cursor-pointer backdrop-blur" title="Histórico"><i data-lucide="clock" size="14"></i></button>
+                                <button onclick="duplicateTool(${t.id}); event.stopPropagation();" class="bg-white/90 p-2 rounded-lg text-slate-600 hover:text-blue-600 shadow-sm border border-slate-200 cursor-pointer backdrop-blur" title="Duplicar"><i data-lucide="copy" size="14"></i></button>
                                 ${t.status === 'em uso' ? `<button onclick="requestReturn(${t.id}); event.stopPropagation();" class="bg-orange-500 text-white p-2 rounded-lg shadow-sm border border-orange-500 cursor-pointer hover:bg-orange-600" title="Devolver"><i data-lucide="rotate-ccw" size="14"></i></button>` : ''}
                                 <button onclick="editTool(${t.id}); event.stopPropagation();" class="bg-white/90 p-2 rounded-lg text-slate-600 hover:text-blue-600 shadow-sm border border-slate-200 cursor-pointer backdrop-blur" title="Editar"><i data-lucide="pencil" size="14"></i></button>
                                 <button onclick="requestDelete(${t.id}); event.stopPropagation();" class="bg-white/90 p-2 rounded-lg text-rose-500 hover:bg-rose-50 shadow-sm border border-slate-200 cursor-pointer backdrop-blur" title="Excluir"><i data-lucide="trash-2" size="14"></i></button>
@@ -1314,6 +1497,39 @@
                     lucide.createIcons();
                 }
 
+                function openItemHistory(id) {
+                    const tool = tools.find(t => t.id === id);
+                    if (!tool) return;
+
+                    const itemHistory = history.filter(h => h.toolId === id).sort((a,b) => new Date(b.checkoutDate) - new Date(a.checkoutDate));
+                    const container = document.getElementById('itemHistoryContent');
+                    
+                    let html = `
+                        <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                            <div class="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center overflow-hidden border border-slate-200">
+                                ${tool.img ? `<img src="${tool.img}" class="w-full h-full object-cover">` : `<i data-lucide="wrench" class="text-slate-300" size="24"></i>`}
+                            </div>
+                            <div>
+                                <h3 class="font-black text-slate-900 uppercase text-lg">${tool.name}</h3>
+                                <p class="text-sm font-bold text-slate-400 uppercase">${tool.code || 'S/C'}</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                    `;
+
+                    if (itemHistory.length === 0) {
+                        html += `<p class="text-center text-slate-400 text-sm py-4">Nenhum histórico registrado para este item.</p>`;
+                    } else {
+                        // Reutiliza a lógica de renderização do histórico, mas simplificada
+                        // ... (Implementação simplificada de lista)
+                        html += itemHistory.map(h => `<div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs"><div class="flex justify-between mb-1"><span class="font-black text-slate-700">${h.workerName}</span><span class="text-slate-400">${formatISODate(h.checkoutDate)}</span></div><div class="flex justify-between"><span class="${h.returnDate ? 'text-emerald-600' : 'text-orange-500'} font-bold">${h.returnDate ? 'Devolvido' : 'Em Uso'}</span><span>${h.returnDate ? formatISODate(h.returnDate) : ''}</span></div></div>`).join('');
+                    }
+                    html += `</div>`;
+                    container.innerHTML = html;
+                    openModal('itemHistoryModal');
+                    lucide.createIcons();
+                }
+
                 // --- FUNÇÃO DE SIMULAÇÃO DE ATRASO ---
                 function simulateOverdue() {
                     // Encontra a primeira ferramenta de item único que esteja disponível
@@ -1321,7 +1537,7 @@
                     
                     if (!availableTool) {
                         document.getElementById('alertModalTitle').innerText = "Simulação Falhou";
-                        document.getElementById('alertModalText').innerText = "Nenhuma ferramenta de item único (não consumível) está disponível para simular o atraso.";
+                        document.getElementById('alertModalText').innerText = "Nenhuma ferramenta de item único disponível para simular o atraso.";
                         openModal('alertModal');
                         return;
                     }
@@ -1330,8 +1546,9 @@
                     availableTool.status = 'em uso';
                     availableTool.user = 'SIMULAÇÃO';
 
-                    // Cria um registro de histórico com data de retirada de 25 horas atrás
+                    // Cria um registro de histórico com data de retirada atrasada (config + 1 hora)
                     const now = new Date();
+                    const hoursBack = (appSettings.overdueHours || 24) + 1;
                     const twentyFiveHoursAgo = new Date(now.getTime() - (25 * 60 * 60 * 1000));
 
                     const historyEntry = {
@@ -1426,6 +1643,16 @@
                     setupEnter('quoteProviderInput', () => saveQuote(itemToManageMaintenanceId));
                     setupEnter('quoteCostInput', () => saveQuote(itemToManageMaintenanceId));
                 };
+
+                // --- FUNÇÕES DE CONFIGURAÇÃO ---
+                function loadSettingsUI() {
+                    document.getElementById('settingOverdueHours').value = appSettings.overdueHours || 24;
+                }
+
+                function saveSettings() {
+                    appSettings.overdueHours = parseInt(document.getElementById('settingOverdueHours').value) || 24;
+                    save();
+                }
 
                 // --- FUNÇÕES DE BACKUP ---
                 function exportData() {
@@ -1889,6 +2116,54 @@
                     if (!isSearchUpdate) openModal('materialModal');
                 }
 
+                // --- FUNÇÕES DE AUDITORIA ---
+                function openAuditModal() {
+                    // Filtra itens que deveriam estar no estoque (disponíveis)
+                    // Ignora consumíveis (qty > 0) por enquanto, foca em ativos fixos ou trata consumíveis como contagem
+                    // Para simplificar: Auditoria de itens únicos (ferramentas)
+                    auditSession.missing = tools.filter(t => t.status === 'disponivel' && (!t.hasOwnProperty('qty') || t.qty === 0));
+                    auditSession.found = [];
+                    
+                    updateAuditUI();
+                    document.getElementById('auditInput').value = '';
+                    openModal('auditModal');
+                    document.getElementById('auditInput').focus();
+                }
+
+                function handleAuditScan(code) {
+                    if (!code) return;
+                    const index = auditSession.missing.findIndex(t => t.code === code);
+                    if (index > -1) {
+                        const tool = auditSession.missing.splice(index, 1)[0];
+                        auditSession.found.unshift(tool);
+                        updateAuditUI();
+                        document.getElementById('auditInput').value = ''; // Limpa para o próximo
+                    } else {
+                        // Opcional: Tocar som de erro ou avisar que item não era esperado/já foi bipado
+                    }
+                }
+
+                function updateAuditUI() {
+                    document.getElementById('auditMissingCount').innerText = auditSession.missing.length;
+                    document.getElementById('auditFoundCount').innerText = auditSession.found.length;
+
+                    const renderList = (list) => list.map(t => `<div class="bg-white p-2 rounded border border-slate-200 text-xs flex justify-between"><span>${t.name}</span><span class="font-bold text-slate-400">${t.code}</span></div>`).join('');
+                    
+                    document.getElementById('auditMissingList').innerHTML = renderList(auditSession.missing);
+                    document.getElementById('auditFoundList').innerHTML = renderList(auditSession.found);
+                    lucide.createIcons();
+                }
+
+                function finishAudit() {
+                    // Aqui poderia gerar um relatório de discrepâncias
+                    if (auditSession.missing.length > 0) {
+                        alert(`Auditoria finalizada. ${auditSession.missing.length} itens não foram encontrados.`);
+                    } else {
+                        alert("Auditoria perfeita! Todos os itens encontrados.");
+                    }
+                    closeModal('auditModal');
+                }
+
                 function selectToolForMaterial(id) {
                     materialData.toolId = id;
                     resetMaterial(1);
@@ -2033,7 +2308,6 @@
                         (decodedText, decodedResult) => {
                             handleBarcodeScan(decodedText);
                             stopQrScanner();
-                            closeModal('materialModal');
                         },
                         (errorMessage) => { /* ignore */ }
                     ).catch(err => console.error("QR Scanner Error:", err));
@@ -2058,7 +2332,7 @@
                         }
                         const checkoutDate = new Date(h.checkoutDate);
                         const diffHours = (now - checkoutDate) / (1000 * 60 * 60);
-                        return diffHours > 24;
+                        return diffHours > (appSettings.overdueHours || 24);
                     });
                     return overdueTools;
                 }
@@ -2085,6 +2359,12 @@
                     const mainOverdueBadge = document.getElementById('mainOverdueBadge');
                     if (mainOverdueBadge) {
                         mainOverdueBadge.classList.toggle('hidden', overdueTools.length === 0);                        
+                    }
+
+                    // Bolinha de alerta no botão da Central de Operações
+                    const actionsOverdueBadge = document.getElementById('actionsOverdueBadge');
+                    if (actionsOverdueBadge) {
+                        actionsOverdueBadge.classList.toggle('hidden', overdueTools.length === 0);
                     }
                 }
 
@@ -2324,6 +2604,150 @@
                         console.error("Erro ao gerar PDF:", e);
                         alert("Ocorreu um erro ao gerar o PDF. Verifique o console para mais detalhes.");
                     }
+                }
+
+                function generateQRCodesPDF() {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    let x = 10;
+                    let y = 10;
+                    const size = 30; 
+                    const margin = 15;
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    
+                    tools.forEach((tool, index) => {
+                        if (!tool.code) return;
+
+                        const qr = new QRious({
+                            value: tool.code,
+                            size: 200
+                        });
+                        const imgData = qr.toDataURL();
+
+                        if (x + size > pageWidth - margin) {
+                            x = 10;
+                            y += size + 20;
+                        }
+                        
+                        if (y + size + 20 > doc.internal.pageSize.getHeight() - margin) {
+                            doc.addPage();
+                            x = 10;
+                            y = 10;
+                        }
+
+                        doc.addImage(imgData, 'JPEG', x, y, size, size);
+                        doc.setFontSize(8);
+                        
+                        const splitTitle = doc.splitTextToSize(tool.name.toUpperCase(), size + 5);
+                        doc.text(splitTitle, x + size / 2, y + size + 5, { align: 'center' });
+                        doc.setFontSize(7);
+                        doc.text(tool.code, x + size / 2, y + size + 12, { align: 'center' });
+
+                        x += size + margin;
+                    });
+
+                    doc.save("etiquetas_ferramentas.pdf");
+                }
+
+                function generateLiabilityForm() {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    
+                    const borrowedTools = tools.filter(t => t.status === 'em uso');
+                    
+                    if (borrowedTools.length === 0) {
+                        alert("Não há ferramentas emprestadas no momento para gerar termos.");
+                        return;
+                    }
+
+                    // Agrupar por usuário
+                    const toolsByUser = borrowedTools.reduce((acc, tool) => {
+                        const user = tool.user || 'Desconhecido';
+                        if (!acc[user]) acc[user] = [];
+                        acc[user].push(tool);
+                        return acc;
+                    }, {});
+
+                    let isFirstPage = true;
+
+                    Object.keys(toolsByUser).forEach((user) => {
+                        if (!isFirstPage) doc.addPage();
+                        isFirstPage = false;
+
+                        doc.setFontSize(16);
+                        doc.text("Termo de Responsabilidade", 105, 20, { align: "center" });
+                        
+                        doc.setFontSize(12);
+                        doc.text(`Eu, ${user}, declaro que recebi os itens abaixo relacionados em perfeito estado de conservação e funcionamento, assumindo a responsabilidade por sua guarda e uso adequado.`, 14, 35, { maxWidth: 180 });
+
+                        const userTools = toolsByUser[user].map(t => [t.code || '-', t.name, t.brand || '-']);
+                        
+                        doc.autoTable({
+                            head: [['Cód.', 'Ferramenta', 'Marca']],
+                            body: userTools,
+                            startY: 50,
+                            theme: 'grid',
+                            headStyles: { fillColor: [51, 65, 85] }
+                        });
+
+                        const finalY = doc.lastAutoTable.finalY + 40;
+                        
+                        doc.line(60, finalY, 150, finalY);
+                        doc.setFontSize(10);
+                        doc.text("Assinatura do Colaborador", 105, finalY + 5, { align: "center" });
+                        doc.text(`Data: ${new Date().toLocaleDateString()}`, 105, finalY + 12, { align: "center" });
+                    });
+
+                    doc.save("termo_responsabilidade.pdf");
+                }
+
+                function generateChecklistPDF() {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+
+                    doc.setFontSize(18);
+                    doc.text("Checklist de Conferência de Estoque", 14, 20);
+                    doc.setFontSize(10);
+                    doc.text(`Data: ${new Date().toLocaleDateString()} - Hora: ${new Date().toLocaleTimeString()}`, 14, 28);
+
+                    const sortedTools = [...tools].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+                    const tableData = sortedTools.map(t => [
+                        t.code || '',
+                        t.name,
+                        t.brand || '',
+                        t.status === 'disponivel' ? 'Disp.' : (t.status === 'em uso' ? `Com ${t.user}` : t.status),
+                        '[   ]' 
+                    ]);
+
+                    doc.autoTable({
+                        head: [['Cód.', 'Item', 'Marca', 'Status Sist.', 'Conferido']],
+                        body: tableData,
+                        startY: 35,
+                        theme: 'grid',
+                        styles: { fontSize: 9 },
+                        columnStyles: { 4: { halign: 'center', fontStyle: 'bold' } },
+                        headStyles: { fillColor: [51, 65, 85] }
+                    });
+
+                    doc.save("checklist_estoque.pdf");
+                }
+
+                function confirmResetSystem() {
+                    const modal = document.getElementById('deleteModal');
+                    modal.querySelector('h3').innerText = 'Resetar Sistema?';
+                    modal.querySelector('p').innerText = 'ATENÇÃO: Esta ação apagará PERMANENTEMENTE todos os dados (Ferramentas, Equipe, Histórico). Recomenda-se exportar um backup antes. Deseja continuar?';
+                    
+                    document.getElementById('confirmDeleteBtn').onclick = async () => {
+                        // Limpa dados em memória
+                        tools = [];
+                        team = [];
+                        history = [];
+                        // Salva estado vazio
+                        await save(true);
+                        location.reload();
+                    };
+                    openModal('deleteModal');
                 }
             </script>
             <script>

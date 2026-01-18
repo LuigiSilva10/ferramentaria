@@ -10,12 +10,16 @@
             <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
             <script src="https://unpkg.com/lucide@latest"></script>
 
+            <script>
+                tailwind.config = { darkMode: 'class' }
+            </script>
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
             <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
             <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
@@ -103,6 +107,20 @@
                 span.flatpickr-weekday {
                     color: #64748B;
                 }
+
+                /* Dark Mode Overrides */
+                .dark body { background-color: #0f172a; color: #cbd5e1; }
+                .dark .bg-white { background-color: #1e293b; border-color: #334155; }
+                .dark .bg-slate-50 { background-color: #0f172a; border-color: #334155; }
+                .dark .bg-slate-100 { background-color: #334155; border-color: #475569; }
+                .dark .bg-slate-200 { background-color: #334155; border-color: #475569; }
+                .dark .text-slate-900, .dark .text-slate-800, .dark .text-slate-700 { color: #e2e8f0; }
+                .dark .text-slate-600, .dark .text-slate-500, .dark .text-slate-400 { color: #94a3b8; }
+                .dark .border-slate-100, .dark .border-slate-200 { border-color: #334155; }
+                .dark input, .dark select, .dark textarea { background-color: #334155; border-color: #475569; color: #e2e8f0; }
+                .dark .sidebar { background-color: #020617; border-color: #1e293b; }
+                .dark .nav-btn:hover { background-color: #1e293b; color: #e2e8f0; }
+                .dark .soft-ui-panel { background: #1e293b; box-shadow: none; border: 1px solid #334155; }
             </style>
         </head>
         <body class="bg-slate-50">
@@ -114,11 +132,17 @@
                 </div>
                 <nav class="flex-1 px-4 space-y-2 mt-4">
                     <button id="btn-main" onclick="showSection('main')" class="nav-btn active"><i data-lucide="layout-dashboard"></i> <span class="sidebar-text">Painel Principal</span></button>
+                    <button id="btn-actions" onclick="showSection('actions')" class="nav-btn relative">
+                        <i data-lucide="zap"></i> 
+                        <span class="sidebar-text">Operações</span>
+                        <span id="actionsOverdueBadge" class="hidden absolute top-3 right-3 w-2 h-2 bg-rose-500 rounded-full"></span>
+                    </button>
                     <button id="btn-catalog" onclick="showSection('catalog')" class="nav-btn"><i data-lucide="archive"></i> <span class="sidebar-text">Estoque</span></button>
                     <button id="btn-team" onclick="showSection('team')" class="nav-btn"><i data-lucide="users"></i> <span class="sidebar-text">Equipe</span></button>
                     <button id="btn-maintenance" onclick="showSection('maintenance')" class="nav-btn"><i data-lucide="wrench"></i> <span class="sidebar-text">FollowUp</span></button>
                     <button id="btn-logs" onclick="showSection('logs')" class="nav-btn"><i data-lucide="history"></i> <span class="sidebar-text">Histórico</span></button>
                     <button id="btn-database" onclick="showSection('database')" class="nav-btn"><i data-lucide="database"></i> <span class="sidebar-text">Backup</span></button>
+                    <button id="btn-settings" onclick="showSection('settings')" class="nav-btn"><i data-lucide="settings"></i> <span class="sidebar-text">Configurações</span></button>
                             <button id="btn-tests" onclick="showSection('tests')" class="nav-btn"><i data-lucide="beaker"></i> <span class="sidebar-text">Testes</span></button>
                 </nav>
             </aside>
@@ -150,21 +174,6 @@
                                     <span id="currentDateDisplay" class="text-xs font-bold uppercase tracking-widest"></span>
                                 </div>
                                 
-                                <div class="flex justify-end gap-3 w-full">
-                                    <button onclick="openAddModal('disponivel')" class="group bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-900/20 text-[10px] uppercase tracking-widest transition-all border border-emerald-500/50 cursor-pointer">
-                                        <i data-lucide="plus" size="16" class="group-hover:scale-110 transition-transform"></i>
-                                        <span>Novo Item</span>
-                                    </button>
-                                    <button onclick="openMaterialModal()" id="mainCheckoutBtn" class="relative group bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-indigo-900/20 text-[10px] uppercase tracking-widest transition-all border border-indigo-500/50 cursor-pointer">
-                                        <i data-lucide="package-minus" size="16" class="group-hover:scale-110 transition-transform"></i>
-                                        <span>Saída</span>
-                                        <span id="mainOverdueBadge" class="hidden absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border-2 border-[#0B1120]"></span>
-                                    </button>
-                                    <button onclick="openMaintenanceModal()" class="group bg-rose-600 hover:bg-rose-500 text-white px-5 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-rose-900/20 text-[10px] uppercase tracking-widest transition-all border border-rose-500/50 cursor-pointer">
-                                        <i data-lucide="wrench" size="16" class="group-hover:scale-110 transition-transform"></i>
-                                        <span>Manutenção</span>
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -185,6 +194,82 @@
                                     </thead>
                                     <tbody id="toolList" class="divide-y divide-slate-50"></tbody>
                                 </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <main id="section-actions" class="main-content p-4 md:p-8">
+                <div class="max-w-[1400px] mx-auto">
+                    <div class="bg-[#0B1120] rounded-[2.5rem] p-8 mb-10 shadow-2xl relative overflow-hidden border border-slate-800">
+                        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none"></div>
+                        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-600/10 rounded-full blur-[80px] -ml-20 -mb-20 pointer-events-none"></div>
+                        <div class="relative z-10 flex items-center gap-4">
+                            <div class="p-3 bg-blue-600/20 rounded-2xl border border-blue-500/30 text-blue-400">
+                                <i data-lucide="zap" size="28"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-none">Central de Operações</h2>
+                                <p class="text-slate-400 text-sm font-medium mt-1">Acesso rápido às principais ações</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div onclick="openMaterialModal()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-indigo-500 transition-all group relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10 flex flex-col items-center text-center gap-6">
+                                <div class="w-24 h-24 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                    <i data-lucide="package-minus" size="48"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-2">Saída de Materiais</h3>
+                                    <p class="text-slate-500 font-medium">Registrar empréstimo ou consumo de itens do estoque.</p>
+                                </div>
+                                <span class="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-indigo-200 group-hover:shadow-indigo-300 transition-all mt-2">Iniciar Saída</span>
+                            </div>
+                        </div>
+
+                        <div onclick="openCheckinModal()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-emerald-500 transition-all group relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10 flex flex-col items-center text-center gap-6">
+                                <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                    <i data-lucide="package-check" size="48"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-2">Devolução</h3>
+                                    <p class="text-slate-500 font-medium">Registrar retorno de ferramentas e equipamentos.</p>
+                                </div>
+                                <span class="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-emerald-200 group-hover:shadow-emerald-300 transition-all mt-2">Iniciar Devolução</span>
+                            </div>
+                        </div>
+
+                        <div onclick="openMaintenanceModal()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-red-500 transition-all group relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-64 h-64 bg-red-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10 flex flex-col items-center text-center gap-6">
+                                <div class="w-24 h-24 bg-red-100 text-red-600 rounded-full flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                    <i data-lucide="wrench" size="48"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-2">Manutenção</h3>
+                                    <p class="text-slate-500 font-medium">Reportar danos ou solicitar manutenção de equipamentos.</p>
+                                </div>
+                                <span class="px-6 py-3 bg-red-600 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-red-200 group-hover:shadow-red-300 transition-all mt-2">Reportar Manutenção</span>
+                            </div>
+                        </div>
+
+                        <div onclick="openAuditModal()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-amber-500 transition-all group relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-64 h-64 bg-amber-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10 flex flex-col items-center text-center gap-6">
+                                <div class="w-24 h-24 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                    <i data-lucide="clipboard-check" size="48"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-2">Auditoria</h3>
+                                    <p class="text-slate-500 font-medium">Conferência física do estoque disponível.</p>
+                                </div>
+                                <span class="px-6 py-3 bg-amber-500 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-amber-200 group-hover:shadow-amber-300 transition-all mt-2">Iniciar Auditoria</span>
                             </div>
                         </div>
                     </div>
@@ -373,8 +458,8 @@
                             <div class="flex flex-col items-end gap-4 w-full xl:w-auto">
                                 <div class="flex items-center gap-3">
                                      <div class="bg-slate-800/50 px-4 py-2 rounded-xl border border-slate-700 text-right">
-                                        <p class="text-slate-400 text-[8px] font-bold uppercase">Total em Manutenção</p>
-                                        <h2 class="text-lg font-black text-red-400 flex items-center justify-end gap-2"><span id="maintenanceTotalCount">0</span></h2>
+                                        <p class="text-white text-[8px] font-bold uppercase">Total em Manutenção</p>
+                                        <h2 class="text-lg font-black text-white flex items-center justify-end gap-2"><span id="maintenanceTotalCount">0</span></h2>
                                     </div>
                                 </div>
                                 <div class="relative w-full xl:w-80">
@@ -523,11 +608,261 @@
                             <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="upload-cloud"></i></div>
                             <h3 class="font-black uppercase text-slate-800">Importar Dados</h3>
                         </div>
+                        <div onclick="generateQRCodesPDF()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-indigo-500 text-center">
+                            <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="qr-code"></i></div>
+                            <h3 class="font-black uppercase text-slate-800">Gerar Etiquetas QR</h3>
+                        </div>
+                        <div onclick="confirmResetSystem()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-red-500 text-center">
+                            <div class="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="trash-2"></i></div>
+                            <h3 class="font-black uppercase text-slate-800">Resetar Sistema</h3>
+                        </div>
                     </div>
                 </div>
             </main>
 
             <main id="section-tests" class="main-content p-4 md:p-8">
+                <div class="max-w-[1400px] mx-auto">
+                    <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase mb-8">Testes de Funcionalidade</h2>
+                    <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 space-y-4">
+                        <p class="text-slate-600">Use os botões abaixo para simular cenários específicos e testar as funcionalidades de alerta do sistema.</p>
+                        <div class="flex gap-4 pt-4 flex-wrap">
+                            <button onclick="simulateOverdue()" class="bg-yellow-500 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-yellow-600 transition-all border-none cursor-pointer"><i data-lucide="clock" size="16"></i> Simular Atraso de 24h</button>
+                            <button onclick="stopSimulation()" class="bg-slate-500 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-slate-600 transition-all border-none cursor-pointer"><i data-lucide="x-circle" size="16"></i> Parar Simulação</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <main id="section-settings" class="main-content p-4 md:p-8">
+                <div class="max-w-[1400px] mx-auto">
+                    <div class="bg-[#0B1120] rounded-[2.5rem] p-8 mb-10 shadow-2xl relative overflow-hidden border border-slate-800">
+                        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none"></div>
+                        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-600/10 rounded-full blur-[80px] -ml-20 -mb-20 pointer-events-none"></div>
+                        <div class="relative z-10 flex items-center gap-4">
+                            <div class="p-3 bg-blue-600/20 rounded-2xl border border-blue-500/30 text-blue-400">
+                                <i data-lucide="settings" size="28"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-none">Configurações</h2>
+                                <p class="text-slate-400 text-sm font-medium mt-1">Ajustes do sistema</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Card 1: Parâmetros Operacionais -->
+                        <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-100 relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center gap-4 mb-6">
+                                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center">
+                                        <i data-lucide="sliders"></i>
+                                    </div>
+                                    <h3 class="font-black text-slate-800 uppercase text-lg tracking-tight">Parâmetros Operacionais</h3>
+                                </div>
+                                
+                                <div class="space-y-6">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Tempo para Alerta de Atraso</label>
+                                        <div class="relative mt-2">
+                                            <i data-lucide="clock" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="18"></i>
+                                            <select id="settingOverdueHours" onchange="saveSettings()" class="w-full bg-white border-2 border-slate-100 rounded-xl pl-12 pr-10 py-3 font-bold text-slate-700 outline-none focus:border-blue-500 transition-all appearance-none cursor-pointer">
+                                                <option value="24">24 Horas (1 Dia)</option>
+                                                <option value="48">48 Horas (2 Dias)</option>
+                                                <option value="72">72 Horas (3 Dias)</option>
+                                                <option value="168">168 Horas (1 Semana)</option>
+                                                <option value="336">336 Horas (2 Semanas)</option>
+                                            </select>
+                                            <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size="18"></i>
+                                        </div>
+                                        <p class="text-[10px] text-slate-400 mt-2 font-medium ml-2">Selecione o período máximo de empréstimo.</p>
+                                    </div>
+
+                                    <div class="pt-4 border-t border-slate-50">
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Limite de Estoque Baixo</label>
+                                        <div class="relative mt-2">
+                                            <i data-lucide="alert-circle" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="18"></i>
+                                            <input type="number" id="settingLowStock" value="5" onchange="saveSettings()" class="w-full bg-white border-2 border-slate-100 rounded-xl pl-12 pr-4 py-3 font-bold text-slate-700 outline-none focus:border-blue-500 transition-all" placeholder="Qtd.">
+                                        </div>
+                                        <p class="text-[10px] text-slate-400 mt-2 font-medium ml-2">Quantidade mínima para alerta de reposição.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Personalização -->
+                        <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-100 relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-purple-50 rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center gap-4 mb-6">
+                                    <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center">
+                                        <i data-lucide="palette"></i>
+                                    </div>
+                                    <h3 class="font-black text-slate-800 uppercase text-lg tracking-tight">Personalização</h3>
+                                </div>
+
+                                <div class="space-y-6">
+                                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                        <div>
+                                            <h4 class="font-bold text-slate-700 text-sm">Modo Escuro</h4>
+                                            <p class="text-[10px] text-slate-400 font-bold uppercase">Interface noturna</p>
+                                        </div>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" id="settingDarkMode" onchange="toggleDarkMode()" class="sr-only peer">
+                                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                        </label>
+                                    </div>
+
+                                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                        <div>
+                                            <h4 class="font-bold text-slate-700 text-sm">Sons do Sistema</h4>
+                                            <p class="text-[10px] text-slate-400 font-bold uppercase">Efeitos sonoros</p>
+                                        </div>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" id="settingSystemSounds" onchange="saveSettings()" class="sr-only peer">
+                                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Dados e Sincronização -->
+                        <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-100 relative overflow-hidden group lg:col-span-2">
+                            <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full -mr-20 -mt-20 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center gap-4 mb-6">
+                                    <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
+                                        <i data-lucide="cloud-cog"></i>
+                                    </div>
+                                    <h3 class="font-black text-slate-800 uppercase text-lg tracking-tight">Dados e Sincronização</h3>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Frequência de Backup Automático</label>
+                                        <select class="w-full mt-2 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-slate-700 outline-none focus:border-emerald-500 transition-all bg-white">
+                                            <option>A cada alteração</option>
+                                            <option>Diariamente</option>
+                                            <option>Semanalmente</option>
+                                            <option>Nunca</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Chave de API (Integração)</label>
+                                        <div class="flex gap-2 mt-2">
+                                            <input type="password" value="**********************" disabled class="flex-1 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-slate-400 outline-none bg-slate-50">
+                                            <button class="bg-slate-100 text-slate-500 px-4 rounded-xl font-bold hover:bg-slate-200 transition-all"><i data-lucide="key"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 4: Notificações (Substituindo Dados da Empresa) -->
+                        <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-100 relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-orange-50 rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center gap-4 mb-6">
+                                    <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center">
+                                        <i data-lucide="bell-ring"></i>
+                                    </div>
+                                    <h3 class="font-black text-slate-800 uppercase text-lg tracking-tight">Notificações</h3>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <label class="text-xs font-bold text-slate-600 dark:text-slate-300">Alertar Estoque Baixo</label>
+                                        <input type="checkbox" id="settingAlertLowStock" onchange="saveSettings()" class="w-5 h-5 text-orange-600 rounded focus:ring-orange-500 border-gray-300 cursor-pointer">
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <label class="text-xs font-bold text-slate-600 dark:text-slate-300">Alertar Devoluções Atrasadas</label>
+                                        <input type="checkbox" id="settingAlertOverdue" onchange="saveSettings()" class="w-5 h-5 text-orange-600 rounded focus:ring-orange-500 border-gray-300 cursor-pointer">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 5: Segurança -->
+                        <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-100 relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-red-50 rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center gap-4 mb-6">
+                                    <div class="w-12 h-12 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center">
+                                        <i data-lucide="shield-alert"></i>
+                                    </div>
+                                    <h3 class="font-black text-slate-800 uppercase text-lg tracking-tight">Segurança</h3>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">PIN de Administrador</label>
+                                        <div class="flex gap-2 mt-1">
+                                            <input type="password" id="settingAdminPin" placeholder="****" class="flex-1 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-slate-700 outline-none focus:border-red-500 transition-all">
+                                            <button id="btnSavePin" onclick="setAdminPin()" class="bg-slate-800 text-white px-4 rounded-xl font-bold uppercase text-[10px] hover:bg-slate-700 transition-all">Definir</button>
+                                            <button id="btnDeletePin" onclick="deleteAdminPin()" class="hidden bg-red-100 text-red-600 px-4 rounded-xl font-bold uppercase text-[10px] hover:bg-red-200 transition-all border border-red-200">Excluir</button>
+                                        </div>
+                                        <p class="text-[10px] text-slate-400 mt-2 font-medium">
+                                            <i data-lucide="info" size="12" class="inline mr-1"></i>
+                                            Se definido, este PIN será exigido para <strong>Resetar o Sistema</strong> ou <strong>Excluir Colaboradores</strong>.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <div id="auditModal" class="fixed inset-0 bg-slate-900/90 hidden z-[800] flex items-center justify-center p-4 backdrop-blur-md" onclick="closeModal('auditModal')">
+                <div class="bg-white rounded-[2.5rem] w-full max-w-4xl h-[80vh] overflow-hidden shadow-2xl flex flex-col" onclick="event.stopPropagation()">
+                    <div class="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center">
+                        <h3 class="font-black uppercase tracking-tighter text-slate-900">Auditoria de Estoque</h3>
+                        <button onclick="closeModal('auditModal');" class="text-slate-400 hover:text-rose-500 bg-transparent border-none cursor-pointer"><i data-lucide="x"></i></button>
+                    </div>
+                    <div class="p-6 bg-slate-100 border-b border-slate-200 flex gap-4 items-center">
+                        <input type="text" id="auditInput" onchange="handleAuditScan(this.value)" placeholder="BIPAR CÓDIGO..." class="flex-1 bg-white border-2 border-slate-200 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-amber-500 transition-all">
+                        <button onclick="finishAudit()" class="bg-amber-500 text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg hover:bg-amber-600 transition-all">Finalizar</button>
+                    </div>
+                    <div class="flex-1 overflow-hidden flex flex-col md:flex-row">
+                        <div class="flex-1 p-6 overflow-y-auto custom-scrollbar border-r border-slate-100 bg-rose-50/30">
+                            <h4 class="font-black text-rose-500 uppercase text-xs mb-4 flex justify-between">Itens Faltantes <span id="auditMissingCount" class="bg-rose-100 px-2 py-0.5 rounded-full">0</span></h4>
+                            <div id="auditMissingList" class="space-y-2"></div>
+                        </div>
+                        <div class="flex-1 p-6 overflow-y-auto custom-scrollbar bg-emerald-50/30">
+                            <h4 class="font-black text-emerald-600 uppercase text-xs mb-4 flex justify-between">Itens Encontrados <span id="auditFoundCount" class="bg-emerald-100 px-2 py-0.5 rounded-full">0</span></h4>
+                            <div id="auditFoundList" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="itemHistoryModal" class="fixed inset-0 bg-slate-900/90 hidden z-[850] flex items-center justify-center p-4 backdrop-blur-md" onclick="closeModal('itemHistoryModal')">
+                <div class="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
+                    <div class="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center">
+                        <h3 class="font-black uppercase tracking-tighter text-slate-900">Histórico do Item</h3>
+                        <button onclick="closeModal('itemHistoryModal');" class="text-slate-400 hover:text-rose-500 bg-transparent border-none cursor-pointer"><i data-lucide="x"></i></button>
+                    </div>
+                    <div class="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar" id="itemHistoryContent">
+                        <!-- Content will be injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="pinModal" class="fixed inset-0 bg-slate-900/90 hidden z-[970] flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('pinModal')">
+                <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm text-center shadow-2xl" onclick="event.stopPropagation()">
+                    <div class="w-16 h-16 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="lock" size="32"></i></div>
+                    <h3 class="text-lg font-black text-slate-900 uppercase mb-2">Acesso Restrito</h3>
+                    <p class="text-slate-500 text-sm mb-6">Esta ação requer autorização. Digite o PIN de administrador para continuar.</p>
+                    <input type="password" id="pinInputModal" placeholder="****" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-center text-lg outline-none focus:border-blue-500 transition-all mb-6">
+                    <div class="flex gap-3">
+                        <button onclick="closeModal('pinModal')" class="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none">Cancelar</button>
+                        <button onclick="validatePin()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none shadow-lg hover:bg-blue-700 transition-all">Confirmar</button>
+                    </div>
+                </div>
+            </div>
+
+            <main id="section-tests-old" class="hidden">
                 <div class="max-w-[1400px] mx-auto">
                     <!-- Header Testes -->
                     <div class="bg-[#0B1120] rounded-[2.5rem] p-8 mb-10 shadow-2xl relative overflow-hidden border border-slate-800">
@@ -635,6 +970,35 @@
                                     <button onclick="resetMaterial(2)" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase text-[10px] cursor-pointer border-none">Voltar</button>
                                     <button id="btnFinalizeMaterial" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] shadow-lg border-none cursor-pointer hover:bg-indigo-700">Confirmar Saída</button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="checkinModal" class="fixed inset-0 bg-slate-900/90 hidden z-[800] flex items-center justify-center p-4 backdrop-blur-md" onclick="closeModal('checkinModal')">
+                <div class="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
+                    <div class="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center gap-4">
+                        <h3 class="font-black uppercase tracking-tighter text-slate-900">Devolução de Ferramentas</h3>
+                        <div class="flex-1 flex justify-end gap-2">
+                            <input type="text" id="checkinBarcodeInput" class="absolute -left-[9999px]" onchange="handleCheckinBarcodeScan(this.value)">
+                            <button onclick="focusCheckinBarcode()" class="bg-white border-2 border-slate-200 text-slate-500 px-3 py-2 rounded-lg font-bold flex items-center gap-2 text-[10px] uppercase hover:bg-slate-100 transition-all"><i data-lucide="barcode" size="14"></i> Bipar</button>
+                            <button onclick="startCheckinQrScanner()" class="bg-white border-2 border-slate-200 text-slate-500 px-3 py-2 rounded-lg font-bold flex items-center gap-2 text-[10px] uppercase hover:bg-slate-100 transition-all"><i data-lucide="qr-code" size="14"></i> QR Code</button>
+                        </div>
+                        <button onclick="closeModal('checkinModal');" class="text-slate-400 hover:text-rose-500 bg-transparent border-none cursor-pointer"><i data-lucide="x"></i></button>
+                    </div>
+                    <div class="p-8">
+                        <div id="checkinQrScannerContainer" class="hidden">
+                            <div id="checkin-qr-reader" class="w-full rounded-xl overflow-hidden border-2 border-slate-200"></div>
+                            <button onclick="stopCheckinQrScanner()" class="w-full mt-4 py-3 bg-slate-100 text-slate-500 rounded-xl font-black uppercase text-[10px] cursor-pointer border-none">Cancelar Câmera</button>
+                        </div>
+                        <div id="checkin-step-list">
+                            <p class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">Selecione o item para devolver:</p>
+                            <div class="relative mb-4">
+                                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
+                                <input type="text" id="checkinSearchInput" onkeyup="handleSearchInput(this, () => openCheckinModal(true))" placeholder="BUSCAR POR NOME, CÓDIGO OU RESPONSÁVEL..." class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl pl-12 pr-10 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                                <button onclick="clearSearch('checkinSearchInput', () => openCheckinModal(true))" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 hidden z-10"><i data-lucide="x-circle" size="16"></i></button>
+                            </div>
+                            <div id="toolGridCheckin" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[55vh] overflow-y-auto p-1 custom-scrollbar"></div>
                         </div>
                     </div>
                 </div>
@@ -790,6 +1154,8 @@
                 team = team.filter(w => w.id !== 1 && w.name !== 'ALMOXARIFADO');
 
                 let history = JSON.parse(localStorage.getItem('ldc_history_db')) || [];
+                let appSettings = JSON.parse(localStorage.getItem('ldc_settings_db')) || { overdueHours: 24, systemSounds: true };
+                let auditSession = { missing: [], found: [] };
 
                 // Timestamp para controle de concorrência (evita sobrescrever dados novos com velhos da nuvem)
                 let lastLocalUpdate = Date.now();
@@ -863,6 +1229,74 @@
 
                 let isSaving = false;
 
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+                function playSound(type) {
+                    if (appSettings.systemSounds === false) return;
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                    const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+
+                    const now = audioCtx.currentTime;
+
+                    if (type === 'click') {
+                        oscillator.type = 'sine';
+                        oscillator.frequency.setValueAtTime(600, now);
+                        oscillator.frequency.exponentialRampToValueAtTime(300, now + 0.05);
+                        gainNode.gain.setValueAtTime(0.03, now);
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                        oscillator.start(now);
+                        oscillator.stop(now + 0.05);
+                    } else if (type === 'type') {
+                        // Som de digitação simples e seco (Click)
+                        oscillator.type = 'sine';
+                        oscillator.frequency.setValueAtTime(800, now);
+                        oscillator.frequency.exponentialRampToValueAtTime(100, now + 0.05);
+                        
+                        gainNode.gain.setValueAtTime(0.05, now);
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                        
+                        oscillator.start(now);
+                        oscillator.stop(now + 0.05);
+                    } else if (type === 'delete') {
+                        oscillator.type = 'sine';
+                        oscillator.frequency.setValueAtTime(300, now);
+                        oscillator.frequency.exponentialRampToValueAtTime(200, now + 0.05);
+                        gainNode.gain.setValueAtTime(0.02, now);
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                        oscillator.start(now);
+                        oscillator.stop(now + 0.05);
+                    } else if (type === 'open') {
+                        oscillator.type = 'sine';
+                        oscillator.frequency.setValueAtTime(400, now);
+                        oscillator.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+                        gainNode.gain.setValueAtTime(0.03, now);
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                        oscillator.start(now);
+                        oscillator.stop(now + 0.1);
+                    } else if (type === 'success') {
+                        oscillator.type = 'sine';
+                        oscillator.frequency.setValueAtTime(500, now);
+                        oscillator.frequency.linearRampToValueAtTime(1000, now + 0.1);
+                        gainNode.gain.setValueAtTime(0.05, now);
+                        gainNode.gain.linearRampToValueAtTime(0.001, now + 0.3);
+                        oscillator.start(now);
+                        oscillator.stop(now + 0.3);
+                    } else if (type === 'error') {
+                        oscillator.type = 'triangle';
+                        oscillator.frequency.setValueAtTime(150, now);
+                        oscillator.frequency.linearRampToValueAtTime(100, now + 0.15);
+                        gainNode.gain.setValueAtTime(0.1, now);
+                        gainNode.gain.linearRampToValueAtTime(0.001, now + 0.15);
+                        oscillator.start(now);
+                        oscillator.stop(now + 0.15);
+                    }
+                }
+
                 async function save(syncToCloud = true) { 
                     isSaving = true;
                     lastLocalUpdate = Date.now(); // Atualiza timestamp da modificação local
@@ -872,6 +1306,7 @@
                         localStorage.setItem('ldc_pro_db', JSON.stringify(tools)); 
                         localStorage.setItem('ldc_team_db', JSON.stringify(team));
                         localStorage.setItem('ldc_history_db', JSON.stringify(history));
+                        localStorage.setItem('ldc_settings_db', JSON.stringify(appSettings));
                     } catch (e) {
                         console.error("Erro ao salvar no LocalStorage", e);
                         document.getElementById('alertModalTitle').innerText = "Erro de Armazenamento";
@@ -949,7 +1384,9 @@
                     if (s === 'logs') renderHistory();
                     if (s === 'maintenance') renderMaintenance();
                     if (s === 'team') renderTeam();
+                    if (s === 'settings') loadSettingsUI();
                     render();
+                    playSound('click');
                 }
 
                 function toggleSidebar() { 
@@ -957,11 +1394,15 @@
                     document.querySelectorAll('.sidebar-text').forEach(e => e.classList.toggle('hidden')); 
                 }
 
-                function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+                function openModal(id) { 
+                    document.getElementById(id).classList.remove('hidden');
+                    playSound('open');
+                }
                 function closeModal(id) { 
                     const modal = document.getElementById(id);
                     if (modal) modal.classList.add('hidden');
                     if (id === 'materialModal' && qrScanner) stopQrScanner();
+                    if (id === 'checkinModal' && qrScanner) stopCheckinQrScanner();
                     
                     if (id === 'zoomModal') {
                         const zoomModal = document.getElementById('zoomModal');
@@ -970,6 +1411,7 @@
                         zoomModal.onmouseleave = null;
                         document.getElementById('zoomContainer').onwheel = null;
                     }
+                    playSound('click');
                 }
 
                 let currentWorkerType = 'LDC';
@@ -1027,27 +1469,38 @@
                     
                     nameInput.value = ""; companyInput.value = "";
                     save(); renderTeam();
+                    playSound('success');
                 }
 
                 function removeWorker(id) {
-                    const worker = team.find(w => w.id === id);
-                    if (worker) {
-                        const toolsInPossession = tools.filter(t => t.user === worker.name).length;
-                        if (toolsInPossession > 0) {
-                            document.getElementById('alertModalTitle').innerText = "Ação Bloqueada";
-                            document.getElementById('alertModalText').innerText = `Não é possível remover ${worker.name}. Este colaborador ainda possui ${toolsInPossession} ferramenta(s) em sua posse.`;
-                            openModal('alertModal');
-                            return;
+                    const executeRemove = () => {
+                        const worker = team.find(w => w.id === id);
+                        if (worker) {
+                            const toolsInPossession = tools.filter(t => t.user === worker.name).length;
+                            if (toolsInPossession > 0) {
+                                document.getElementById('alertModalTitle').innerText = "Ação Bloqueada";
+                                document.getElementById('alertModalText').innerText = `Não é possível remover ${worker.name}. Este colaborador ainda possui ${toolsInPossession} ferramenta(s) em sua posse.`;
+                                openModal('alertModal');
+                                playSound('error');
+                                return;
+                            }
+                            const modal = document.getElementById('deleteModal');
+                            modal.querySelector('h3').innerText = `Remover ${worker.name}?`;
+                            modal.querySelector('p').innerText = 'Você tem certeza que deseja remover este colaborador da equipe?';
+                            document.getElementById('confirmDeleteBtn').onclick = () => {
+                                team = team.filter(w => w.id !== id);
+                                closeModal('deleteModal');
+                                save();
+                                playSound('success');
+                            };
+                            openModal('deleteModal');
                         }
-                        const modal = document.getElementById('deleteModal');
-                        modal.querySelector('h3').innerText = `Remover ${worker.name}?`;
-                        modal.querySelector('p').innerText = 'Você tem certeza que deseja remover este colaborador da equipe?';
-                        document.getElementById('confirmDeleteBtn').onclick = () => {
-                        team = team.filter(w => w.id !== id);
-                            closeModal('deleteModal');
-                        save();
-                        };
-                        openModal('deleteModal');
+                    };
+
+                    if (appSettings.adminPin) {
+                        requestPin(executeRemove);
+                    } else {
+                        executeRemove();
                     }
                 }
 
@@ -1259,6 +1712,7 @@
                         document.getElementById('alertModalTitle').innerText = "Código Duplicado";
                         document.getElementById('alertModalText').innerText = `O código/tag "${code}" já está cadastrado no sistema.`;
                         openModal('alertModal');
+                        playSound('error');
                         return;
                     }
 
@@ -1288,6 +1742,7 @@
                     tools.unshift(tool);
                     closeModal('addModal');
                     save();
+                    playSound('success');
                 }
 
                 function editTool(id) {
@@ -1324,6 +1779,7 @@
                         t.img = currentImageBase64;
                         // A nota de manutenção só é alterada na tela de manutenção
                         save(); closeModal('addModal');
+                        playSound('success');
                     };
                     openModal('addModal');
                     lucide.createIcons();
@@ -1335,6 +1791,7 @@
                         document.getElementById('alertModalTitle').innerText = "Ação Bloqueada";
                         document.getElementById('alertModalText').innerText = "Não é possível excluir um item que está 'Em Uso'. Realize a devolução primeiro.";
                         openModal('alertModal');
+                        playSound('error');
                         return;
                     }
                     itemToDeleteId = id;
@@ -1345,6 +1802,7 @@
                         tools = tools.filter(t => t.id !== itemToDeleteId);
                         closeModal('deleteModal');
                         save();
+                        playSound('success');
                     }; 
                     openModal('deleteModal');
                 }
@@ -1462,6 +1920,7 @@
                     return `
                         <div id="tool-card-${t.id}" class="bg-white rounded-[2rem] p-4 shadow-lg border border-slate-100 flex flex-col group relative transition-all hover:shadow-2xl hover:-translate-y-1">
                             <div class="absolute top-6 right-6 flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="openItemHistory(${t.id}); event.stopPropagation();" class="bg-white/90 p-2 rounded-lg text-slate-600 hover:text-blue-600 shadow-sm border border-slate-200 cursor-pointer backdrop-blur" title="Histórico"><i data-lucide="clock" size="14"></i></button>
                                 ${t.status === 'em uso' ? `<button onclick="requestReturn(${t.id}); event.stopPropagation();" class="bg-orange-500 text-white p-2 rounded-lg shadow-sm border border-orange-500 cursor-pointer hover:bg-orange-600" title="Devolver"><i data-lucide="rotate-ccw" size="14"></i></button>` : ''}
                                 <button onclick="editTool(${t.id}); event.stopPropagation();" class="bg-white/90 p-2 rounded-lg text-slate-600 hover:text-blue-600 shadow-sm border border-slate-200 cursor-pointer backdrop-blur" title="Editar"><i data-lucide="pencil" size="14"></i></button>
                                 <button onclick="requestDelete(${t.id}); event.stopPropagation();" class="bg-white/90 p-2 rounded-lg text-rose-500 hover:bg-rose-50 shadow-sm border border-slate-200 cursor-pointer backdrop-blur" title="Excluir"><i data-lucide="trash-2" size="14"></i></button>
@@ -1622,6 +2081,7 @@
                     history = history.filter(h => h.historyId !== historyItemToDeleteId);
                     save();
                     closeModal('deleteModal');
+                    playSound('success');
                 }
 
                 function clearHistoryDateFilter() {
@@ -1725,6 +2185,26 @@
                     lucide.createIcons();
                 }
 
+                function openItemHistory(id) {
+                    const tool = tools.find(t => t.id === id);
+                    if (!tool) return;
+
+                    const itemHistory = history.filter(h => h.toolId === id).sort((a,b) => new Date(b.checkoutDate) - new Date(a.checkoutDate));
+                    const container = document.getElementById('itemHistoryContent');
+                    
+                    let html = `<div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100"><div class="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center overflow-hidden border border-slate-200">${tool.img ? `<img src="${tool.img}" class="w-full h-full object-cover">` : `<i data-lucide="wrench" class="text-slate-300" size="24"></i>`}</div><div><h3 class="font-black text-slate-900 uppercase text-lg">${tool.name}</h3><p class="text-sm font-bold text-slate-400 uppercase">${tool.code || 'S/C'}</p></div></div><div class="space-y-3">`;
+
+                    if (itemHistory.length === 0) {
+                        html += `<p class="text-center text-slate-400 text-sm py-4">Nenhum histórico registrado para este item.</p>`;
+                    } else {
+                        html += itemHistory.map(h => `<div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs"><div class="flex justify-between mb-1"><span class="font-black text-slate-700">${h.workerName}</span><span class="text-slate-400">${formatISODate(h.checkoutDate)}</span></div><div class="flex justify-between"><span class="${h.returnDate ? 'text-emerald-600' : 'text-orange-500'} font-bold">${h.returnDate ? 'Devolvido' : 'Em Uso'}</span><span>${h.returnDate ? formatISODate(h.returnDate) : ''}</span></div></div>`).join('');
+                    }
+                    html += `</div>`;
+                    container.innerHTML = html;
+                    openModal('itemHistoryModal');
+                    lucide.createIcons();
+                }
+
                 // --- FUNÇÃO DE SIMULAÇÃO DE ATRASO ---
                 function simulateOverdue() {
                     // Encontra a primeira ferramenta de item único que esteja disponível
@@ -1743,7 +2223,8 @@
 
                     // Cria um registro de histórico com data de retirada de 25 horas atrás
                     const now = new Date();
-                    const twentyFiveHoursAgo = new Date(now.getTime() - (25 * 60 * 60 * 1000));
+                    const hoursBack = (appSettings.overdueHours || 24) + 1;
+                    const twentyFiveHoursAgo = new Date(now.getTime() - (hoursBack * 60 * 60 * 1000));
 
                     const historyEntry = {
                         historyId: Date.now(),
@@ -1761,6 +2242,32 @@
                     // Salva os dados e atualiza a interface, mostrando o alerta
                     save();
                     openOverdueModal();
+                }
+
+                let pendingPinAction = null;
+
+                function requestPin(callback) {
+                    pendingPinAction = callback;
+                    const input = document.getElementById('pinInputModal');
+                    input.value = '';
+                    input.placeholder = "****";
+                    input.classList.remove('border-rose-500');
+                    openModal('pinModal');
+                    setTimeout(() => input.focus(), 100);
+                }
+
+                function validatePin() {
+                    const input = document.getElementById('pinInputModal');
+                    if (input.value === appSettings.adminPin) {
+                        closeModal('pinModal');
+                        if (pendingPinAction) pendingPinAction();
+                        pendingPinAction = null;
+                    } else {
+                        input.classList.add('border-rose-500');
+                        input.value = '';
+                        input.placeholder = "PIN Incorreto";
+                        input.focus();
+                    }
                 }
 
                 // --- FUNÇÃO DE PARAR SIMULAÇÃO DE ATRASO ---
@@ -1791,6 +2298,7 @@
                 window.onload = () => { 
                     render(); 
                     renderOverdueAlert();
+                    applyTheme(); // Aplica o tema salvo
                     loadFromCloud(); // Tenta baixar os dados mais recentes da nuvem
                     lucide.createIcons(); 
                     setInterval(loadFromCloud, 3000); // Sincroniza com a nuvem a cada 5 segundos (tempo real)
@@ -1832,13 +2340,145 @@
                     setupEnter('toolValueInput', saveToolAction);
                     setupEnter('toolQtyInput', saveToolAction);
 
+                    // PIN Modal
+                    setupEnter('pinInputModal', validatePin);
+
                     // Saída de Materiais (Quantidade)
                     setupEnter('materialQtyInput', processQtyStep);
 
                     // Manutenção (Orçamento)
                     setupEnter('quoteProviderInput', () => saveQuote(itemToManageMaintenanceId));
                     setupEnter('quoteCostInput', () => saveQuote(itemToManageMaintenanceId));
+
+                    // Sons de digitação
+                    document.addEventListener('keydown', (e) => {
+                        if (e.target.matches('input, textarea')) {
+                            if (e.key === 'Backspace' || e.key === 'Delete') {
+                                playSound('delete');
+                            } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                                playSound('type');
+                            }
+                        }
+                    });
                 };
+
+                // --- FUNÇÕES DE CONFIGURAÇÃO ---
+                function loadSettingsUI() {
+                    // Carrega valores nos inputs
+                    const hours = appSettings.overdueHours || 24;
+                    document.getElementById('settingOverdueHours').value = hours;
+                    
+                    const lowStock = appSettings.lowStockLimit || 5;
+                    document.getElementById('settingLowStock').value = lowStock;
+                    
+                    // PIN UI Logic
+                    const pinInput = document.getElementById('settingAdminPin');
+                    const btnSave = document.getElementById('btnSavePin');
+                    const btnDelete = document.getElementById('btnDeletePin');
+                    
+                    if (appSettings.adminPin) {
+                        pinInput.value = '';
+                        pinInput.placeholder = "PIN Ativo (Protegido)";
+                        pinInput.disabled = true;
+                        pinInput.classList.add('bg-slate-50');
+                        btnSave.classList.add('hidden');
+                        btnDelete.classList.remove('hidden');
+                    } else {
+                        pinInput.value = '';
+                        pinInput.placeholder = "Digite para definir...";
+                        pinInput.disabled = false;
+                        pinInput.classList.remove('bg-slate-50');
+                        btnSave.classList.remove('hidden');
+                        btnDelete.classList.add('hidden');
+                    }
+
+                    // Checkboxes
+                    document.getElementById('settingDarkMode').checked = appSettings.darkMode || false;
+                    document.getElementById('settingAlertLowStock').checked = appSettings.alertLowStock !== false;
+                    document.getElementById('settingAlertOverdue').checked = appSettings.alertOverdue !== false;
+                    document.getElementById('settingSystemSounds').checked = appSettings.systemSounds !== false;
+                }
+
+                function saveSettings() {
+                    appSettings.overdueHours = parseInt(document.getElementById('settingOverdueHours').value) || 24;
+                    appSettings.lowStockLimit = parseInt(document.getElementById('settingLowStock').value) || 5;
+                    appSettings.darkMode = document.getElementById('settingDarkMode').checked;
+                    appSettings.alertLowStock = document.getElementById('settingAlertLowStock').checked;
+                    appSettings.alertOverdue = document.getElementById('settingAlertOverdue').checked;
+                    appSettings.systemSounds = document.getElementById('settingSystemSounds').checked;
+                    save();
+                }
+
+                function setAdminPin() {
+                    const pinInput = document.getElementById('settingAdminPin');
+                    const val = pinInput.value.trim();
+                    if (!val) return;
+                    appSettings.adminPin = val;
+                    save();
+                    loadSettingsUI();
+                    document.getElementById('alertModalTitle').innerText = "Sucesso";
+                    document.getElementById('alertModalText').innerText = "PIN de segurança definido com sucesso!";
+                    openModal('alertModal');
+                    playSound('success');
+                }
+
+                function deleteAdminPin() {
+                    const modal = document.getElementById('deleteModal');
+                    modal.querySelector('h3').innerText = 'Remover PIN?';
+                    modal.querySelector('p').innerText = 'Tem certeza que deseja remover a proteção por PIN?';
+                    
+                    document.getElementById('confirmDeleteBtn').onclick = () => {
+                        appSettings.adminPin = null;
+                        save();
+                        loadSettingsUI();
+                        closeModal('deleteModal');
+                        document.getElementById('alertModalTitle').innerText = "Sucesso";
+                        document.getElementById('alertModalText').innerText = "PIN removido com sucesso.";
+                        openModal('alertModal');
+                        playSound('success');
+                    };
+                    openModal('deleteModal');
+                }
+
+                function toggleDarkMode() {
+                    appSettings.darkMode = !appSettings.darkMode;
+                    applyTheme();
+                    saveSettings();
+                }
+
+                function applyTheme() {
+                    const html = document.documentElement;
+                    if (appSettings.darkMode) {
+                        html.classList.add('dark');
+                    } else {
+                        html.classList.remove('dark');
+                    }
+                }
+
+                function confirmResetSystem() {
+                    const executeReset = () => {
+                        const modal = document.getElementById('deleteModal');
+                        modal.querySelector('h3').innerText = 'Resetar Sistema?';
+                        modal.querySelector('p').innerText = 'ATENÇÃO: Esta ação apagará PERMANENTEMENTE todos os dados (Ferramentas, Equipe, Histórico). Recomenda-se exportar um backup antes. Deseja continuar?';
+                        
+                        document.getElementById('confirmDeleteBtn').onclick = async () => {
+                            // Limpa dados em memória
+                            tools = [];
+                            team = [];
+                            history = [];
+                            // Salva estado vazio
+                            await save(true);
+                            location.reload();
+                        };
+                        openModal('deleteModal');
+                    };
+
+                    if (appSettings.adminPin) {
+                        requestPin(executeReset);
+                    } else {
+                        executeReset();
+                    }
+                }
 
                 // --- FUNÇÕES DE BACKUP ---
                 function exportData() {
@@ -1865,10 +2505,12 @@
                             document.getElementById('alertModalTitle').innerText = "Sucesso";
                             document.getElementById('alertModalText').innerText = "Dados importados com sucesso!";
                             openModal('alertModal');
+                            playSound('success');
                         } catch(e) { 
                             document.getElementById('alertModalTitle').innerText = "Erro";
                             document.getElementById('alertModalText').innerText = "Erro ao importar arquivo. Verifique se o arquivo é um backup válido.";
                             openModal('alertModal');
+                            playSound('error');
                         } finally {
                             // Reseta o título do modal de alerta para o padrão depois de usar
                             setTimeout(() => {
@@ -1916,6 +2558,7 @@
                         closeModal('returnModal');
                         document.getElementById(`tool-card-${id}`)?.remove();
                         save();
+                        playSound('success');
                     } else if (condition === 'quebrado') {
                         // Para ferramentas normais e consumíveis, inicia o fluxo de manutenção
                         maintenanceData.toolId = itemToReturnId;
@@ -1966,6 +2609,7 @@
                         currentTool.maintenanceInfo.status = 'Finalizado';
                         closeModal('manageMaintenanceModal');
                         setTimeout(save, 50);
+                        playSound('success');
                     };
 
                     if (file) {
@@ -2013,6 +2657,7 @@
                             document.getElementById('alertModalTitle').innerText = "Arquivo Muito Grande";
                             document.getElementById('alertModalText').innerText = "Para arquivos PDF, o limite é 1MB. Para imagens, o sistema tentará comprimir automaticamente.";
                             openModal('alertModal');
+                            playSound('error');
                             isSaving = false; // Libera sincronização em caso de erro
                             return;
                         }
@@ -2041,6 +2686,7 @@
                         t.maintenanceInfo = null;
                         document.getElementById(`tool-card-${id}`)?.remove();
                         save();
+                        playSound('success');
                     }
                 }
 
@@ -2144,6 +2790,7 @@
                     if (t && !note) { // Validação para nota de manutenção
                         document.getElementById('alertModalText').innerText = 'Por favor, descreva o problema para registrar a manutenção.';
                         openModal('alertModal');
+                        playSound('error');
                         return;
                     }
                     
@@ -2156,6 +2803,7 @@
                         if (qtyToMaintenance > t.qty) {
                              document.getElementById('alertModalText').innerText = 'Quantidade inválida.';
                              openModal('alertModal');
+                             playSound('error');
                              return;
                         }
 
@@ -2253,6 +2901,7 @@
 
                     closeModal('maintenanceModal');
                     setTimeout(save, 50);
+                    playSound('success');
                 }
 
                 // --- FUNÇÕES DE SAÍDA DE MATERIAL ---
@@ -2321,6 +2970,7 @@
                     if (!qty || qty <= 0) { // Validação de quantidade
                         document.getElementById('alertModalText').innerText = "Por favor, insira uma quantidade válida.";
                         openModal('alertModal');
+                        playSound('error');
                         return;
                     }
 
@@ -2328,11 +2978,13 @@
                     if (isConsumable && qty > tool.qty) { // Validação de estoque
                         document.getElementById('alertModalText').innerText = `Quantidade indisponível. Máximo em estoque: ${tool.qty}`;
                         openModal('alertModal');
+                        playSound('error');
                         return;
                     }
                     if (!isConsumable && qty > 1) { // Validação para item único
                         document.getElementById('alertModalText').innerText = "Só é possível emprestar uma unidade desta ferramenta por vez.";
                         openModal('alertModal');
+                        playSound('error');
                         return;
                     }
 
@@ -2429,6 +3081,55 @@
                     }
                     closeModal('materialModal');
                     save();
+                    playSound('success');
+                }
+
+                // --- FUNÇÕES DE ENTRADA (DEVOLUÇÃO) ---
+                function openCheckinModal(isSearchUpdate = false) {
+                     if (!isSearchUpdate) {
+                        document.getElementById('checkinSearchInput').value = "";
+                        openModal('checkinModal');
+                    }
+                    
+                    const list = document.getElementById('toolGridCheckin');
+                    const searchInput = document.getElementById('checkinSearchInput');
+                    const searchTerm = searchInput.value.toLowerCase();
+
+                    const borrowedItems = tools.filter(t => 
+                        t.status === 'em uso' &&
+                        (!searchTerm || t.name.toLowerCase().includes(searchTerm) || (t.code && t.code.toLowerCase().includes(searchTerm)) || (t.user && t.user.toLowerCase().includes(searchTerm)))
+                    );
+
+                    list.innerHTML = borrowedItems.map(t => `
+                        <div onclick="requestReturn(${t.id}); closeModal('checkinModal');"
+                            class="bg-white rounded-2xl p-3 shadow-lg border border-slate-100 cursor-pointer hover:border-blue-500 hover:shadow-xl transition-all flex flex-col text-center group">
+                            <div class="relative w-full aspect-square bg-white rounded-xl mb-3 flex items-center justify-center overflow-hidden border border-slate-100">
+                                ${t.img ? `<img src="${t.img}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">` : `<i data-lucide="wrench" class="text-slate-200" size="40"></i>`}
+                            </div>
+                            <div class="flex-1 flex flex-col justify-between">
+                                <h3 class="font-black text-slate-700 uppercase text-[10px] leading-tight h-8 flex items-center justify-center px-1" title="${t.name}">${t.name}</h3>
+                                <div class="mt-2 pt-2 border-t border-slate-100">
+                                    <p class="text-[9px] font-bold text-slate-400 uppercase">Com: <span class="text-orange-600">${t.user}</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    if(borrowedItems.length === 0) {
+                        list.innerHTML = `<p class="text-center text-xs text-slate-400 col-span-full py-10">${searchTerm ? 'Nenhum item encontrado.' : 'Nenhum item emprestado no momento.'}</p>`;
+                    }
+                    lucide.createIcons();
+                }
+
+                function focusCheckinBarcode() {
+                    document.getElementById('checkinBarcodeInput').focus();
+                }
+
+                function handleCheckinBarcodeScan(code) {
+                    if (!code) return;
+                    document.getElementById('checkinSearchInput').value = code;
+                    openCheckinModal(true);
+                    document.getElementById('checkinBarcodeInput').value = "";
                 }
 
                 // --- FUNÇÕES DE CÓDIGO DE BARRAS E QR CODE ---
@@ -2454,7 +3155,6 @@
                         (decodedText, decodedResult) => {
                             handleBarcodeScan(decodedText);
                             stopQrScanner();
-                            closeModal('materialModal');
                         },
                         (errorMessage) => { /* ignore */ }
                     ).catch(err => console.error("QR Scanner Error:", err));
@@ -2470,6 +3170,157 @@
                     }
                 }
 
+                function generateQRCodesPDF() {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    let x = 10;
+                    let y = 10;
+                    const size = 30; 
+                    const margin = 15;
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    
+                    tools.forEach((tool, index) => {
+                        if (!tool.code) return;
+
+                        const qr = new QRious({
+                            value: tool.code,
+                            size: 200
+                        });
+                        const imgData = qr.toDataURL();
+
+                        if (x + size > pageWidth - margin) {
+                            x = 10;
+                            y += size + 20;
+                        }
+                        
+                        if (y + size + 20 > doc.internal.pageSize.getHeight() - margin) {
+                            doc.addPage();
+                            x = 10;
+                            y = 10;
+                        }
+
+                        doc.addImage(imgData, 'JPEG', x, y, size, size);
+                        doc.setFontSize(8);
+                        
+                        const splitTitle = doc.splitTextToSize(tool.name.toUpperCase(), size + 5);
+                        doc.text(splitTitle, x + size / 2, y + size + 5, { align: 'center' });
+                        doc.setFontSize(7);
+                        doc.text(tool.code, x + size / 2, y + size + 12, { align: 'center' });
+
+                        x += size + margin;
+                    });
+
+                    doc.save("etiquetas_ferramentas.pdf");
+                }
+
+                function generateLiabilityForm() {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    
+                    const borrowedTools = tools.filter(t => t.status === 'em uso');
+                    
+                    if (borrowedTools.length === 0) {
+                        alert("Não há ferramentas emprestadas no momento para gerar termos.");
+                        return;
+                    }
+
+                    // Agrupar por usuário
+                    const toolsByUser = borrowedTools.reduce((acc, tool) => {
+                        const user = tool.user || 'Desconhecido';
+                        if (!acc[user]) acc[user] = [];
+                        acc[user].push(tool);
+                        return acc;
+                    }, {});
+
+                    let isFirstPage = true;
+
+                    Object.keys(toolsByUser).forEach((user) => {
+                        if (!isFirstPage) doc.addPage();
+                        isFirstPage = false;
+
+                        doc.setFontSize(16);
+                        doc.text("Termo de Responsabilidade", 105, 20, { align: "center" });
+                        
+                        doc.setFontSize(12);
+                        doc.text(`Eu, ${user}, declaro que recebi os itens abaixo relacionados em perfeito estado de conservação e funcionamento, assumindo a responsabilidade por sua guarda e uso adequado.`, 14, 35, { maxWidth: 180 });
+
+                        const userTools = toolsByUser[user].map(t => [t.code || '-', t.name, t.brand || '-']);
+                        
+                        doc.autoTable({
+                            head: [['Cód.', 'Ferramenta', 'Marca']],
+                            body: userTools,
+                            startY: 50,
+                            theme: 'grid',
+                            headStyles: { fillColor: [51, 65, 85] }
+                        });
+
+                        const finalY = doc.lastAutoTable.finalY + 40;
+                        
+                        doc.line(60, finalY, 150, finalY);
+                        doc.setFontSize(10);
+                        doc.text("Assinatura do Colaborador", 105, finalY + 5, { align: "center" });
+                        doc.text(`Data: ${new Date().toLocaleDateString()}`, 105, finalY + 12, { align: "center" });
+                    });
+
+                    doc.save("termo_responsabilidade.pdf");
+                }
+
+                function generateChecklistPDF() {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+
+                    doc.setFontSize(18);
+                    doc.text("Checklist de Conferência de Estoque", 14, 20);
+                    doc.setFontSize(10);
+                    doc.text(`Data: ${new Date().toLocaleDateString()} - Hora: ${new Date().toLocaleTimeString()}`, 14, 28);
+
+                    const sortedTools = [...tools].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+                    const tableData = sortedTools.map(t => [
+                        t.code || '',
+                        t.name,
+                        t.brand || '',
+                        t.status === 'disponivel' ? 'Disp.' : (t.status === 'em uso' ? `Com ${t.user}` : t.status),
+                        '[   ]' 
+                    ]);
+
+                    doc.autoTable({
+                        head: [['Cód.', 'Item', 'Marca', 'Status Sist.', 'Conferido']],
+                        body: tableData,
+                        startY: 35,
+                        theme: 'grid',
+                        styles: { fontSize: 9 },
+                        columnStyles: { 4: { halign: 'center', fontStyle: 'bold' } },
+                        headStyles: { fillColor: [51, 65, 85] }
+                    });
+
+                    doc.save("checklist_estoque.pdf");
+                }
+
+                function startCheckinQrScanner() {
+                     document.getElementById('checkin-step-list').style.display = 'none';
+                     document.getElementById('checkinQrScannerContainer').style.display = 'block';
+                     
+                     qrScanner = new Html5Qrcode("checkin-qr-reader");
+                     qrScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 200, height: 200 } },
+                        (decodedText) => {
+                            handleCheckinBarcodeScan(decodedText);
+                            stopCheckinQrScanner();
+                        },
+                        () => {}
+                     ).catch(err => console.error("QR Scanner Error:", err));
+                }
+
+                function stopCheckinQrScanner() {
+                    if (qrScanner) {
+                        qrScanner.stop().then(() => {
+                             document.getElementById('checkin-step-list').style.display = 'block';
+                             document.getElementById('checkinQrScannerContainer').style.display = 'none';
+                             qrScanner = null;
+                        }).catch(err => console.error("QR Stop Error:", err));
+                    }
+                }
+
                 // --- FUNÇÕES DE ALERTA DE ATRASO ---
                 function checkOverdueTools() {
                     const now = new Date();
@@ -2479,7 +3330,7 @@
                         }
                         const checkoutDate = new Date(h.checkoutDate);
                         const diffHours = (now - checkoutDate) / (1000 * 60 * 60);
-                        return diffHours > 24;
+                        return diffHours > (appSettings.overdueHours || 24);
                     });
                     return overdueTools;
                 }
@@ -2506,6 +3357,12 @@
                     const mainOverdueBadge = document.getElementById('mainOverdueBadge');
                     if (mainOverdueBadge) {
                         mainOverdueBadge.classList.toggle('hidden', overdueTools.length === 0);
+                    }
+
+                    // Bolinha de alerta no botão da Central de Operações
+                    const actionsOverdueBadge = document.getElementById('actionsOverdueBadge');
+                    if (actionsOverdueBadge) {
+                        actionsOverdueBadge.classList.toggle('hidden', overdueTools.length === 0);
                     }
                 }
 
@@ -2690,7 +3547,7 @@
                             body: estoqueBody,
                             startY: 22,
                             theme: 'grid',
-                            headStyles: { fillColor: [16, 124, 65] }
+                            headStyles: { fillColor: [11, 17, 32] }
                         });
 
                         // --- 2. GUIA FOLLOW-UP ---
@@ -2716,7 +3573,7 @@
                             body: maintBody,
                             startY: 22,
                             theme: 'grid',
-                            headStyles: { fillColor: [16, 124, 65] }
+                            headStyles: { fillColor: [11, 17, 32] }
                         });
 
                         // --- 3. GUIA HISTÓRICO ---
@@ -2737,7 +3594,7 @@
                             body: historyBody,
                             startY: 22,
                             theme: 'grid',
-                            headStyles: { fillColor: [16, 124, 65] }
+                            headStyles: { fillColor: [11, 17, 32] }
                         });
 
                         doc.save("Relatorio_Completo_Ferramentaria.pdf");
@@ -2745,6 +3602,44 @@
                         console.error("Erro ao gerar PDF:", e);
                         alert("Ocorreu um erro ao gerar o PDF. Verifique o console para mais detalhes.");
                     }
+                }
+
+                // --- FUNÇÕES DE AUDITORIA ---
+                function openAuditModal() {
+                    auditSession.missing = tools.filter(t => t.status === 'disponivel' && (!t.hasOwnProperty('qty') || t.qty === 0));
+                    auditSession.found = [];
+                    updateAuditUI();
+                    document.getElementById('auditInput').value = '';
+                    openModal('auditModal');
+                    document.getElementById('auditInput').focus();
+                }
+
+                function handleAuditScan(code) {
+                    if (!code) return;
+                    const index = auditSession.missing.findIndex(t => t.code === code);
+                    if (index > -1) {
+                        const tool = auditSession.missing.splice(index, 1)[0];
+                        auditSession.found.unshift(tool);
+                        updateAuditUI();
+                        document.getElementById('auditInput').value = '';
+                    }
+                }
+
+                function updateAuditUI() {
+                    document.getElementById('auditMissingCount').innerText = auditSession.missing.length;
+                    document.getElementById('auditFoundCount').innerText = auditSession.found.length;
+                    const renderList = (list) => list.map(t => `<div class="bg-white p-2 rounded border border-slate-200 text-xs flex justify-between"><span>${t.name}</span><span class="font-bold text-slate-400">${t.code}</span></div>`).join('');
+                    document.getElementById('auditMissingList').innerHTML = renderList(auditSession.missing);
+                    document.getElementById('auditFoundList').innerHTML = renderList(auditSession.found);
+                }
+
+                function finishAudit() {
+                    if (auditSession.missing.length > 0) {
+                        alert(`Auditoria finalizada. ${auditSession.missing.length} itens não foram encontrados.`);
+                    } else {
+                        alert("Auditoria perfeita! Todos os itens encontrados.");
+                    }
+                    closeModal('auditModal');
                 }
             </script>
             <script>
@@ -2957,6 +3852,7 @@
 
                     closeModal('manageMaintenanceModal');
                     setTimeout(save, 50);
+                    playSound('success');
                 }
 
                 function approveRepair(id) {
@@ -2967,6 +3863,7 @@
                     tool.maintenanceInfo.approvalDate = new Date().toISOString();
                     closeModal('manageMaintenanceModal');
                     setTimeout(save, 50);
+                    playSound('success');
                 }
 
                 function sendBackToQuote(id) {
@@ -2980,6 +3877,7 @@
                     tool.maintenanceInfo.invoiceFile = null;
                     closeModal('manageMaintenanceModal');
                     setTimeout(save, 50);
+                    playSound('success');
                 }
 
                 function rejectRepair(id) {
@@ -2993,6 +3891,7 @@
                     tool.maintenanceInfo.invoiceFile = null;
                     closeModal('manageMaintenanceModal');
                     setTimeout(save, 50);
+                    playSound('success');
                 }
 
                 function requestDeleteMaintenance(id, event) {
@@ -3024,6 +3923,7 @@
                             save();
                             openManageMaintenanceModal(id);
                         }, 50);
+                        playSound('success');
                     };
                     openModal('deleteModal');
                 }
@@ -3038,6 +3938,7 @@
                         history = history.filter(h => !(h.toolId === id && h.type === 'manutencao' && h.returnDate === null));
                         closeModal('deleteModal');
                         setTimeout(save, 50);
+                        playSound('success');
                     }
                 }
 
