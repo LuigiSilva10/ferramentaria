@@ -9,6 +9,7 @@
             <script src="https://cdn.tailwindcss.com"></script>
             <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
             <script src="https://unpkg.com/lucide@latest"></script>
+            <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
             <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -117,13 +118,13 @@
                     <button id="btn-main" onclick="showSection('main')" class="nav-btn active"><i data-lucide="layout-dashboard"></i> <span class="sidebar-text">Painel Principal</span></button>
                     <button id="btn-actions" onclick="showSection('actions')" class="nav-btn relative">
                         <i data-lucide="zap"></i> 
-                        <span class="sidebar-text">Operações</span>
+                        <span class="sidebar-text">Ações</span>
                         <span id="actionsOverdueBadge" class="hidden absolute top-3 right-3 w-2 h-2 bg-rose-500 rounded-full"></span>
                     </button>
                     <button id="btn-catalog" onclick="showSection('catalog')" class="nav-btn"><i data-lucide="archive"></i> <span class="sidebar-text">Estoque</span></button>
                     <button id="btn-team" onclick="showSection('team')" class="nav-btn"><i data-lucide="users"></i> <span class="sidebar-text">Equipe</span></button>
                     <button id="btn-maintenance" onclick="showSection('maintenance')" class="nav-btn"><i data-lucide="wrench"></i> <span class="sidebar-text">FollowUp</span></button>
-                    <button id="btn-logs" onclick="showSection('logs')" class="nav-btn"><i data-lucide="history"></i> <span class="sidebar-text">Histórico</span></button>
+                    <button id="btn-logs" onclick="showSection('logs')" class="nav-btn"><i data-lucide="history"></i> <span class="sidebar-text">Logs</span></button>
                     <button id="btn-database" onclick="showSection('database')" class="nav-btn"><i data-lucide="database"></i> <span class="sidebar-text">Backup</span></button>
                     <button id="btn-settings" onclick="showSection('settings')" class="nav-btn"><i data-lucide="settings"></i> <span class="sidebar-text">Configurações</span></button>
                             <button id="btn-tests" onclick="showSection('tests')" class="nav-btn"><i data-lucide="beaker"></i> <span class="sidebar-text">Testes</span></button>
@@ -137,7 +138,7 @@
                             <h2 class="text-2xl font-black text-slate-900 uppercase tracking-tighter">Inventário Operacional</h2>
                             <p id="currentDateDisplay" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest"></p>
                         </div>
-                        <div class="flex flex-row gap-3 flex-wrap">
+                        <div id="mainActionButtons" class="flex flex-row gap-3 flex-wrap">
                             <button onclick="openAddModal('disponivel')" class="bg-emerald-600 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all border-none cursor-pointer"><i data-lucide="plus" size="16"></i> Novo Item</button>
                             <button onclick="openMaterialModal()" id="mainCheckoutBtn" class="relative bg-indigo-600 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all border-none cursor-pointer">
                                 <i data-lucide="package-minus" size="16"></i>
@@ -160,7 +161,7 @@
                             <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100">
                                 <table class="w-full text-left text-sm">
                                     <thead class="bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
-                                        <tr><th class="px-8 py-4">Equipamento</th><th class="px-8 py-4">Status / Responsável</th><th class="px-8 py-4 text-right">Ações</th></tr>
+                                        <tr><th class="px-8 py-4">Equipamento</th><th class="px-8 py-4">Status / Responsável</th><th id="mainTableActionsHeader" class="px-8 py-4 text-right">Ações</th></tr>
                                     </thead>
                                     <tbody id="toolList" class="divide-y divide-slate-50"></tbody>
                                 </table>
@@ -180,7 +181,7 @@
                                 <i data-lucide="zap" size="28"></i>
                             </div>
                             <div>
-                                <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-none">Central de Operações</h2>
+                                <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-none">Ações Rápidas</h2>
                                 <p class="text-slate-400 text-sm font-medium mt-1">Acesso rápido às principais ações</p>
                             </div>
                         </div>
@@ -201,7 +202,7 @@
                             </div>
                         </div>
 
-                        <div onclick="openMaintenanceModal()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-red-500 transition-all group relative overflow-hidden">
+                        <div onclick="openCheckinModal()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-emerald-500 transition-all group relative overflow-hidden">
                             <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
                             <div class="relative z-10 flex flex-col items-center text-center gap-6">
                                 <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
@@ -212,6 +213,20 @@
                                     <p class="text-slate-500 font-medium">Registrar retorno de ferramentas e equipamentos.</p>
                                 </div>
                                 <span class="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-emerald-200 group-hover:shadow-emerald-300 transition-all mt-2">Iniciar Devolução</span>
+                            </div>
+                        </div>
+
+                        <div onclick="openMaintenanceModal()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-red-500 transition-all group relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-64 h-64 bg-red-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10 flex flex-col items-center text-center gap-6">
+                                <div class="w-24 h-24 bg-red-100 text-red-600 rounded-full flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                    <i data-lucide="wrench" size="48"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-2">Manutenção</h3>
+                                    <p class="text-slate-500 font-medium">Reportar danos ou solicitar manutenção de equipamentos.</p>
+                                </div>
+                                <span class="px-6 py-3 bg-red-600 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-red-200 group-hover:shadow-red-300 transition-all mt-2">Reportar Manutenção</span>
                             </div>
                         </div>
 
@@ -293,21 +308,28 @@
 
             <main id="section-team" class="main-content p-4 md:p-8">
                 <div class="max-w-[1400px] mx-auto">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                        <div>
-                            <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase">Gestão de Equipe</h2>
-                        </div>
-                        <div class="flex-1 flex justify-end gap-2 flex-wrap">
-                            <input type="text" id="workerNameInput" placeholder="NOME DO COLABORADOR" class="w-full md:w-48 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
-                            <input type="text" id="workerCompanyInput" placeholder="EMPRESA / DEPARTAMENTO" class="w-full md:w-48 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
-                            <button onclick="addWorker()" class="bg-blue-600 text-white px-5 rounded-xl border-none cursor-pointer hover:bg-blue-700 transition-all shadow-md"><i data-lucide="plus"></i></button>
+                    <!-- Header Equipe -->
+                    <div class="bg-[#0B1120] rounded-[2.5rem] p-8 mb-10 shadow-2xl relative overflow-hidden border border-slate-800">
+                        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none"></div>
+                        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-600/10 rounded-full blur-[80px] -ml-20 -mb-20 pointer-events-none"></div>
+                        <div class="relative z-10 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8">
+                            <div>
+                                <div class="flex items-center gap-4 mb-2">
+                                    <div class="p-3 bg-blue-600/20 rounded-2xl border border-blue-500/30 text-blue-400"><i data-lucide="users" size="28"></i></div>
+                                    <div>
+                                        <h2 class="text-3xl font-black text-white uppercase tracking-tighter leading-none">Gestão de Equipe</h2>
+                                        <p class="text-slate-400 text-sm font-medium mt-1">Colaboradores e departamentos</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="relative w-full xl:w-96">
+                                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
+                                <input type="text" id="teamSearchInput" onkeyup="handleSearchInput(this, renderTeam)" placeholder="PESQUISAR POR NOME OU EMPRESA..." class="w-full bg-slate-800/50 border border-slate-700 text-white rounded-xl pl-12 pr-10 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all placeholder-slate-500">
+                                <button onclick="clearSearch('teamSearchInput', renderTeam)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 hidden z-10"><i data-lucide="x-circle" size="16"></i></button>
+                            </div>
                         </div>
                     </div>
-                    <div class="relative mb-8 w-full md:w-80">
-                        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
-                        <input type="text" id="teamSearchInput" onkeyup="handleSearchInput(this, renderTeam)" placeholder="PESQUISAR POR NOME OU EMPRESA..." class="w-full bg-white border-2 border-slate-100 rounded-xl pl-12 pr-10 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
-                        <button onclick="clearSearch('teamSearchInput', renderTeam)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 hidden z-10"><i data-lucide="x-circle" size="16"></i></button>
-                    </div>
+                    <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-100 mb-8"><h3 class="font-black text-slate-800 uppercase text-lg tracking-tight mb-6">Adicionar Novo Colaborador</h3><div class="flex flex-col md:flex-row gap-3 items-end"><div class="flex-1 w-full space-y-1.5"><label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Nome Completo</label><input type="text" id="workerNameInput" placeholder="NOME DO COLABORADOR" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all h-[48px]"></div><div class="flex-1 w-full space-y-1.5"><label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Empresa / Departamento</label><input type="text" id="workerCompanyInput" placeholder="EMPRESA OU SETOR" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all h-[48px]"></div><button onclick="addWorker()" class="w-full md:w-auto h-[48px] bg-blue-600 text-white px-6 rounded-xl border-none cursor-pointer hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-bold uppercase text-xs tracking-widest flex items-center justify-center gap-2"><i data-lucide="plus" size="16"></i> <span>Adicionar</span></button></div></div>
                     <div id="teamGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
                 </div>
             </main>
@@ -448,7 +470,7 @@
                             <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="qr-code"></i></div>
                             <h3 class="font-black uppercase text-slate-800">Gerar Etiquetas QR</h3>
                         </div>
-                        <div onclick="document.getElementById('importInput').click()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-emerald-500 text-center">
+                        <div id="btn-backup-import" onclick="document.getElementById('importInput').click()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-emerald-500 text-center">
                             <input type="file" id="importInput" class="hidden" accept=".json" onchange="importData(this)">
                             <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="upload-cloud"></i></div>
                             <h3 class="font-black uppercase text-slate-800">Importar Dados</h3>
@@ -461,7 +483,7 @@
                             <div class="w-16 h-16 bg-pink-50 text-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="list-checks"></i></div>
                             <h3 class="font-black uppercase text-slate-800">Checklist Manual</h3>
                         </div>
-                        <div onclick="confirmResetSystem()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-red-500 text-center">
+                        <div id="btn-backup-reset" onclick="confirmResetSystem()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-red-500 text-center">
                             <div class="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="trash-2"></i></div>
                             <h3 class="font-black uppercase text-slate-800">Resetar Sistema</h3>
                         </div>
@@ -772,11 +794,26 @@
             -->
 
             <script>
+                // --- CONFIGURAÇÃO DE NUVEM (SUPABASE) ---
+                // Substitua os valores abaixo pelos do seu projeto Supabase
+                const SUPABASE_URL = 'SUA_URL_SUPABASE_AQUI'; 
+                const SUPABASE_KEY = 'SUA_CHAVE_ANON_SUPABASE_AQUI';
+                // ------------------------------------------
+
                 let tools = JSON.parse(localStorage.getItem('ldc_pro_db')) || [];
                 let team = JSON.parse(localStorage.getItem('ldc_team_db')) || [{id: 1, name: 'ALMOXARIFADO', company: 'LDC'}];
                 let history = JSON.parse(localStorage.getItem('ldc_history_db')) || [];
-                let appSettings = JSON.parse(localStorage.getItem('ldc_settings_db')) || { overdueHours: 24 };
+                let appSettings = JSON.parse(localStorage.getItem('ldc_settings_db')) || { overdueHours: 24, lowStockLimit: 5, systemSounds: true, darkMode: false, alertLowStock: true, alertOverdue: true, adminPin: null };
                 let auditSession = { missing: [], found: [] };
+
+                // Variáveis de controle de sincronização
+                let isSaving = false;
+                let lastLocalUpdate = 0;
+                let lastCloudSaveTime = 0;
+                let hasUnsavedChanges = false;
+
+                // Inicializa o cliente Supabase
+                const supabase = (typeof createClient !== 'undefined' && SUPABASE_URL !== 'SUA_URL_SUPABASE_AQUI') ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
                 
                 let currentImageBase64 = "";
                 let pendingStatus = "disponivel";
@@ -802,17 +839,77 @@
                     return s.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
                 };
 
-                function save() { 
-                    localStorage.setItem('ldc_pro_db', JSON.stringify(tools)); 
-                    localStorage.setItem('ldc_team_db', JSON.stringify(team));
-                    localStorage.setItem('ldc_history_db', JSON.stringify(history));
-                    localStorage.setItem('ldc_settings_db', JSON.stringify(appSettings));
+                function renderAll() {
                     render(); 
                     renderCatalog(); 
                     renderHistory(); 
                     renderMaintenance(); 
                     renderOverdueAlert();
                     renderTeam(); 
+                }
+
+                // Função para carregar dados da nuvem
+                async function loadFromCloud() {
+                    if (!supabase) return;
+                    if (isSaving || hasUnsavedChanges) return;
+                    if (document.querySelectorAll('.fixed.inset-0:not(.hidden)').length > 0) return;
+                    if (Date.now() - lastCloudSaveTime < 5000) return;
+
+                    const fetchStart = Date.now();
+
+                    try {
+                        const { data, error } = await supabaseClient.from('app_storage').select('*');
+                        if (error) throw error;
+
+                        if (lastLocalUpdate > fetchStart || isSaving) return;
+
+                        if (data && data.length > 0) {
+                            const cloudData = data.reduce((acc, { key, value }) => {
+                                acc[key] = value;
+                                return acc;
+                            }, {});
+
+                            let changed = false;
+                            if (cloudData.tools && JSON.stringify(cloudData.tools) !== JSON.stringify(tools)) {
+                                tools = cloudData.tools;
+                                changed = true;
+                            }
+                            if (cloudData.team && JSON.stringify(cloudData.team) !== JSON.stringify(team)) {
+                                team = cloudData.team;
+                                changed = true;
+                            }
+                            if (cloudData.history && JSON.stringify(cloudData.history) !== JSON.stringify(history)) {
+                                history = cloudData.history;
+                                changed = true;
+                            }
+
+                            if (changed) {
+                                await save(false); // Salva localmente e atualiza a tela
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Erro ao carregar da nuvem", e);
+                    }
+                }
+
+                async function save(syncToCloud = true) {
+                    if (isSaving && syncToCloud) return;
+                    isSaving = true;
+                    lastLocalUpdate = Date.now();
+                    if (syncToCloud) hasUnsavedChanges = true;
+
+                    localStorage.setItem('ldc_pro_db', JSON.stringify(tools)); 
+                    localStorage.setItem('ldc_team_db', JSON.stringify(team));
+                    localStorage.setItem('ldc_history_db', JSON.stringify(history));
+                    localStorage.setItem('ldc_settings_db', JSON.stringify(appSettings));
+
+                    if (syncToCloud && supabaseClient) {
+                        const { error } = await supabaseClient.from('app_storage').upsert([{ key: 'tools', value: tools }, { key: 'team', value: team }, { key: 'history', value: history }]);
+                        if (!error) { lastCloudSaveTime = Date.now(); hasUnsavedChanges = false; } 
+                        else { console.error("Erro ao salvar na nuvem:", error); }
+                    }
+                    renderAll();
+                    isSaving = false;
                 }
 
                 function handleSearchInput(input, renderCallback) {
@@ -873,18 +970,21 @@
                     }
                 }
 
-                function addWorker() {
+                async function addWorker() {
                     const nameInput = document.getElementById('workerNameInput');
                     const companyInput = document.getElementById('workerCompanyInput');
                     const name = nameInput.value.trim().toUpperCase();
-                    const company = companyInput.value.trim().toUpperCase() || 'N/A';
+                    const company = companyInput.value.trim().toUpperCase();
                     if(!name) return;
-                    team.push({ id: Date.now(), name, company });
-                    nameInput.value = ""; companyInput.value = "";
-                    save(); renderTeam();
+                    const dateAdded = new Date().toLocaleDateString('pt-BR');
+
+                    team.push({ id: Date.now(), name, company: company || 'N/A', info: company, type: 'LDC', dateAdded });
+                    nameInput.value = ""; companyInput.value = ""; 
+                    await save();
+                    playSound('success');
                 }
 
-                function removeWorker(id) {
+                function removeWorker(id) { // A função interna do onclick já é async
                     if (id === 1) { // Proteção para não remover o Almoxarifado
                         document.getElementById('alertModalTitle').innerText = "Ação Bloqueada";
                         document.getElementById('alertModalText').innerText = "Não é possível remover o Almoxarifado.";
@@ -903,10 +1003,10 @@
                         const modal = document.getElementById('deleteModal');
                         modal.querySelector('h3').innerText = `Remover ${worker.name}?`;
                         modal.querySelector('p').innerText = 'Você tem certeza que deseja remover este colaborador da equipe?';
-                        document.getElementById('confirmDeleteBtn').onclick = () => {
+                        document.getElementById('confirmDeleteBtn').onclick = async () => {
                         team = team.filter(w => w.id !== id);
-                            closeModal('deleteModal');
-                        save();
+                            closeModal('deleteModal'); 
+                            await save();
                         };
                         openModal('deleteModal');
                     }
@@ -916,21 +1016,30 @@
                     const grid = document.getElementById('teamGrid');
                     if (!grid) return;
                     const search = document.getElementById('teamSearchInput').value.toLowerCase();
-
-                    const filteredTeam = team.filter(w => w.name.toLowerCase().includes(search) || w.company.toLowerCase().includes(search));
+                    
+                    const filteredTeam = team.filter(w => w.name.toLowerCase().includes(search) || (w.info && w.info.toLowerCase().includes(search)) || (w.company && w.company.toLowerCase().includes(search)));
                     
                     if (filteredTeam.length === 0) {
                         grid.innerHTML = `<p class="text-center text-sm text-slate-400 col-span-full py-20">Nenhum colaborador encontrado.</p>`;
                         return;
                     }
 
-                    grid.innerHTML = filteredTeam.map(w => {
+                    grid.innerHTML = filteredTeam.map(w => {                        
+                        const workerType = w.type || (w.company === 'LDC' ? 'LDC' : 'TERCEIRO');
+                        let displayInfo = w.info || w.company || 'N/A';
+                        
+                        const typeLabel = workerType === 'LDC' ? 'LDC' : 'Terceiro';
+                        const typeColor = workerType === 'LDC' ? 'text-blue-500' : 'text-orange-500';
+                        const infoLabel = workerType === 'LDC' ? 'Matrícula' : 'Empresa';
+
                         const toolsInPossession = tools.filter(t => t.user === w.name).length;
                         const historyCount = history.filter(h => h.workerName === w.name).length;
                         return `
-                        <div class="bg-white rounded-2xl p-5 shadow-md border border-slate-100 flex flex-col relative group">
-                            <div class="absolute top-4 right-4">${w.id !== 1 ? `<button onclick="removeWorker(${w.id})" class="p-2 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Excluir Colaborador"><i data-lucide="trash-2" size="16"></i></button>` : ''}</div>
-                            <div class="flex items-center gap-4 mb-4"><div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-black">${w.name.charAt(0)}</div><div class="flex-1"><h3 class="font-black text-slate-800 uppercase truncate" title="${w.name}">${w.name}</h3><p class="text-xs font-bold text-slate-400 uppercase truncate" title="${w.company}">${w.company}</p></div></div>
+                        <div onclick="openWorkerDetails(${w.id})" class="bg-slate-50 rounded-2xl p-5 border border-slate-200 flex flex-col relative group hover:border-blue-400 transition-all cursor-pointer hover:shadow-lg hover:-translate-y-1">
+                            <div class="absolute top-2 right-2 flex flex-col items-end">
+                                <button onclick="removeWorker(${w.id}); event.stopPropagation();" class="p-2 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Excluir Colaborador"><i data-lucide="trash-2" size="16"></i></button>
+                            </div>
+                            <div class="flex items-center gap-4 mb-4"><div class="w-12 h-12 ${workerType === 'TERCEIRO' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'} rounded-full flex items-center justify-center text-lg font-black">${w.name.charAt(0)}</div><div class="flex-1 min-w-0"><h3 class="font-black text-slate-800 uppercase truncate text-sm" title="${w.name}">${w.name}</h3><div class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase flex-wrap"><span class="${typeColor}">${typeLabel}</span><span class="truncate" title="${infoLabel}: ${displayInfo}">• ${displayInfo}</span></div></div></div>
                             <div class="mt-auto pt-4 border-t border-slate-100 grid grid-cols-2 gap-4 text-center"><div><p class="text-[9px] font-black text-slate-400 uppercase">Em Posse</p><p class="text-2xl font-black ${toolsInPossession > 0 ? 'text-orange-500' : 'text-slate-600'}">${toolsInPossession}</p></div><div><p class="text-[9px] font-black text-slate-400 uppercase">Movimentações</p><p class="text-2xl font-black text-slate-600">${historyCount}</p></div></div>
                         </div>
                     `}).join('');
@@ -1007,7 +1116,7 @@
                     openModal('addModal'); 
                 }
 
-                function duplicateTool(id) {
+                async function duplicateTool(id) {
                     const t = tools.find(x => x.id === id);
                     if(!t) return;
                     openAddModal('disponivel');
@@ -1025,7 +1134,7 @@
                     }
                 }
 
-                function addTool() {
+                async function addTool() {
                     if (document.getElementById('addModal').classList.contains('hidden')) return;
                     const name = document.getElementById('toolNameInput').value;
                     if(!name) return;
@@ -1063,10 +1172,10 @@
                     }
                     tools.unshift(tool);
                     closeModal('addModal');
-                    save();
+                    await save();
                 }
 
-                function editTool(id) {
+                async function editTool(id) {
                     const t = tools.find(x => x.id === id);
                     if(!t) return;
                     document.getElementById('addModalTitle').innerText = "Editar Equipamento";
@@ -1084,7 +1193,7 @@
                     } else {
                         removeImage({ stopPropagation: () => {} });
                     }
-                    document.getElementById('btnSaveTool').onclick = () => {
+                    document.getElementById('btnSaveTool').onclick = async () => {
                         t.name = document.getElementById('toolNameInput').value;
                         t.code = document.getElementById('toolCodeInput').value;
                         t.brand = document.getElementById('toolBrandInput').value.toUpperCase();
@@ -1099,13 +1208,13 @@
                             delete t.qty;
                         }
                         // A nota de manutenção só é alterada na tela de manutenção
-                        save(); closeModal('addModal');
+                        await save(); closeModal('addModal');
                     };
                     openModal('addModal');
                     lucide.createIcons();
                 }
 
-                function requestDelete(id) {
+                function requestDelete(id) { // A função interna do onclick já é async
                     const tool = tools.find(t => t.id === id);
                     if (tool && tool.status === 'em uso') {
                         document.getElementById('alertModalTitle').innerText = "Ação Bloqueada";
@@ -1117,10 +1226,10 @@
                     const modal = document.getElementById('deleteModal');
                     modal.querySelector('h3').innerText = 'Excluir Item?';
                     modal.querySelector('p').innerText = 'Você tem certeza que deseja remover este item? Esta ação não pode ser desfeita.';
-                    document.getElementById('confirmDeleteBtn').onclick = () => {
+                    document.getElementById('confirmDeleteBtn').onclick = async () => {
                         tools = tools.filter(t => t.id !== itemToDeleteId);
                         closeModal('deleteModal');
-                        save();
+                        await save();
                     }; 
                     openModal('deleteModal');
                 }
@@ -1391,13 +1500,13 @@
                     modal.querySelector('h3').innerText = 'Excluir Registro?';
                     modal.querySelector('p').innerText = 'Deseja remover este registro do histórico? Esta ação não pode ser desfeita.';
                     document.getElementById('confirmDeleteBtn').onclick = deleteHistoryEntry;
-                    openModal('deleteModal');
+                    openModal('deleteModal'); 
                 }
 
-                function deleteHistoryEntry() {
+                async function deleteHistoryEntry() {
                     history = history.filter(h => h.historyId !== historyItemToDeleteId);
-                    save();
                     closeModal('deleteModal');
+                    await save();
                 }
 
                 function clearHistoryDateFilter() {
@@ -1594,10 +1703,12 @@
                     openModal('alertModal');
                 }
 
-                window.onload = () => { 
-                    render(); 
-                    renderOverdueAlert();
+                window.onload = () => {
+                    applyTheme();
+                    loadFromCloud();
+                    renderAll();
                     lucide.createIcons(); 
+                    setInterval(loadFromCloud, 5000); // Sincroniza a cada 5 segundos
 
                     historyDatePicker = flatpickr("#historyDateInput", {
                         locale: "pt",
@@ -1649,12 +1760,12 @@
                     document.getElementById('settingOverdueHours').value = appSettings.overdueHours || 24;
                 }
 
-                function saveSettings() {
+                async function saveSettings() {
                     appSettings.overdueHours = parseInt(document.getElementById('settingOverdueHours').value) || 24;
-                    save();
+                    await save();
                 }
 
-                // --- FUNÇÕES DE BACKUP ---
+                // --- FUNÇÕES DE BACKUP E DADOS ---
                 function exportData() {
                     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ tools, team, history }));
                 const downloadAnchorNode = document.createElement('a');
@@ -1665,7 +1776,7 @@
                     downloadAnchorNode.remove();
                 }
 
-                function importData(input) {
+                async function importData(input) {
                     const file = input.files[0];
                     if(!file) return;
                     const reader = new FileReader();
@@ -1675,7 +1786,7 @@
                             if (data.tools) tools = data.tools;
                             if (data.team) team = data.team;
                             if (data.history) history = data.history;
-                            save();
+                            await save();
                             document.getElementById('alertModalTitle').innerText = "Sucesso";
                             document.getElementById('alertModalText').innerText = "Dados importados com sucesso!";
                             openModal('alertModal');
@@ -1705,7 +1816,7 @@
                     document.getElementById('btnReturnWorking').onclick = () => handleReturnCondition(id, 'funcionando');
                     openModal('returnModal');
                 }
-                function handleReturnCondition(id, condition) {
+                async function handleReturnCondition(id, condition) {
                     const tool = tools.find(t => t.id === id);
                     if (!tool) return;
 
@@ -1728,8 +1839,8 @@
                             tool.user = '-';
                         }
                         closeModal('returnModal');
-                        document.getElementById(`tool-card-${id}`)?.remove();
-                        save();
+                        document.getElementById(`tool-card-${id}`)?.remove(); 
+                        await save();
                     } else if (condition === 'quebrado') {
                         if (historyEntry) {
                             historyEntry.returnDate = new Date().toISOString();
@@ -1752,11 +1863,11 @@
                 openModal('maintenanceModal');
             }
             closeModal('returnModal');
-                        document.getElementById(`tool-card-${id}`)?.remove();
-                        save();
+                        document.getElementById(`tool-card-${id}`)?.remove(); 
+                        await save();
                     }
                 }
-                function finishRepair(id) {
+                async function finishRepair(id) {
                     const tool = tools.find(t => t.id === id);
                     if (!tool || !tool.maintenanceInfo) return;
 
@@ -1773,12 +1884,12 @@
                         return;
                     }
 
-                    const processAndSave = (invoiceData) => {
+                    const processAndSave = async (invoiceData) => {
                         const currentTool = tools.find(t => t.id === id) || tool;
                         currentTool.maintenanceInfo.invoiceFile = invoiceData;
                         currentTool.maintenanceInfo.status = 'Finalizado';
-                        closeModal('manageMaintenanceModal');
-                        setTimeout(save, 50);
+                        closeModal('manageMaintenanceModal'); 
+                        await save();
                     };
 
                     // Image compression
@@ -1835,7 +1946,7 @@
                     reader.readAsDataURL(file);
                 }
 
-                function concludeAndMoveToStock(id) {
+                async function concludeAndMoveToStock(id) {
                     closeModal('manageMaintenanceModal');
                     const t = tools.find(x => x.id === id);
                     if (t) {
@@ -1849,8 +1960,8 @@
                         t.maintenanceNote = "";
                         t.maintenanceInfo = null;
                         document.getElementById(`tool-card-${id}`)?.remove();
-                        save();
-                    }
+                        await save();
+                    } 
                 }
 
                 // --- FUNÇÕES DE MANUTENÇÃO ---
@@ -1941,7 +2052,7 @@
                     document.getElementById('step-detalhes-manutencao').classList.add('hidden');
                 }
 
-                function finalizeMaintenanceReport() {
+                async function finalizeMaintenanceReport() {
                     const t = tools.find(x => x.id === maintenanceData.toolId);
                     const note = document.getElementById('maintenanceNoteInput').value.trim();
                     const qtyInput = document.getElementById('maintenanceQtyInput');
@@ -2060,8 +2171,8 @@
                     }
 
                     closeModal('maintenanceModal');
-                    setTimeout(save, 50);
-                }
+                    await save();
+                } 
 
                 // --- FUNÇÕES DE SAÍDA DE MATERIAL ---
                 function openMaterialModal(isSearchUpdate = false, toolId = null) {
@@ -2169,7 +2280,7 @@
                     resetMaterial(1);
                 }
 
-                function processQtyStep() {
+                async function processQtyStep() {
                     const tool = tools.find(t => t.id === materialData.toolId);
                     const qtyInput = document.getElementById('materialQtyInput');
                     const qty = parseInt(qtyInput.value);
@@ -2282,7 +2393,7 @@
                         });
                     }
                     closeModal('materialModal');
-                    save();
+                    await save();
                 }
 
                 // --- FUNÇÕES DE CÓDIGO DE BARRAS E QR CODE ---
@@ -2403,7 +2514,7 @@
                         alignment: { horizontal: "center", vertical: "center" }
                     };
                     const centerAlign = { alignment: { horizontal: "center", vertical: "center" } };
-                    const currencyFormat = { numFmt: 'R$ #,##0.00' };
+                    const currencyFormat = { numFmt: '_-"R$"* #,##0.00_-;-"R$"* #,##0.00_-;_-"R$"* "-"??_-;_-@_-' };
                     const borderAll = {
                         border: {
                             top: { style: "thin", color: { rgb: "E2E8F0" } },
@@ -2743,7 +2854,7 @@
                         tools = [];
                         team = [];
                         history = [];
-                        // Salva estado vazio
+                        // Salva estado vazio na nuvem
                         await save(true);
                         location.reload();
                     };
@@ -2757,7 +2868,7 @@
                     maintenanceFilter = f;
                     document.querySelectorAll('#section-maintenance .filter-pill').forEach(b => b.classList.remove('active'));
                     document.getElementById(`maint-filter-${f.toLowerCase().replace(/ /g, '-')}`).classList.add('active');
-                    renderMaintenance();
+                    renderMaintenance(); 
                 }
 
                 function renderMaintenance() {
@@ -2963,47 +3074,47 @@
                     lucide.createIcons();
                 }
 
-                function saveQuote(id) {
+                async function saveQuote(id) {
                     const tool = tools.find(t => t.id === id);
                     if (!tool || !tool.maintenanceInfo) return;
 
                     tool.maintenanceInfo.provider = document.getElementById('quoteProviderInput').value.toUpperCase();
                     tool.maintenanceInfo.cost = parseFloat(document.getElementById('quoteCostInput').value) || 0;
                     tool.maintenanceInfo.quoteNote = document.getElementById('quoteNoteInput').value;
-                    tool.maintenanceInfo.status = 'Aguardando Aprovação';
+                    tool.maintenanceInfo.status = 'Aguardando Aprovação'; 
 
-                    closeModal('manageMaintenanceModal');
-                    setTimeout(save, 50);
+                    closeModal('manageMaintenanceModal'); 
+                    await save();
                 }
 
-                function approveRepair(id) {
+                async function approveRepair(id) {
                     const tool = tools.find(t => t.id === id);
                     if (!tool || !tool.maintenanceInfo) return;
 
                     tool.maintenanceInfo.status = 'Em Conserto';
                     tool.maintenanceInfo.approvalDate = new Date().toISOString();
-                    closeModal('manageMaintenanceModal');
-                    setTimeout(save, 50);
+                    closeModal('manageMaintenanceModal'); 
+                    await save();
                 }
 
-                function sendBackToQuote(id) {
+                async function sendBackToQuote(id) {
                     const tool = tools.find(t => t.id === id);
                     if (!tool || !tool.maintenanceInfo) return;
                     tool.maintenanceInfo.status = 'Aguardando Orçamento';
                     tool.maintenanceInfo.provider = '';
                     tool.maintenanceInfo.cost = 0;
-                    tool.maintenanceInfo.quoteNote = '';
+                    tool.maintenanceInfo.quoteNote = ''; 
                     tool.maintenanceInfo.approvalDate = null;
                     tool.maintenanceInfo.invoiceFile = null;
-                    closeModal('manageMaintenanceModal');
-                    setTimeout(save, 50);
+                    closeModal('manageMaintenanceModal'); 
+                    await save();
                 }
 
-                function rejectRepair(id) {
+                async function rejectRepair(id) {
                     const tool = tools.find(t => t.id === id);
                     if (!tool || !tool.maintenanceInfo) return;
                     tool.maintenanceInfo.status = 'Aguardando Orçamento';
-                    tool.maintenanceInfo.provider = '';
+                    tool.maintenanceInfo.provider = ''; 
                     tool.maintenanceInfo.cost = 0;
                     tool.maintenanceInfo.quoteNote = '';
                     tool.maintenanceInfo.approvalDate = null;
@@ -3020,33 +3131,31 @@
                     const modal = document.getElementById('deleteModal');
                     modal.querySelector('h3').innerText = 'Cancelar Manutenção?';
                     modal.querySelector('p').innerText = `Você tem certeza que deseja cancelar a manutenção para "${tool.name}"? O item retornará ao status "Disponível".`;
-                    document.getElementById('confirmDeleteBtn').onclick = () => {
-                        deleteMaintenance(id);
+                    document.getElementById('confirmDeleteBtn').onclick = async () => {
+                        await deleteMaintenance(id);
                     };
                     openModal('deleteModal');
                 }
 
-                function deleteInvoice(id, event) {
+                function deleteInvoice(id, event) { // A função interna do onclick já é async
                     if (event) event.stopPropagation();
                     const tool = tools.find(t => t.id === id);
                     if (!tool || !tool.maintenanceInfo) return;
 
                     const modal = document.getElementById('deleteModal');
                     modal.querySelector('h3').innerText = 'Excluir Nota Fiscal?';
-                    modal.querySelector('p').innerText = 'Deseja realmente excluir a nota fiscal? O status do item será revertido para "Em Conserto".';
-                    document.getElementById('confirmDeleteBtn').onclick = () => {
+                    modal.querySelector('p').innerText = 'Deseja realmente excluir a nota fiscal? O status do item será revertido para "Em Conserto".'; 
+                    document.getElementById('confirmDeleteBtn').onclick = async () => {
                         tool.maintenanceInfo.invoiceFile = null;
                         tool.maintenanceInfo.status = 'Em Conserto';
                         closeModal('deleteModal');
-                        setTimeout(() => {
-                            save();
-                            openManageMaintenanceModal(id);
-                        }, 50);
+                        await save();
+                        openManageMaintenanceModal(id);
                     };
                     openModal('deleteModal');
                 }
 
-                function deleteMaintenance(id) {
+                async function deleteMaintenance(id) {
                     const tool = tools.find(t => t.id === id);
                     if (tool && tool.status === 'quebrado') {
                         tool.status = 'disponivel';
@@ -3054,8 +3163,8 @@
                         tool.maintenanceNote = '';
                         tool.maintenanceInfo = null;
                         history = history.filter(h => !(h.toolId === id && h.type === 'manutencao' && h.returnDate === null));
-                        closeModal('deleteModal');
-                        setTimeout(save, 50);
+                        closeModal('deleteModal'); 
+                        await save();
                     }
                 }
 

@@ -9,6 +9,7 @@
             <script src="https://cdn.tailwindcss.com"></script>
             <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
             <script src="https://unpkg.com/lucide@latest"></script>
+            <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
             <script>
                 tailwind.config = { darkMode: 'class' }
@@ -18,7 +19,7 @@
             <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
             <style>
@@ -190,7 +191,7 @@
                             <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100">
                                 <table class="w-full text-left text-sm">
                                     <thead class="bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
-                                        <tr><th class="px-8 py-4">Equipamento</th><th class="px-8 py-4">Status / Responsável</th><th class="px-8 py-4 text-right">Ações</th></tr>
+                                        <tr><th class="px-8 py-4">Equipamento</th><th class="px-8 py-4">Status / Responsável</th><th id="mainTableActionsHeader" class="px-8 py-4 text-right">Ações</th></tr>
                                     </thead>
                                     <tbody id="toolList" class="divide-y divide-slate-50"></tbody>
                                 </table>
@@ -217,6 +218,34 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div onclick="openAddModal('disponivel')" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-cyan-500 transition-all group relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-64 h-64 bg-cyan-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10 flex flex-col items-center text-center gap-6">
+                                <div class="w-24 h-24 bg-cyan-100 text-cyan-600 rounded-full flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                    <i data-lucide="plus" size="48"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-2">Novo Item</h3>
+                                    <p class="text-slate-500 font-medium">Cadastrar novo equipamento no inventário.</p>
+                                </div>
+                                <span class="px-6 py-3 bg-cyan-600 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-cyan-200 group-hover:shadow-cyan-300 transition-all mt-2">Cadastrar</span>
+                            </div>
+                        </div>
+
+                        <div onclick="openMaintenanceModal()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-red-500 transition-all group relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-64 h-64 bg-red-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10 flex flex-col items-center text-center gap-6">
+                                <div class="w-24 h-24 bg-red-100 text-red-600 rounded-full flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                    <i data-lucide="wrench" size="48"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-2">Manutenção</h3>
+                                    <p class="text-slate-500 font-medium">Reportar danos ou solicitar manutenção de equipamentos.</p>
+                                </div>
+                                <span class="px-6 py-3 bg-red-600 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-red-200 group-hover:shadow-red-300 transition-all mt-2">Reportar Manutenção</span>
+                            </div>
+                        </div>
+
                         <div onclick="openMaterialModal()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-indigo-500 transition-all group relative overflow-hidden">
                             <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
                             <div class="relative z-10 flex flex-col items-center text-center gap-6">
@@ -242,34 +271,6 @@
                                     <p class="text-slate-500 font-medium">Registrar retorno de ferramentas e equipamentos.</p>
                                 </div>
                                 <span class="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-emerald-200 group-hover:shadow-emerald-300 transition-all mt-2">Iniciar Devolução</span>
-                            </div>
-                        </div>
-
-                        <div onclick="openMaintenanceModal()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-red-500 transition-all group relative overflow-hidden">
-                            <div class="absolute top-0 right-0 w-64 h-64 bg-red-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
-                            <div class="relative z-10 flex flex-col items-center text-center gap-6">
-                                <div class="w-24 h-24 bg-red-100 text-red-600 rounded-full flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
-                                    <i data-lucide="wrench" size="48"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-2">Manutenção</h3>
-                                    <p class="text-slate-500 font-medium">Reportar danos ou solicitar manutenção de equipamentos.</p>
-                                </div>
-                                <span class="px-6 py-3 bg-red-600 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-red-200 group-hover:shadow-red-300 transition-all mt-2">Reportar Manutenção</span>
-                            </div>
-                        </div>
-
-                        <div onclick="openAuditModal()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-amber-500 transition-all group relative overflow-hidden">
-                            <div class="absolute top-0 right-0 w-64 h-64 bg-amber-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
-                            <div class="relative z-10 flex flex-col items-center text-center gap-6">
-                                <div class="w-24 h-24 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
-                                    <i data-lucide="clipboard-check" size="48"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-2xl font-black text-slate-800 uppercase tracking-tight mb-2">Auditoria</h3>
-                                    <p class="text-slate-500 font-medium">Conferência física do estoque disponível.</p>
-                                </div>
-                                <span class="px-6 py-3 bg-amber-500 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-amber-200 group-hover:shadow-amber-300 transition-all mt-2">Iniciar Auditoria</span>
                             </div>
                         </div>
                     </div>
@@ -375,27 +376,27 @@
                             </div>
                             <div class="relative w-full xl:w-96">
                                 <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
-                                <input type="text" id="teamSearchInput" onkeyup="handleSearchInput(this, renderTeam)" placeholder="PESQUISAR POR NOME..." class="w-full bg-slate-800/50 border border-slate-700 text-white rounded-xl pl-12 pr-10 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all placeholder-slate-500">
+                                <input type="text" id="teamSearchInput" onkeyup="handleSearchInput(this, renderTeam)" placeholder="PESQUISAR POR NOME, MATRÍCULA, EMPRESA OU C. CUSTO..." class="w-full bg-slate-800/50 border border-slate-700 text-white rounded-xl pl-12 pr-10 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all placeholder-slate-500">
                                 <button onclick="clearSearch('teamSearchInput', renderTeam)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 hidden z-10"><i data-lucide="x-circle" size="16"></i></button>
                             </div>
                         </div>
                     </div>
 
                     <!-- Add Worker Card Reformulado -->
-                    <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-100 mb-8 relative overflow-hidden">
+                    <div id="addWorkerFormContainer" class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-100 mb-8 relative overflow-hidden">
                         <div class="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full -mr-16 -mt-16 pointer-events-none"></div>
                         
                         <div class="relative z-10">
                             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                                 <div>
-                                    <h3 class="font-black text-slate-800 uppercase text-lg tracking-tight">Adicionar Novo Colaborador</h3>
+                                        <h3 class="font-black text-slate-800 uppercase text-lg tracking-tight">Adicionar Colaborador</h3>
                                     <p class="text-sm text-slate-400 font-medium">Selecione o tipo de vínculo e preencha os dados.</p>
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-                                <!-- Tipo de Colaborador (Cards de Seleção) -->
-                                <div class="md:col-span-4 flex gap-3">
+                                    <!-- Tipo de Colaborador -->
+                                    <div class="md:col-span-3 flex gap-3">
                                     <div onclick="selectWorkerType('LDC')" id="type-card-ldc" class="flex-1 cursor-pointer bg-blue-50 border-2 border-blue-500 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all shadow-md group relative overflow-hidden">
                                         <div id="indicator-ldc" class="absolute top-3 right-3 w-2.5 h-2.5 bg-blue-500 rounded-full transition-colors"></div>
                                         <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-sm group-hover:scale-110 transition-transform">
@@ -414,15 +415,19 @@
                                 </div>
 
                                 <!-- Inputs -->
-                                <div class="md:col-span-8 flex flex-col justify-center">
+                                    <div class="md:col-span-9 flex flex-col justify-center">
                                     <div class="flex flex-col md:flex-row gap-3 items-end">
-                                        <div class="flex-1 w-full space-y-1.5">
+                                            <div class="flex-1 w-full md:w-auto space-y-1.5">
                                             <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Nome Completo</label>
                                             <input type="text" id="workerNameInput" placeholder="NOME DO COLABORADOR" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all h-[48px]">
                                         </div>
-                                        <div class="flex-1 w-full space-y-1.5">
+                                            <div id="workerCostCenterField" class="flex-1 w-full md:w-auto space-y-1.5">
+                                                <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Centro de Custo</label>
+                                                <input type="text" id="workerCostCenterInput" placeholder="C. CUSTO" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all h-[48px]">
+                                            </div>
+                                            <div class="flex-1 w-full md:w-auto space-y-1.5">
                                             <label id="workerCompanyLabel" class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Matrícula</label>
-                                            <input type="text" id="workerCompanyInput" placeholder="000000" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all h-[48px]">
+                                                <input type="text" id="workerInfoInput" placeholder="000000" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all h-[48px]">
                                         </div>
                                         <button onclick="addWorker()" class="w-full md:w-auto h-[48px] bg-blue-600 text-white px-6 rounded-xl border-none cursor-pointer hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-bold uppercase text-xs tracking-widest flex items-center justify-center gap-2">
                                             <i data-lucide="plus" size="16"></i> <span>Adicionar</span>
@@ -603,7 +608,7 @@
                             <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="download-cloud"></i></div>
                             <h3 class="font-black uppercase text-slate-800">Exportar Dados</h3>
                         </div>
-                        <div onclick="document.getElementById('importInput').click()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-emerald-500 text-center">
+                        <div id="btn-backup-import" onclick="document.getElementById('importInput').click()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-emerald-500 text-center">
                             <input type="file" id="importInput" class="hidden" accept=".json" onchange="importData(this)">
                             <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="upload-cloud"></i></div>
                             <h3 class="font-black uppercase text-slate-800">Importar Dados</h3>
@@ -612,7 +617,7 @@
                             <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="qr-code"></i></div>
                             <h3 class="font-black uppercase text-slate-800">Gerar Etiquetas QR</h3>
                         </div>
-                        <div onclick="confirmResetSystem()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-red-500 text-center">
+                        <div id="btn-backup-reset" onclick="confirmResetSystem()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-red-500 text-center">
                             <div class="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="trash-2"></i></div>
                             <h3 class="font-black uppercase text-slate-800">Resetar Sistema</h3>
                         </div>
@@ -678,7 +683,7 @@
                                         <p class="text-[10px] text-slate-400 mt-2 font-medium ml-2">Selecione o período máximo de empréstimo.</p>
                                     </div>
 
-                                    <div class="pt-4 border-t border-slate-50">
+                                    <div class="pt-4">
                                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Limite de Estoque Baixo</label>
                                         <div class="relative mt-2">
                                             <i data-lucide="alert-circle" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="18"></i>
@@ -810,6 +815,30 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Card 6: Compartilhamento -->
+                        <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-100 relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-pink-50 rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center gap-4 mb-6">
+                                    <div class="w-12 h-12 bg-pink-100 text-pink-600 rounded-2xl flex items-center justify-center">
+                                        <i data-lucide="share-2"></i>
+                                    </div>
+                                    <h3 class="font-black text-slate-800 uppercase text-lg tracking-tight">Compartilhamento</h3>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Link de Visualização (Somente Leitura)</label>
+                                        <div class="flex gap-2 mt-1">
+                                            <input type="text" id="readOnlyLinkInput" readonly class="flex-1 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-slate-500 outline-none bg-slate-50 text-xs truncate">
+                                            <button onclick="copyReadOnlyLink()" class="bg-pink-500 text-white px-4 rounded-xl font-bold uppercase text-[10px] hover:bg-pink-600 transition-all shadow-lg shadow-pink-200">Copiar</button>
+                                        </div>
+                                        <p class="text-[10px] text-slate-400 mt-2 font-medium"><i data-lucide="info" size="12" class="inline mr-1"></i>Quem acessar este link poderá ver os dados mas <strong>não poderá editar nada</strong>.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -908,6 +937,14 @@
                         <div id="step-detalhes-manutencao" class="hidden">
                             <p class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">2. Detalhes do problema</p>
                             <div id="selectedToolMaintenance" class="mb-4"></div>
+                            <div class="border-2 border-dashed border-slate-200 rounded-2xl p-4 text-center h-40 flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors group mb-4" onclick="document.getElementById('maintenanceFileInput').click()">
+                                <input type="file" id="maintenanceFileInput" class="hidden" accept="image/*" onchange="previewMaintenanceImage(this)">
+                                <div id="maintenanceUploadPlaceholder" class="text-slate-400">
+                                    <i data-lucide="camera" class="mx-auto" size="24"></i>
+                                    <p class="text-[8px] font-black uppercase">Foto do Dano</p>
+                                </div>
+                                <div id="maintenanceImagePreviewContainer" class="hidden relative h-full" title="Clique para alterar a imagem"><img id="maintenanceImagePreview" class="h-full object-contain rounded-lg transition-opacity group-hover:opacity-80"><button onclick="removeMaintenanceImage(event)" class="absolute top-1 right-1 bg-rose-500 text-white rounded-full p-0.5 leading-none shadow-md border-2 border-white cursor-pointer" title="Remover Imagem"><i data-lucide="x" size="14"></i></button></div>
+                            </div>
                             <div id="maintenanceQtyContainer" class="hidden mb-4">
                                 <div class="flex justify-between items-center ml-4 mb-1">
                                     <label for="maintenanceQtyInput" class="text-[10px] font-black uppercase text-slate-400">Quantidade para Manutenção</label>
@@ -930,8 +967,6 @@
                     <div class="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center gap-4">
                         <h3 id="materialModalTitle" class="font-black uppercase tracking-tighter text-slate-900">Saída de Ferramentas</h3>
                         <div class="flex-1 flex justify-end gap-2">
-                            <input type="text" id="barcodeInput" class="absolute -left-[9999px]" onchange="handleBarcodeScan(this.value)">
-                            <button onclick="focusBarcode()" class="bg-white border-2 border-slate-200 text-slate-500 px-3 py-2 rounded-lg font-bold flex items-center gap-2 text-[10px] uppercase hover:bg-slate-100 transition-all"><i data-lucide="barcode" size="14"></i> Bipar</button>
                             <button onclick="startQrScanner()" class="bg-white border-2 border-slate-200 text-slate-500 px-3 py-2 rounded-lg font-bold flex items-center gap-2 text-[10px] uppercase hover:bg-slate-100 transition-all"><i data-lucide="qr-code" size="14"></i> QR Code</button>
                         </div>
                         <button onclick="closeModal('materialModal'); event.stopPropagation();" class="text-slate-400 hover:text-rose-500 bg-transparent border-none cursor-pointer"><i data-lucide="x"></i></button>
@@ -980,8 +1015,6 @@
                     <div class="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center gap-4">
                         <h3 class="font-black uppercase tracking-tighter text-slate-900">Devolução de Ferramentas</h3>
                         <div class="flex-1 flex justify-end gap-2">
-                            <input type="text" id="checkinBarcodeInput" class="absolute -left-[9999px]" onchange="handleCheckinBarcodeScan(this.value)">
-                            <button onclick="focusCheckinBarcode()" class="bg-white border-2 border-slate-200 text-slate-500 px-3 py-2 rounded-lg font-bold flex items-center gap-2 text-[10px] uppercase hover:bg-slate-100 transition-all"><i data-lucide="barcode" size="14"></i> Bipar</button>
                             <button onclick="startCheckinQrScanner()" class="bg-white border-2 border-slate-200 text-slate-500 px-3 py-2 rounded-lg font-bold flex items-center gap-2 text-[10px] uppercase hover:bg-slate-100 transition-all"><i data-lucide="qr-code" size="14"></i> QR Code</button>
                         </div>
                         <button onclick="closeModal('checkinModal');" class="text-slate-400 hover:text-rose-500 bg-transparent border-none cursor-pointer"><i data-lucide="x"></i></button>
@@ -1142,11 +1175,13 @@
             </div>
 
             <script>
-                // --- CONFIGURAÇÃO DE NUVEM (JSONBIN.IO) ---
-                // Substitua os valores abaixo pelos que você pegou no site jsonbin.io
-                const BIN_ID = '695fb641ae596e708fcda778'; 
-                const API_KEY = '$2a$10$T1Y5zeImcBOV2FVqLHbyQeOcqVpPQIaJWn2NxVbtFZF8akzuwjxNy';
+                // --- CONFIGURAÇÃO DE NUVEM (SUPABASE) ---
+                // Substitua os valores abaixo pelos do seu projeto Supabase
+                const SUPABASE_URL = 'https://kglgvtprtstactsxeakr.supabase.coI'; 
+                const SUPABASE_KEY = 'sb_publishable_bhC70GSso8WGsNjNufkySg_o9XbeJel';
                 // ------------------------------------------
+
+                const isReadOnly = new URLSearchParams(window.location.search).get('mode') === 'readonly';
 
                 let tools = JSON.parse(localStorage.getItem('ldc_pro_db')) || [];
                 let team = JSON.parse(localStorage.getItem('ldc_team_db')) || [];
@@ -1162,9 +1197,12 @@
                 let lastCloudSaveTime = 0; // Timestamp do último salvamento na nuvem bem-sucedido
                 let hasUnsavedChanges = false; // Indica se temos dados locais que falharam ao subir pra nuvem
 
+                // Inicializa o cliente Supabase
+                const supabaseClient = (typeof window.supabase !== 'undefined' && SUPABASE_URL !== 'SUA_URL_SUPABASE_AQUI') ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
                 // Função para carregar dados da nuvem ao abrir
                 async function loadFromCloud() {
-                    if (BIN_ID === 'SEU_BIN_ID_AQUI') return; // Não configurado
+                    if (!supabaseClient) return; // Não configurado
                     if (isSaving) return; // Não carrega se estiver salvando
 
                     // Se temos alterações locais que ainda não foram salvas na nuvem (ex: erro de rede ou tamanho),
@@ -1184,30 +1222,31 @@
                     const fetchStart = Date.now(); // Marca o início da requisição
 
                     try {
-                        const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                            headers: { 'X-Master-Key': API_KEY },
-                            cache: 'no-store' // Garante que não estamos pegando cache do navegador
-                        });
-                        if (res.ok) {
-                            const data = await res.json();
+                        const { data, error } = await supabaseClient.from('app_storage').select('*');
+                        
+                        if (error) throw error;
 
-                            // Se houve alteração local enquanto baixava, ignora este download para não sobrescrever
-                            if (lastLocalUpdate > fetchStart) return;
-                            // Verifica novamente se abriu modal durante o download
-                            if (document.querySelectorAll('.fixed.inset-0:not(.hidden)').length > 0) return;
+                        // Se houve alteração local enquanto baixava, ignora este download para não sobrescrever
+                        if (lastLocalUpdate > fetchStart) return;
+                        // Verifica novamente se abriu modal durante o download
+                        if (document.querySelectorAll('.fixed.inset-0:not(.hidden)').length > 0) return;
 
-                            if (isSaving) return; // Verifica novamente antes de aplicar
-                            if (data.record) {
-                                tools = data.record.tools || [];
-                                team = data.record.team || team;
-                                history = data.record.history || [];
-                                save(false); // Salva localmente e atualiza a tela (false para não reenviar pra nuvem)
-                            }
+                        if (isSaving) return; // Verifica novamente antes de aplicar
+
+                        if (data && data.length > 0) {
+                            const cloudData = data.reduce((acc, { key, value }) => { acc[key] = value; return acc; }, {});
+
+                            if (cloudData.tools) tools = cloudData.tools;
+                            if (cloudData.team) team = cloudData.team;
+                            if (cloudData.history) history = cloudData.history;
+                            
+                            save(false); // Salva localmente e atualiza a tela (false para não reenviar pra nuvem)
                         }
                     } catch (e) { console.error("Erro ao carregar da nuvem", e); }
                 }
                 
                 let currentImageBase64 = "";
+                let currentMaintenanceImageBase64 = "";
                 let pendingStatus = "disponivel";
                 let catalogFilter = 'all';
                 let maintenanceFilter = 'all';
@@ -1297,6 +1336,15 @@
                     }
                 }
 
+                function renderAll() {
+                    render(); 
+                    renderCatalog(); 
+                    renderHistory(); 
+                    renderMaintenance(); 
+                    renderOverdueAlert();
+                    renderTeam(); 
+                }
+
                 async function save(syncToCloud = true) { 
                     isSaving = true;
                     lastLocalUpdate = Date.now(); // Atualiza timestamp da modificação local
@@ -1317,23 +1365,19 @@
                     }
                     
                     // Salvar na nuvem (apenas se syncToCloud for true)
-                    if (syncToCloud && BIN_ID !== 'SEU_BIN_ID_AQUI') {
+                    if (syncToCloud && supabaseClient) {
                         try {
-                            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                                method: 'PUT',
-                                headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-                                body: JSON.stringify({ tools, team, history })
-                            });
+                            const { error } = await supabaseClient.from('app_storage').upsert([
+                                { key: 'tools', value: tools },
+                                { key: 'team', value: team },
+                                { key: 'history', value: history }
+                            ]);
                             
-                            if (res.ok) {
+                            if (!error) {
                                 lastCloudSaveTime = Date.now();
                                 hasUnsavedChanges = false; // Sucesso! Estamos sincronizados.
                             } else {
-                                console.error("Erro ao salvar na nuvem:", res.status);
-                                if (res.status === 413) {
-                                    alert("ERRO: O arquivo é muito grande para ser salvo na nuvem. Tente usar uma imagem menor ou comprimida.");
-                                }
-                                // Mantém hasUnsavedChanges = true, o que bloqueia o loadFromCloud e evita o "vai e volta"
+                                console.error("Erro ao salvar na nuvem:", error);
                             }
                         } catch (e) { 
                             console.error("Erro de rede ao salvar", e); 
@@ -1341,12 +1385,7 @@
                         }
                     }
 
-                    render(); 
-                    renderCatalog(); 
-                    renderHistory(); 
-                    renderMaintenance(); 
-                    renderOverdueAlert();
-                    renderTeam(); 
+                    renderAll();
                     isSaving = false;
                 }
 
@@ -1425,14 +1464,15 @@
                     const ldcText = document.getElementById('text-ldc');
                     const terceiroText = document.getElementById('text-terceiro');
                     const companyLabel = document.getElementById('workerCompanyLabel');
-                    const companyInput = document.getElementById('workerCompanyInput');
+                    const companyInput = document.getElementById('workerInfoInput');
+                    const costCenterField = document.getElementById('workerCostCenterField');
 
                     if (type === 'LDC') {
                         // Active LDC
                         ldcCard.className = "flex-1 cursor-pointer bg-blue-50 border-2 border-blue-500 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all shadow-md group relative overflow-hidden";
                         ldcIndicator.className = "absolute top-3 right-3 w-2.5 h-2.5 bg-blue-500 rounded-full transition-colors";
                         ldcText.className = "font-black text-blue-900 text-[10px] uppercase tracking-widest";
-                        
+
                         // Inactive Terceiro
                         terceiroCard.className = "flex-1 cursor-pointer bg-white border-2 border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all hover:border-slate-300 hover:shadow-md group relative overflow-hidden";
                         terceiroIndicator.className = "absolute top-3 right-3 w-2.5 h-2.5 bg-slate-200 rounded-full transition-colors";
@@ -1440,6 +1480,7 @@
 
                         companyLabel.innerText = "Matrícula";
                         companyInput.placeholder = "000000";
+                        costCenterField.classList.add('hidden');
                     } else {
                         // Inactive LDC
                         ldcCard.className = "flex-1 cursor-pointer bg-white border-2 border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all hover:border-blue-200 hover:shadow-md group relative overflow-hidden";
@@ -1451,24 +1492,27 @@
                         terceiroIndicator.className = "absolute top-3 right-3 w-2.5 h-2.5 bg-orange-500 rounded-full transition-colors";
                         terceiroText.className = "font-black text-orange-900 text-[10px] uppercase tracking-widest";
 
-                        companyLabel.innerText = "Centro de Custo";
-                        companyInput.placeholder = "CENTRO DE CUSTO";
+                        companyLabel.innerText = "Empresa";
+                        companyInput.placeholder = "NOME DA EMPRESA";
+                        costCenterField.classList.remove('hidden');
                     }
                 }
 
-                function addWorker() {
+                async function addWorker() {
                     const nameInput = document.getElementById('workerNameInput');
-                    const companyInput = document.getElementById('workerCompanyInput');
+                    const infoInput = document.getElementById('workerInfoInput');
+                    const costCenterInput = document.getElementById('workerCostCenterInput');
                     const name = nameInput.value.trim().toUpperCase();
-                    const info = companyInput.value.trim().toUpperCase() || 'N/A';
+                    const info = infoInput.value.trim().toUpperCase() || 'N/A';
+                    const costCenter = costCenterInput.value.trim().toUpperCase();
                     if(!name) return;
                     const dateAdded = new Date().toLocaleDateString('pt-BR');
 
                     // Salva 'info' (Matrícula ou CC) e 'type' (LDC ou TERCEIRO)
-                    team.push({ id: Date.now(), name, info, type: currentWorkerType, dateAdded });
+                    team.push({ id: Date.now(), name, info, costCenter: (currentWorkerType === 'TERCEIRO' ? costCenter : null), type: currentWorkerType, dateAdded });
                     
-                    nameInput.value = ""; companyInput.value = "";
-                    save(); renderTeam();
+                    nameInput.value = ""; infoInput.value = ""; costCenterInput.value = "";
+                    await save();
                     playSound('success');
                 }
 
@@ -1487,10 +1531,10 @@
                             const modal = document.getElementById('deleteModal');
                             modal.querySelector('h3').innerText = `Remover ${worker.name}?`;
                             modal.querySelector('p').innerText = 'Você tem certeza que deseja remover este colaborador da equipe?';
-                            document.getElementById('confirmDeleteBtn').onclick = () => {
+                            document.getElementById('confirmDeleteBtn').onclick = async () => {
                                 team = team.filter(w => w.id !== id);
                                 closeModal('deleteModal');
-                                save();
+                                await save();
                                 playSound('success');
                             };
                             openModal('deleteModal');
@@ -1509,7 +1553,10 @@
                     if (!grid) return;
                     const search = document.getElementById('teamSearchInput').value.toLowerCase();
 
-                    const filteredTeam = team.filter(w => w.name.toLowerCase().includes(search) || (w.info && w.info.toLowerCase().includes(search)) || (w.company && w.company.toLowerCase().includes(search)));
+                    const filteredTeam = team.filter(w => w.name.toLowerCase().includes(search) || 
+                                                        (w.info && w.info.toLowerCase().includes(search)) || 
+                                                        (w.company && w.company.toLowerCase().includes(search)) || // Compatibilidade com dados antigos
+                                                        (w.costCenter && w.costCenter.toLowerCase().includes(search)));
                     
                     if (filteredTeam.length === 0) {
                         grid.innerHTML = `<p class="text-center text-sm text-slate-400 col-span-full py-20">Nenhum colaborador encontrado.</p>`;
@@ -1527,25 +1574,25 @@
                         
                         const typeLabel = workerType === 'LDC' ? 'LDC' : 'Terceiro';
                         const typeColor = workerType === 'LDC' ? 'text-blue-500' : 'text-orange-500';
-                        const infoLabel = workerType === 'LDC' ? 'Matrícula' : 'C. Custo';
+                        const infoLabel = workerType === 'LDC' ? 'Matrícula' : 'Empresa';
 
                         const toolsInPossession = tools.filter(t => t.user === w.name).length;
                         const historyCount = history.filter(h => h.workerName === w.name).length;
                         return `
                         <div onclick="openWorkerDetails(${w.id})" class="bg-slate-50 rounded-2xl p-5 border border-slate-200 flex flex-col relative group hover:border-blue-400 transition-all cursor-pointer hover:shadow-lg hover:-translate-y-1">
-                            <div class="absolute top-2 right-2 flex flex-col items-end">
+                            ${!isReadOnly ? `<div class="absolute top-2 right-2 flex flex-col items-end">
                                 <button onclick="removeWorker(${w.id}); event.stopPropagation();" class="p-2 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Excluir Colaborador"><i data-lucide="trash-2" size="16"></i></button>
-                            </div>
+                            </div>` : ''}
                             <div class="flex items-center gap-4 mb-4">
                                 <div class="w-12 h-12 ${workerType === 'TERCEIRO' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'} rounded-full flex items-center justify-center text-lg font-black">
                                     ${w.name.charAt(0)}
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <h3 class="font-black text-slate-800 uppercase truncate text-sm" title="${w.name}">${w.name}</h3>
-                                    <div class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase">
+                                    <div class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase flex-wrap">
                                         <span class="${typeColor}">${typeLabel}</span>
-                                        <span>•</span>
-                                        <span class="truncate" title="${infoLabel}: ${displayInfo}">${displayInfo}</span>
+                                        <span class="truncate" title="${infoLabel}: ${displayInfo}">• ${displayInfo}</span>
+                                        ${w.costCenter ? `<span class="truncate" title="Centro de Custo: ${w.costCenter}">• ${w.costCenter}</span>` : ''}
                                     </div>
                                 </div>
                             </div>
@@ -1567,17 +1614,25 @@
                     
                     const typeLabel = workerType === 'LDC' ? 'LDC' : 'Terceiro';
                     const typeColor = workerType === 'LDC' ? 'text-blue-600 bg-blue-50 border-blue-200' : 'text-orange-600 bg-orange-50 border-orange-200';
-                    const infoLabel = workerType === 'LDC' ? 'Matrícula' : 'Centro de Custo';
+                    const infoLabel = workerType === 'LDC' ? 'Matrícula' : 'Empresa';
                     const dateAdded = w.dateAdded || '';
 
                     const toolsInPossession = tools.filter(t => t.user === w.name);
                     const historyCount = history.filter(h => h.workerName === w.name).length;
 
                     let toolsHtml = '';
+                    let detailsGridHtml = '';
+
+                    detailsGridHtml += `<div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center"><p class="text-[9px] font-bold text-slate-400 uppercase mb-1">${infoLabel}</p><p class="text-sm font-black text-slate-700 truncate" title="${displayInfo}">${displayInfo}</p></div>`;
+
+                    if (w.costCenter) {
+                        detailsGridHtml += `<div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center"><p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Centro de Custo</p><p class="text-sm font-black text-slate-700 truncate" title="${w.costCenter}">${w.costCenter}</p></div>`;
+                    }
+
                     if (toolsInPossession.length > 0) {
                         toolsHtml = `
                             <div class="mt-6">
-                                <h4 class="text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider">Ferramentas em Posse</h4>
+                                <h4 class="text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider">Ferramentas em Posse (${toolsInPossession.length})</h4>
                                 <div class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar pr-2">
                                     ${toolsInPossession.map(t => `
                                         <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
@@ -1610,13 +1665,9 @@
                             <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${typeColor}">${typeLabel}</span>
                             ${dateAdded ? `<p class="text-[10px] text-slate-400 font-bold mt-2 uppercase tracking-wider">Adicionado em ${dateAdded}</p>` : ''}
                         </div>
-
-                        <div class="grid grid-cols-2 gap-4 mb-2">
-                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center">
-                                <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">${infoLabel}</p>
-                                <p class="text-sm font-black text-slate-700 truncate" title="${displayInfo}">${displayInfo}</p>
-                            </div>
-                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center">
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-2">
+                            ${detailsGridHtml}
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center ${w.costCenter ? 'col-span-2 md:col-span-1' : 'col-span-2 md:col-span-1'}">
                                 <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Histórico</p>
                                 <p class="text-sm font-black text-slate-700">${historyCount} Mov.</p>
                             </div>
@@ -1684,6 +1735,58 @@
                     lucide.createIcons();
                 }
 
+                function previewMaintenanceImage(input) {
+                    if (input.files && input.files[0]) {
+                        const file = input.files[0];
+                        const reader = new FileReader();
+                        reader.onload = e => {
+                            const img = new Image();
+                            img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                const ctx = canvas.getContext('2d');
+                                const maxWidth = 800;
+                                const maxHeight = 800;
+                                let width = img.width;
+                                let height = img.height;
+
+                                if (width > height) {
+                                    if (width > maxWidth) {
+                                        height *= maxWidth / width;
+                                        width = maxWidth;
+                                    }
+                                } else {
+                                    if (height > maxHeight) {
+                                        width *= maxHeight / height;
+                                        height = maxHeight;
+                                    }
+                                }
+                                canvas.width = width;
+                                canvas.height = height;
+                                ctx.fillStyle = "#FFFFFF";
+                                ctx.fillRect(0, 0, width, height);
+                                ctx.drawImage(img, 0, 0, width, height);
+                                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5);
+                                
+                                currentMaintenanceImageBase64 = compressedBase64;
+                                document.getElementById('maintenanceImagePreview').src = compressedBase64;
+                                document.getElementById('maintenanceImagePreviewContainer').classList.remove('hidden');
+                                document.getElementById('maintenanceUploadPlaceholder').classList.add('hidden');
+                            };
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                }
+
+                function removeMaintenanceImage(event) {
+                    event.stopPropagation();
+                    currentMaintenanceImageBase64 = "";
+                    document.getElementById('maintenanceFileInput').value = null;
+                    document.getElementById('maintenanceImagePreview').src = "";
+                    document.getElementById('maintenanceImagePreviewContainer').classList.add('hidden');
+                    document.getElementById('maintenanceUploadPlaceholder').classList.remove('hidden');
+                }
+
                 function openAddModal(s) { 
                     pendingStatus = s; 
                     currentImageBase64 = "";
@@ -1702,7 +1805,7 @@
                     openModal('addModal'); 
                 }
 
-                function addTool() {
+                async function addTool() {
                     if (document.getElementById('addModal').classList.contains('hidden')) return;
                     const name = document.getElementById('toolNameInput').value;
                     if(!name) return;
@@ -1741,11 +1844,11 @@
                     }
                     tools.unshift(tool);
                     closeModal('addModal');
-                    save();
+                    await save();
                     playSound('success');
                 }
 
-                function editTool(id) {
+                async function editTool(id) {
                     const t = tools.find(x => x.id === id);
                     if(!t) return;
                     document.getElementById('fileInput').value = null;
@@ -1764,7 +1867,7 @@
                     } else {
                         removeImage({ stopPropagation: () => {} });
                     }
-                    document.getElementById('btnSaveTool').onclick = () => {
+                    document.getElementById('btnSaveTool').onclick = async () => {
                         t.name = document.getElementById('toolNameInput').value;
                         t.code = document.getElementById('toolCodeInput').value;
                         t.brand = document.getElementById('toolBrandInput').value.toUpperCase();
@@ -1778,7 +1881,7 @@
                         }
                         t.img = currentImageBase64;
                         // A nota de manutenção só é alterada na tela de manutenção
-                        save(); closeModal('addModal');
+                        await save(); closeModal('addModal');
                         playSound('success');
                     };
                     openModal('addModal');
@@ -1798,10 +1901,10 @@
                     const modal = document.getElementById('deleteModal');
                     modal.querySelector('h3').innerText = 'Excluir Item?';
                     modal.querySelector('p').innerText = 'Você tem certeza que deseja remover este item? Esta ação não pode ser desfeita.';
-                    document.getElementById('confirmDeleteBtn').onclick = () => {
+                    document.getElementById('confirmDeleteBtn').onclick = async () => {
                         tools = tools.filter(t => t.id !== itemToDeleteId);
                         closeModal('deleteModal');
-                        save();
+                        await save();
                         playSound('success');
                     }; 
                     openModal('deleteModal');
@@ -1919,14 +2022,14 @@
 
                     return `
                         <div id="tool-card-${t.id}" class="bg-white rounded-[2rem] p-4 shadow-lg border border-slate-100 flex flex-col group relative transition-all hover:shadow-2xl hover:-translate-y-1">
-                            <div class="absolute top-6 right-6 flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onclick="openItemHistory(${t.id}); event.stopPropagation();" class="bg-white/90 p-2 rounded-lg text-slate-600 hover:text-blue-600 shadow-sm border border-slate-200 cursor-pointer backdrop-blur" title="Histórico"><i data-lucide="clock" size="14"></i></button>
+                            ${!isReadOnly ? `<div class="absolute top-6 right-6 flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                                 ${t.status === 'em uso' ? `<button onclick="requestReturn(${t.id}); event.stopPropagation();" class="bg-orange-500 text-white p-2 rounded-lg shadow-sm border border-orange-500 cursor-pointer hover:bg-orange-600" title="Devolver"><i data-lucide="rotate-ccw" size="14"></i></button>` : ''}
                                 <button onclick="editTool(${t.id}); event.stopPropagation();" class="bg-white/90 p-2 rounded-lg text-slate-600 hover:text-blue-600 shadow-sm border border-slate-200 cursor-pointer backdrop-blur" title="Editar"><i data-lucide="pencil" size="14"></i></button>
                                 <button onclick="requestDelete(${t.id}); event.stopPropagation();" class="bg-white/90 p-2 rounded-lg text-rose-500 hover:bg-rose-50 shadow-sm border border-slate-200 cursor-pointer backdrop-blur" title="Excluir"><i data-lucide="trash-2" size="14"></i></button>
-                            </div>
+                            </div>` : ''}
                             <div onclick="openZoom('${t.img || ''}')" class="img-container relative w-full aspect-square bg-slate-50 rounded-2xl mb-4 flex items-center justify-center overflow-hidden border border-slate-50">
                                 ${t.img ? `<img src="${t.img}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">` : `<i data-lucide="wrench" class="text-slate-200" size="40"></i>`}
+                                ${t.weight ? `<div class="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm"><i data-lucide="weight" size="12"></i> ${t.weight} KG</div>` : ''}
                                 <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
                                     <i data-lucide="expand" class="text-white opacity-0 group-hover:opacity-100 transition-all transform scale-50 group-hover:scale-100" size="32"></i>
                                 </div>
@@ -1936,11 +2039,10 @@
                                 <h3 class="font-black text-slate-900 uppercase text-xs truncate" title="${t.name}">${t.name}</h3>
                                 ${t.status === 'quebrado' && t.maintenanceNote ? 
                                     `<p class="text-[9px] font-bold text-rose-500 mt-1 truncate" title="${t.maintenanceNote}"><i data-lucide="wrench" size="10" class="inline-block -mt-px"></i> ${t.maintenanceNote}</p>` :
-                                    `<p class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">
-                                        ${t.code || ''} 
-                                        ${t.brand ? '<span class="text-indigo-500 font-black"> | ' + t.brand + '</span>' : ''}
-                                        ${t.weight ? '<span class="text-slate-500 font-black"> | ' + t.weight + ' KG <i data-lucide="weight" width="10" height="15" class="inline-block -mt-px"></i></span>' : ''}
-                                    </p>`}
+                                    `<div class="flex items-center gap-2 mt-2 flex-wrap">
+                                        ${t.code ? `<span class="bg-slate-800 text-white px-2 py-1 rounded-md text-[10px] font-black tracking-widest shadow-sm">#${t.code}</span>` : ''}
+                                        ${t.brand ? `<span class="text-[10px] font-bold text-indigo-500 uppercase tracking-tight">${t.brand}</span>` : ''}
+                                    </div>`}
                                 
                                 <div class="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
                                     <div class="flex flex-col">
@@ -2030,7 +2132,7 @@
                                     </span>
                                     ${t.status === 'quebrado' && t.maintenanceNote ? `<span class="text-[9px] text-rose-500 font-bold mt-1 block truncate" title="${t.maintenanceNote}">${t.maintenanceNote}</span>` : ''}
                                 </div>
-                            </td>
+                            </td>` + (!isReadOnly ? `
                             <td class="px-8 py-5 text-right">
                                 <div class="flex justify-end gap-2">
                                     ${t.status === 'em uso' ? 
@@ -2040,7 +2142,7 @@
                                     <button onclick="editTool(${t.id})" class="p-2 text-slate-400 hover:text-blue-600 bg-transparent border-none cursor-pointer"><i data-lucide="pencil" size="16"></i></button>
                                     <button onclick="requestDelete(${t.id})" class="p-2 text-slate-400 hover:text-rose-600 bg-transparent border-none cursor-pointer"><i data-lucide="trash-2" size="16"></i></button>
                                 </div>
-                            </td>
+                            </td>` : '') + `
                         </tr>
                     `).join('');
                     lucide.createIcons();
@@ -2077,9 +2179,9 @@
                     openModal('deleteModal');
                 }
 
-                function deleteHistoryEntry() {
+                async function deleteHistoryEntry() {
                     history = history.filter(h => h.historyId !== historyItemToDeleteId);
-                    save();
+                    await save();
                     closeModal('deleteModal');
                     playSound('success');
                 }
@@ -2140,9 +2242,9 @@
 
                         return `
                         <div class="bg-white rounded-2xl p-5 shadow-md border border-slate-100 flex flex-col gap-4 relative group">
-                            <div class="absolute top-4 right-4">
+                            ${!isReadOnly ? `<div class="absolute top-4 right-4">
                                 <button onclick="requestDeleteHistory(${h.historyId})" class="p-2 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Excluir Registro"><i data-lucide="trash-2" size="16"></i></button>
-                            </div>
+                            </div>` : ''}
                             <div class="flex items-start gap-4">
                                 <div class="w-16 h-16 bg-slate-50 rounded-xl flex items-center justify-center overflow-hidden border border-slate-100">
                                     ${toolImg ? `<img src="${toolImg}" class="w-full h-full object-cover">` : `<i data-lucide="wrench" class="text-slate-300" size="24"></i>`}
@@ -2206,7 +2308,7 @@
                 }
 
                 // --- FUNÇÃO DE SIMULAÇÃO DE ATRASO ---
-                function simulateOverdue() {
+                async function simulateOverdue() {
                     // Encontra a primeira ferramenta de item único que esteja disponível
                     const availableTool = tools.find(t => t.status === 'disponivel' && (!t.hasOwnProperty('qty') || t.qty === 0));
                     
@@ -2240,7 +2342,7 @@
                     history.unshift(historyEntry);
 
                     // Salva os dados e atualiza a interface, mostrando o alerta
-                    save();
+                    await save();
                     openOverdueModal();
                 }
 
@@ -2271,7 +2373,7 @@
                 }
 
                 // --- FUNÇÃO DE PARAR SIMULAÇÃO DE ATRASO ---
-                function stopSimulation() {
+                async function stopSimulation() {
                     const simulatedTool = tools.find(t => t.status === 'em uso' && t.user === 'SIMULAÇÃO');
                     
                     if (!simulatedTool) {
@@ -2289,13 +2391,35 @@
                         history.splice(historyIndex, 1);
                     }
 
-                    save();
+                    await save();
                     document.getElementById('alertModalTitle').innerText = "Simulação Finalizada";
                     document.getElementById('alertModalText').innerText = "A simulação de atraso foi revertida com sucesso.";
                     openModal('alertModal');
                 }
 
                 window.onload = () => { 
+                    if (isReadOnly) {
+                        document.body.classList.add('read-only-mode');
+                        // Ocultar botões e seções administrativas
+                        ['btn-actions', 'btn-team', 'btn-settings', 'btn-tests'].forEach(id => {
+                            const el = document.getElementById(id);
+                            if(el) el.classList.add('hidden');
+                        });
+                        const mainBtns = document.getElementById('mainActionButtons');
+                        if(mainBtns) mainBtns.classList.add('hidden');
+                        
+                        const mainTh = document.getElementById('mainTableActionsHeader');
+                        if(mainTh) mainTh.classList.add('hidden');
+
+                        const teamForm = document.getElementById('addWorkerFormContainer');
+                        if(teamForm) teamForm.classList.add('hidden');
+
+                        // Ocultar opções de backup restritas
+                        if(document.getElementById('btn-backup-import')) document.getElementById('btn-backup-import').classList.add('hidden');
+                        if(document.getElementById('btn-backup-reset')) document.getElementById('btn-backup-reset').classList.add('hidden');
+                    }
+
+                    selectWorkerType('LDC');
                     render(); 
                     renderOverdueAlert();
                     applyTheme(); // Aplica o tema salvo
@@ -2397,16 +2521,20 @@
                     document.getElementById('settingAlertLowStock').checked = appSettings.alertLowStock !== false;
                     document.getElementById('settingAlertOverdue').checked = appSettings.alertOverdue !== false;
                     document.getElementById('settingSystemSounds').checked = appSettings.systemSounds !== false;
+
+                    // Sharing Link
+                    const baseUrl = window.location.href.split('?')[0];
+                    document.getElementById('readOnlyLinkInput').value = `${baseUrl}?mode=readonly`;
                 }
 
-                function saveSettings() {
+                async function saveSettings() {
                     appSettings.overdueHours = parseInt(document.getElementById('settingOverdueHours').value) || 24;
                     appSettings.lowStockLimit = parseInt(document.getElementById('settingLowStock').value) || 5;
                     appSettings.darkMode = document.getElementById('settingDarkMode').checked;
                     appSettings.alertLowStock = document.getElementById('settingAlertLowStock').checked;
                     appSettings.alertOverdue = document.getElementById('settingAlertOverdue').checked;
                     appSettings.systemSounds = document.getElementById('settingSystemSounds').checked;
-                    save();
+                    await save();
                 }
 
                 function setAdminPin() {
@@ -2414,10 +2542,22 @@
                     const val = pinInput.value.trim();
                     if (!val) return;
                     appSettings.adminPin = val;
-                    save();
+                    save(false); // Salva localmente primeiro
                     loadSettingsUI();
                     document.getElementById('alertModalTitle').innerText = "Sucesso";
                     document.getElementById('alertModalText').innerText = "PIN de segurança definido com sucesso!";
+                    openModal('alertModal');
+                    playSound('success');
+                }
+
+                function copyReadOnlyLink() {
+                    const input = document.getElementById('readOnlyLinkInput');
+                    input.select();
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(input.value);
+                    }
+                    document.getElementById('alertModalTitle').innerText = "Link Copiado";
+                    document.getElementById('alertModalText').innerText = "O link de visualização foi copiado para a área de transferência.";
                     openModal('alertModal');
                     playSound('success');
                 }
@@ -2427,9 +2567,9 @@
                     modal.querySelector('h3').innerText = 'Remover PIN?';
                     modal.querySelector('p').innerText = 'Tem certeza que deseja remover a proteção por PIN?';
                     
-                    document.getElementById('confirmDeleteBtn').onclick = () => {
+                    document.getElementById('confirmDeleteBtn').onclick = async () => {
                         appSettings.adminPin = null;
-                        save();
+                        await save();
                         loadSettingsUI();
                         closeModal('deleteModal');
                         document.getElementById('alertModalTitle').innerText = "Sucesso";
@@ -2443,7 +2583,7 @@
                 function toggleDarkMode() {
                     appSettings.darkMode = !appSettings.darkMode;
                     applyTheme();
-                    saveSettings();
+                    save(false);
                 }
 
                 function applyTheme() {
@@ -2491,17 +2631,17 @@
                     downloadAnchorNode.remove();
                 }
 
-                function importData(input) {
+                async function importData(input) {
                     const file = input.files[0];
                     if(!file) return;
                     const reader = new FileReader();
-                    reader.onload = function(e) {
+                    reader.onload = async function(e) {
                         try {
                             const data = JSON.parse(e.target.result);
                             if (data.tools) tools = data.tools;
                             if (data.team) team = data.team;
                             if (data.history) history = data.history;
-                            save();
+                            await save();
                             document.getElementById('alertModalTitle').innerText = "Sucesso";
                             document.getElementById('alertModalText').innerText = "Dados importados com sucesso!";
                             openModal('alertModal');
@@ -2533,7 +2673,7 @@
                     document.getElementById('btnReturnWorking').onclick = () => handleReturnCondition(id, 'funcionando');
                     openModal('returnModal');
                 }
-                function handleReturnCondition(id, condition) {
+                async function handleReturnCondition(id, condition) {
                     const tool = tools.find(t => t.id === id);
                     if (!tool) return;
 
@@ -2557,7 +2697,7 @@
                         }
                         closeModal('returnModal');
                         document.getElementById(`tool-card-${id}`)?.remove();
-                        save();
+                        await save();
                         playSound('success');
                     } else if (condition === 'quebrado') {
                         // Para ferramentas normais e consumíveis, inicia o fluxo de manutenção
@@ -2592,7 +2732,7 @@
                         // Não salva aqui, pois o fluxo continua no modal de manutenção
                     }
                 }
-                function finishRepair(id) {
+                async function finishRepair(id) {
                     const tool = tools.find(t => t.id === id);
                     if (!tool || !tool.maintenanceInfo) return;
 
@@ -2602,13 +2742,13 @@
                     const fileInput = document.getElementById('invoiceFileInput');
                     const file = fileInput.files[0];
 
-                    const processAndSave = (invoiceData) => {
+                    const processAndSave = async (invoiceData) => {
                         // Re-busca a ferramenta para garantir que estamos alterando a instância correta
                         const currentTool = tools.find(t => t.id === id) || tool;
                         currentTool.maintenanceInfo.invoiceFile = invoiceData;
                         currentTool.maintenanceInfo.status = 'Finalizado';
                         closeModal('manageMaintenanceModal');
-                        setTimeout(save, 50);
+                        await save();
                         playSound('success');
                     };
 
@@ -2671,7 +2811,7 @@
                     }
                 }
 
-                function concludeAndMoveToStock(id) {
+                async function concludeAndMoveToStock(id) {
                     closeModal('manageMaintenanceModal');
                     const t = tools.find(x => x.id === id);
                     if (t) {
@@ -2685,7 +2825,7 @@
                         t.maintenanceNote = "";
                         t.maintenanceInfo = null;
                         document.getElementById(`tool-card-${id}`)?.remove();
-                        save();
+                        await save();
                         playSound('success');
                     }
                 }
@@ -2752,6 +2892,13 @@
                         <div><p class="font-bold text-xs uppercase text-slate-800">${tool.name}</p><p class="text-[9px] font-black text-slate-400 uppercase">${tool.code}</p></div>
                     </div>`;
                     
+                    // Reset image upload
+                    currentMaintenanceImageBase64 = "";
+                    document.getElementById('maintenanceFileInput').value = null;
+                    document.getElementById('maintenanceImagePreview').src = "";
+                    document.getElementById('maintenanceImagePreviewContainer').classList.add('hidden');
+                    document.getElementById('maintenanceUploadPlaceholder').classList.remove('hidden');
+
                     // Configuração do campo de quantidade
                     const qtyContainer = document.getElementById('maintenanceQtyContainer');
                     const qtyInput = document.getElementById('maintenanceQtyInput');
@@ -2779,7 +2926,7 @@
                     document.getElementById('step-detalhes-manutencao').classList.add('hidden');
                 }
 
-                function finalizeMaintenanceReport() {
+                async function finalizeMaintenanceReport() {
                     const t = tools.find(x => x.id === maintenanceData.toolId);
                     const note = document.getElementById('maintenanceNoteInput').value.trim();
                     const qtyInput = document.getElementById('maintenanceQtyInput');
@@ -2842,7 +2989,8 @@
                                 reportDate: new Date().toISOString(),
                                 reportedBy: t.user !== '-' ? t.user : 'ALMOXARIFADO',
                                 approvalDate: null,
-                                invoiceFile: null
+                                invoiceFile: null,
+                                damagePhoto: currentMaintenanceImageBase64
                             }
                         };
                         
@@ -2895,12 +3043,13 @@
                             reportDate: new Date().toISOString(),
                             reportedBy: responsibleUser,
                             approvalDate: null,
-                            invoiceFile: null
+                            invoiceFile: null,
+                            damagePhoto: currentMaintenanceImageBase64
                         };
                     }
 
                     closeModal('maintenanceModal');
-                    setTimeout(save, 50);
+                    await save();
                     playSound('success');
                 }
 
@@ -2962,7 +3111,7 @@
                     resetMaterial(1);
                 }
 
-                function processQtyStep() {
+                async function processQtyStep() {
                     const tool = tools.find(t => t.id === materialData.toolId);
                     const qtyInput = document.getElementById('materialQtyInput');
                     const qty = parseInt(qtyInput.value);
@@ -3041,7 +3190,7 @@
                     }
                 }
 
-                function finalizeMaterialCheckout() {
+                async function finalizeMaterialCheckout() {
                     const t = tools.find(x => x.id === materialData.toolId);
                     const w = team.find(x => x.id === materialData.workerId);
                     const qty = materialData.qty;
@@ -3080,7 +3229,7 @@
                         });
                     }
                     closeModal('materialModal');
-                    save();
+                    await save();
                     playSound('success');
                 }
 
@@ -3121,27 +3270,17 @@
                     lucide.createIcons();
                 }
 
-                function focusCheckinBarcode() {
-                    document.getElementById('checkinBarcodeInput').focus();
-                }
-
                 function handleCheckinBarcodeScan(code) {
                     if (!code) return;
                     document.getElementById('checkinSearchInput').value = code;
                     openCheckinModal(true);
-                    document.getElementById('checkinBarcodeInput').value = "";
                 }
 
                 // --- FUNÇÕES DE CÓDIGO DE BARRAS E QR CODE ---
-                function focusBarcode() {
-                    document.getElementById('barcodeInput').focus();
-                }
-
                 function handleBarcodeScan(code) {
                     if (!code) return;
                     document.getElementById('materialSearchInput').value = code;
                     openMaterialModal(true);
-                    document.getElementById('barcodeInput').value = ""; // Limpa para a próxima leitura
                 }
 
                 function startQrScanner() {
@@ -3394,134 +3533,208 @@
 
                 // --- FUNÇÕES DE RELATÓRIO ---
                 function exportToolsToExcel() {
-                    // --- 0. Common Styles ---
-                    const headerStyle = {
-                        font: { bold: true, color: { rgb: "FFFFFF" }, sz: 12 },
-                        fill: { fgColor: { rgb: "107C41" } }, // Green Header
-                        alignment: { horizontal: "center", vertical: "center" }
-                    };
-                    const centerAlign = { alignment: { horizontal: "center", vertical: "center" } };
-                    const currencyFormat = { numFmt: 'R$ #,##0.00' };
-                    const borderAll = {
-                        border: {
-                            top: { style: "thin", color: { rgb: "E2E8F0" } },
-                            bottom: { style: "thin", color: { rgb: "E2E8F0" } },
-                            left: { style: "thin", color: { rgb: "E2E8F0" } },
-                            right: { style: "thin", color: { rgb: "E2E8F0" } }
+                    const wb = XLSX.utils.book_new();
+                    const now = new Date();
+                    const dateStr = now.toLocaleDateString('pt-BR');
+                    const timeStr = now.toLocaleTimeString('pt-BR');
+
+                    // Estilos Profissionais
+                    const styles = {
+                        title: {
+                            font: { bold: true, sz: 18, color: { rgb: "FFFFFF" }, name: "Calibri" },
+                            fill: { fgColor: { rgb: "000000" } }, // Preto
+                            alignment: { horizontal: "center", vertical: "center" }
+                        },
+                        header: {
+                            font: { bold: true, sz: 12, color: { rgb: "FFFFFF" }, name: "Calibri" },
+                            fill: { fgColor: { rgb: "000000" } }, // Preto
+                            alignment: { horizontal: "center", vertical: "center", wrapText: true },
+                            border: {
+                                top: { style: "thin", color: { rgb: "000000" } },
+                                bottom: { style: "thin", color: { rgb: "000000" } },
+                                left: { style: "thin", color: { rgb: "000000" } },
+                                right: { style: "thin", color: { rgb: "000000" } }
+                            }
+                        },
+                        cell: {
+                            font: { sz: 11, name: "Calibri", color: { rgb: "000000" } },
+                            alignment: { vertical: "center", wrapText: true },
+                            border: {
+                                top: { style: "thin", color: { rgb: "D9D9D9" } },
+                                bottom: { style: "thin", color: { rgb: "D9D9D9" } },
+                                left: { style: "thin", color: { rgb: "D9D9D9" } },
+                                right: { style: "thin", color: { rgb: "D9D9D9" } }
+                            }
+                        },
+                        cellCenter: {
+                            font: { sz: 11, name: "Calibri", color: { rgb: "000000" } },
+                            alignment: { vertical: "center", horizontal: "center", wrapText: true },
+                            border: {
+                                top: { style: "thin", color: { rgb: "D9D9D9" } },
+                                bottom: { style: "thin", color: { rgb: "D9D9D9" } },
+                                left: { style: "thin", color: { rgb: "D9D9D9" } },
+                                right: { style: "thin", color: { rgb: "D9D9D9" } }
+                            }
+                        },
+                        currency: {
+                            font: { sz: 11, name: "Calibri", color: { rgb: "000000" } },
+                            alignment: { vertical: "center", horizontal: "right" },
+                            border: {
+                                top: { style: "thin", color: { rgb: "D9D9D9" } },
+                                bottom: { style: "thin", color: { rgb: "D9D9D9" } },
+                                left: { style: "thin", color: { rgb: "D9D9D9" } },
+                                right: { style: "thin", color: { rgb: "D9D9D9" } }
+                            },
+                            numFmt: '"R$" #,##0.00'
                         }
                     };
 
-                    const workbook = XLSX.utils.book_new();
+                    const createSheet = (title, headers, data, colWidths, currencyCols = [], centerCols = []) => {
+                        const nCols = headers.length;
+                        const titleRow = new Array(nCols).fill("");
+                        titleRow[0] = title.toUpperCase();
+                        if (nCols >= 2) {
+                            titleRow[nCols - 2] = dateStr;
+                            titleRow[nCols - 1] = timeStr;
+                        }
+
+                        // Dados da planilha com Título e Data
+                        const wsData = [
+                            titleRow,
+                            [""], // Linha em branco
+                            headers
+                        ];
+                        
+                        data.forEach(row => wsData.push(row));
+
+                        const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+                        // Mesclar células do título
+                        if (nCols > 2) {
+                            ws['!merges'] = [
+                                { s: { r: 0, c: 0 }, e: { r: 0, c: nCols - 3 } } // Título
+                            ];
+                        }
+
+                        // Largura das colunas
+                        ws['!cols'] = colWidths.map(w => ({ wch: w }));
+                        
+                        // Altura das linhas (Título maior)
+                        ws['!rows'] = [{ hpt: 40 }, { hpt: 10 }, { hpt: 30 }]; 
+
+                        // Aplicar Estilos
+                        const range = XLSX.utils.decode_range(ws['!ref']);
+                        for (let R = range.s.r; R <= range.e.r; ++R) {
+                            for (let C = range.s.c; C <= range.e.c; ++C) {
+                                const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
+                                if (!ws[cellRef]) continue;
+
+                                if (R === 0) { // Título e Data/Hora
+                                    if (C === nCols - 1 || C === nCols - 2) {
+                                        ws[cellRef].s = {
+                                            font: { bold: true, sz: 10, color: { rgb: "FFFFFF" }, name: "Calibri" },
+                                            fill: { fgColor: { rgb: "000000" } },
+                                            alignment: { horizontal: "center", vertical: "center" }
+                                        };
+                                    } else {
+                                        ws[cellRef].s = styles.title;
+                                    }
+                                } else if (R === 2) { // Cabeçalho
+                                    ws[cellRef].s = styles.header;
+                                } else if (R > 2) { // Dados
+                                    let cellStyle = { ...styles.cell };
+                                    
+                                    // Efeito Zebra (Linhas alternadas)
+                                    if ((R - 2) % 2 !== 0) {
+                                        cellStyle.fill = { fgColor: { rgb: "F2F2F2" } };
+                                    }
+
+                                    if (currencyCols.includes(C)) {
+                                        cellStyle = { ...cellStyle, ...styles.currency, fill: cellStyle.fill };
+                                        ws[cellRef].t = 'n'; // Força tipo número para Excel entender
+                                    } else if (centerCols.includes(C)) {
+                                        cellStyle = { ...cellStyle, ...styles.cellCenter, fill: cellStyle.fill };
+                                    }
+                                    
+                                    ws[cellRef].s = cellStyle;
+                                }
+                            }
+                        }
+                        
+                        // AutoFiltro no cabeçalho
+                        ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 2, c: 0 }, e: { r: 2, c: headers.length - 1 } }) };
+
+                        return ws;
+                    };
 
                     // --- 1. GUIA ESTOQUE ---
-                    (() => {
-                        const statusStyles = {
-                            disponivel: { fill: { fgColor: { rgb: "D1FAE5" } } },
-                            'em uso':   { fill: { fgColor: { rgb: "FFEDD5" } } },
-                            quebrado:   { fill: { fgColor: { rgb: "FEE2E2" } } }
-                        };
-                        const sortedTools = [...tools].sort((a, b) => (a.code || '').localeCompare(b.code || '', undefined, { numeric: true, sensitivity: 'base' }));
-                        const headers = ['Nome', 'Código', 'Local', 'Status', 'Responsável', 'Valor', 'Quantidade'];
-                        const data = sortedTools.map(t => [
-                            capitalize(t.name), t.code, t.location, capitalize(t.status), capitalize(t.user), t.value || 0, t.qty || 0
-                        ]);
-                        const worksheetData = [headers, ...data];
-                        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-
-                        worksheetData.forEach((row, r) => {
-                            row.forEach((cell, c) => {
-                                const cellRef = XLSX.utils.encode_cell({ r, c });
-                                if (!worksheet[cellRef]) return;
-                                worksheet[cellRef].s = { ...borderAll };
-                                if (r === 0) {
-                                    worksheet[cellRef].s = { ...headerStyle, ...borderAll };
-                                } else {
-                                    if (c === 5 || c === 6) { // Valor & Quantidade
-                                        worksheet[cellRef].t = 'n';
-                                    }
-                                    if ([1, 2, 3, 4, 6].includes(c)) worksheet[cellRef].s.alignment = centerAlign.alignment;
-                                    if (c === 5) { worksheet[cellRef].s.numFmt = currencyFormat.numFmt; } // Valor
-
-                                    if (c === 3) {
-                                        const status = (typeof cell === 'string' ? cell.toLowerCase() : '');
-                                        if (statusStyles[status]) worksheet[cellRef].s.fill = statusStyles[status].fill;
-                                    }
-                                }
-                            });
-                        });
-
-                        worksheet['!cols'] = [ { wch: 40 }, { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 12 } ];
-                        worksheet['!autofilter'] = { ref: `A1:G${data.length + 1}` };
-                        XLSX.utils.book_append_sheet(workbook, worksheet, "Estoque");
-                    })();
+                    const estoqueData = [...tools].sort((a, b) => (a.name || '').localeCompare(b.name || '')).map(t => [
+                        capitalize(t.name),
+                        t.code || '-',
+                        capitalize(t.status),
+                        capitalize(t.user),
+                        t.value || 0,
+                        t.qty || 0
+                    ]);
+                    const wsEstoque = createSheet(
+                        "Relatório de Estoque",
+                        ['Nome', 'Código', 'Status', 'Responsável', 'Valor', 'Quantidade'],
+                        estoqueData,
+                        [40, 15, 15, 25, 15, 12],
+                        [4], // Coluna Valor é moeda
+                        [1, 5] // Código e Qtd centralizados
+                    );
+                    XLSX.utils.book_append_sheet(wb, wsEstoque, "Estoque");
 
                     // --- 2. GUIA FOLLOW-UP ---
-                    (() => {
-                        const maintenanceTools = tools.filter(t => t.status === 'quebrado' && t.maintenanceInfo);
-                        const headers = ['Equipamento', 'Código', 'Problema', 'Status Atual', 'Fornecedor', 'Custo Orçado', 'Reportado Por', 'Data Reporte'];
-                        const data = maintenanceTools.map(t => {
-                            const info = t.maintenanceInfo || {};
-                            return [ t.name, t.code, t.maintenanceNote, info.status, info.provider, info.cost || 0, info.reportedBy, formatISODate(info.reportDate) ];
-                        });
-                        const worksheetData = [headers, ...data];
-                        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-
-                        worksheetData.forEach((row, r) => {
-                            row.forEach((cell, c) => {
-                                const cellRef = XLSX.utils.encode_cell({ r, c });
-                                if (!worksheet[cellRef]) return;
-                                worksheet[cellRef].s = { ...borderAll };
-                                if (r === 0) {
-                                    worksheet[cellRef].s = { ...headerStyle, ...borderAll };
-                                } else {
-                                    if ([1, 3, 4, 6, 7].includes(c)) worksheet[cellRef].s.alignment = centerAlign.alignment;
-                                    if (c === 5) { worksheet[cellRef].t = 'n'; worksheet[cellRef].s.numFmt = currencyFormat.numFmt; }
-                                }
-                            });
-                        });
-
-                        worksheet['!cols'] = [ { wch: 40 }, { wch: 15 }, { wch: 50 }, { wch: 20 }, { wch: 25 }, { wch: 15 }, { wch: 25 }, { wch: 20 } ];
-                        worksheet['!autofilter'] = { ref: `A1:H${data.length + 1}` };
-                        XLSX.utils.book_append_sheet(workbook, worksheet, "FollowUp");
-                    })();
+                    const maintData = tools.filter(t => t.status === 'quebrado' && t.maintenanceInfo).map(t => {
+                        const info = t.maintenanceInfo || {};
+                        return [
+                            t.name,
+                            t.code || '-',
+                            t.maintenanceNote || '-',
+                            info.status || '-',
+                            info.provider || '-',
+                            info.cost || 0,
+                            info.reportedBy || '-',
+                            formatISODate(info.reportDate)
+                        ];
+                    });
+                    const wsMaint = createSheet(
+                        "Follow-Up de Manutenção",
+                        ['Equipamento', 'Código', 'Problema', 'Status', 'Fornecedor', 'Custo', 'Reportado Por', 'Data'],
+                        maintData,
+                        [35, 15, 40, 20, 25, 15, 20, 15],
+                        [5], // Custo é moeda
+                        [1, 7] // Código e Data centralizados
+                    );
+                    XLSX.utils.book_append_sheet(wb, wsMaint, "FollowUp");
 
                     // --- 3. GUIA HISTÓRICO ---
-                    (() => {
-                        const headers = ['Ferramenta', 'Responsável', 'Qtd', 'Data Retirada', 'Data Devolução', 'Status', 'Tempo de Posse'];
-                        const data = history.sort((a,b) => new Date(b.checkoutDate) - new Date(a.checkoutDate)).map(h => {
-                            let statusLabel;
-                            if (h.returnDate) {
-                                statusLabel = h.condition === 'quebrado' ? 'Devolvido (Quebrado)' : 'Devolvido';
-                            } else {
-                                statusLabel = h.type === 'manutencao' ? 'Em Manutenção' : 'Em Uso';
-                            }
-                            return [ h.toolName, h.workerName, h.qty, formatISODate(h.checkoutDate), formatISODate(h.returnDate), statusLabel, formatDuration(h.checkoutDate, h.returnDate) ];
-                        });
-                        const worksheetData = [headers, ...data];
-                        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-
-                        worksheetData.forEach((row, r) => {
-                            row.forEach((cell, c) => {
-                                const cellRef = XLSX.utils.encode_cell({ r, c });
-                                if (!worksheet[cellRef]) return;
-                                worksheet[cellRef].s = { ...borderAll };
-                                if (r === 0) {
-                                    worksheet[cellRef].s = { ...headerStyle, ...borderAll };
-                                } else {
-                                    if (c === 2) { // Qtd column
-                                        worksheet[cellRef].t = 'n';
-                                    }
-                                    if ([2, 3, 4, 5, 6].includes(c)) worksheet[cellRef].s.alignment = centerAlign.alignment;
-                                }
-                            });
-                        });
-                        worksheet['!cols'] = [ { wch: 40 }, { wch: 25 }, { wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 15 } ];
-                        worksheet['!autofilter'] = { ref: `A1:G${data.length + 1}` };
-                        XLSX.utils.book_append_sheet(workbook, worksheet, "Historico");
-                    })();
+                    const histData = history.sort((a, b) => new Date(b.checkoutDate) - new Date(a.checkoutDate)).map(h => {
+                        let statusLabel = h.returnDate ? (h.condition === 'quebrado' ? 'Devolvido (Quebrado)' : 'Devolvido') : (h.type === 'manutencao' ? 'Em Manutenção' : 'Em Uso');
+                        return [
+                            h.toolName,
+                            h.workerName,
+                            h.qty,
+                            formatISODate(h.checkoutDate),
+                            formatISODate(h.returnDate),
+                            statusLabel,
+                            formatDuration(h.checkoutDate, h.returnDate)
+                        ];
+                    });
+                    const wsHist = createSheet(
+                        "Histórico de Movimentações",
+                        ['Ferramenta', 'Responsável', 'Qtd', 'Retirada', 'Devolução', 'Status', 'Duração'],
+                        histData,
+                        [35, 25, 8, 18, 18, 20, 15],
+                        [], // Sem moeda
+                        [2, 3, 4, 6] // Qtd, Datas, Duração centralizados
+                    );
+                    XLSX.utils.book_append_sheet(wb, wsHist, "Historico");
 
                     // --- Download Workbook ---
-                    XLSX.writeFile(workbook, "Relatorio_Completo_Ferramentaria.xlsx");
+                    XLSX.writeFile(wb, "Relatorio_LDC_Pro.xlsx");
                 }
 
                 function exportToPDF() {
@@ -3531,12 +3744,11 @@
 
                         // --- 1. GUIA ESTOQUE ---
                         doc.text("Relatório de Estoque", 14, 16);
-                        const estoqueHead = [['Nome', 'Código', 'Local', 'Status', 'Responsável', 'Valor', 'Quantidade']];
+                        const estoqueHead = [['Nome', 'Código', 'Status', 'Responsável', 'Valor', 'Quantidade']];
                         const sortedTools = [...tools].sort((a, b) => (a.code || '').localeCompare(b.code || '', undefined, { numeric: true, sensitivity: 'base' }));
                         const estoqueBody = sortedTools.map(t => [
                             capitalize(t.name),
                             t.code || '',
-                            t.location || '',
                             capitalize(t.status),
                             capitalize(t.user),
                             formatBRL(t.value || 0),
@@ -3547,7 +3759,7 @@
                             body: estoqueBody,
                             startY: 22,
                             theme: 'grid',
-                            headStyles: { fillColor: [11, 17, 32] }
+                            headStyles: { fillColor: [0, 0, 0] }
                         });
 
                         // --- 2. GUIA FOLLOW-UP ---
@@ -3573,7 +3785,7 @@
                             body: maintBody,
                             startY: 22,
                             theme: 'grid',
-                            headStyles: { fillColor: [11, 17, 32] }
+                            headStyles: { fillColor: [0, 0, 0] }
                         });
 
                         // --- 3. GUIA HISTÓRICO ---
@@ -3594,7 +3806,7 @@
                             body: historyBody,
                             startY: 22,
                             theme: 'grid',
-                            headStyles: { fillColor: [11, 17, 32] }
+                            headStyles: { fillColor: [0, 0, 0] }
                         });
 
                         doc.save("Relatorio_Completo_Ferramentaria.pdf");
@@ -3684,9 +3896,9 @@
                         const info = t.maintenanceInfo || {};
                         return `
                         <div class="bg-white rounded-2xl p-5 shadow-lg border border-slate-100 flex flex-col gap-4 group cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all relative" onclick="openManageMaintenanceModal(${t.id})">
-                            <div class="absolute top-4 right-4 z-10">
+                            ${!isReadOnly ? `<div class="absolute top-4 right-4 z-10">
                                 <button onclick="requestDeleteMaintenance(${t.id}, event)" class="p-2 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Excluir Manutenção"><i data-lucide="trash-2" size="16"></i></button>
-                            </div>
+                            </div>` : ''}
                             <div class="flex items-start gap-4">
                                 <div class="w-16 h-16 bg-slate-50 rounded-xl flex items-center justify-center overflow-hidden border border-slate-100 shadow-sm">
                                     ${t.img ? `<img src="${t.img}" class="w-full h-full object-cover">` : `<i data-lucide="wrench" class="text-slate-300" size="24"></i>`}
@@ -3697,12 +3909,21 @@
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <div class="bg-amber-50/50 border border-amber-200/50 rounded-lg p-3 text-center">
-                                    <div class="flex items-center justify-center gap-1">
+                                <div class="bg-amber-50/50 border border-amber-200/50 rounded-xl p-3 text-center group/photo">
+                                    <div class="flex items-center justify-center gap-1 mb-1">
                                         <i data-lucide="alert-circle" class="text-amber-500" size="14"></i>
                                         <p class="text-[9px] font-black text-amber-700 uppercase">Problema Reportado</p>
                                     </div>
-                                    <p class="text-xs font-semibold text-amber-900 mt-1 truncate" title="${t.maintenanceNote || ''}">${t.maintenanceNote || 'N/A'}</p>
+                                    <p class="text-xs font-semibold text-amber-900 line-clamp-2" title="${t.maintenanceNote || ''}">${t.maintenanceNote || 'N/A'}</p>
+                                    ${info.damagePhoto ? `
+                                    <div class="mt-3 relative w-full h-32 rounded-lg overflow-hidden cursor-zoom-in border border-amber-200 shadow-sm" onclick="event.stopPropagation(); openZoom('${info.damagePhoto}')">
+                                        <img src="${info.damagePhoto}" class="w-full h-full object-cover transition-transform duration-700 group-hover/photo:scale-110">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover/photo:opacity-100 transition-opacity flex items-end justify-center pb-2">
+                                            <span class="text-white text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"><i data-lucide="zoom-in" size="12"></i> Ver Foto</span>
+                                        </div>
+                                        <div class="absolute top-2 right-2 bg-amber-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-sm">FOTO</div>
+                                    </div>
+                                    ` : ''}
                                 </div>
                                 ${info.provider ? `
                                 <div class="grid grid-cols-2 gap-2">
@@ -3769,6 +3990,18 @@
 
                 updateMaintenanceTimeline(info.status);
 
+                    // Check for damage photo
+                    const damagePhotoHtml = info.damagePhoto ? 
+                        `<div class="mt-4 mb-4">
+                            <p class="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-wider">Evidência do Dano</p>
+                            <div class="relative w-full h-48 rounded-2xl overflow-hidden border-2 border-slate-100 cursor-zoom-in group" onclick="openZoom('${info.damagePhoto}')">
+                                <img src="${info.damagePhoto}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all flex items-center justify-center">
+                                    <i data-lucide="zoom-in" class="text-white opacity-0 group-hover:opacity-100 transition-all transform scale-50 group-hover:scale-100" size="32"></i>
+                                </div>
+                            </div>
+                        </div>` : '';
+
                     // Preenche informações gerais
                     document.getElementById('maintenanceToolName').innerText = `${tool.name} (#${tool.code || 'S/C'})`;
                     document.getElementById('maintenanceToolInfo').innerHTML = `
@@ -3777,10 +4010,17 @@
                         </div>
                         <p class="text-xs text-slate-500 font-bold">Reportado por: <span class="text-blue-600">${info.reportedBy}</span></p>
                         <p class="text-xs text-slate-500 font-bold">Data: <span class="text-blue-600">${formatISODate(info.reportDate)}</span></p>
+                        ${damagePhotoHtml}
                     `;
 
                     // Esconde todos os passos de ação
                     document.querySelectorAll('#maintenanceActions > div').forEach(div => div.classList.add('hidden'));
+
+                    if (isReadOnly) {
+                        document.getElementById('maintenanceActions').classList.add('hidden');
+                    } else {
+                        document.getElementById('maintenanceActions').classList.remove('hidden');
+                    }
 
                     // Mostra o passo correto
                     switch (info.status) {
@@ -3841,7 +4081,7 @@
                     lucide.createIcons();
                 }
 
-                function saveQuote(id) {
+                async function saveQuote(id) {
                     const tool = tools.find(t => t.id === id);
                     if (!tool || !tool.maintenanceInfo) return;
 
@@ -3851,22 +4091,22 @@
                     tool.maintenanceInfo.status = 'Aguardando Aprovação';
 
                     closeModal('manageMaintenanceModal');
-                    setTimeout(save, 50);
+                    await save();
                     playSound('success');
                 }
 
-                function approveRepair(id) {
+                async function approveRepair(id) {
                     const tool = tools.find(t => t.id === id);
                     if (!tool || !tool.maintenanceInfo) return;
 
                     tool.maintenanceInfo.status = 'Em Conserto';
                     tool.maintenanceInfo.approvalDate = new Date().toISOString();
                     closeModal('manageMaintenanceModal');
-                    setTimeout(save, 50);
+                    await save();
                     playSound('success');
                 }
 
-                function sendBackToQuote(id) {
+                async function sendBackToQuote(id) {
                     const tool = tools.find(t => t.id === id);
                     if (!tool || !tool.maintenanceInfo) return;
                     tool.maintenanceInfo.status = 'Aguardando Orçamento';
@@ -3876,11 +4116,11 @@
                     tool.maintenanceInfo.approvalDate = null;
                     tool.maintenanceInfo.invoiceFile = null;
                     closeModal('manageMaintenanceModal');
-                    setTimeout(save, 50);
+                    await save();
                     playSound('success');
                 }
 
-                function rejectRepair(id) {
+                async function rejectRepair(id) {
                     const tool = tools.find(t => t.id === id);
                     if (!tool || !tool.maintenanceInfo) return;
                     tool.maintenanceInfo.status = 'Aguardando Orçamento';
@@ -3890,11 +4130,11 @@
                     tool.maintenanceInfo.approvalDate = null;
                     tool.maintenanceInfo.invoiceFile = null;
                     closeModal('manageMaintenanceModal');
-                    setTimeout(save, 50);
+                    await save();
                     playSound('success');
                 }
 
-                function requestDeleteMaintenance(id, event) {
+                async function requestDeleteMaintenance(id, event) {
                     event.stopPropagation();
                     const tool = tools.find(t => t.id === id);
                     if (!tool) return;
@@ -3902,33 +4142,31 @@
                     const modal = document.getElementById('deleteModal');
                     modal.querySelector('h3').innerText = 'Cancelar Manutenção?';
                     modal.querySelector('p').innerText = `Você tem certeza que deseja cancelar a manutenção para "${tool.name}"? O item retornará ao status "Disponível".`;
-                    document.getElementById('confirmDeleteBtn').onclick = () => {
-                        deleteMaintenance(id);
+                    document.getElementById('confirmDeleteBtn').onclick = async () => {
+                        await deleteMaintenance(id);
                     };
                     openModal('deleteModal');
                 }
 
-                function deleteInvoice(id) {
+                async function deleteInvoice(id) {
                     const tool = tools.find(t => t.id === id);
                     if (!tool || !tool.maintenanceInfo) return;
 
                     const modal = document.getElementById('deleteModal');
                     modal.querySelector('h3').innerText = 'Excluir Nota Fiscal?';
                     modal.querySelector('p').innerText = 'Deseja realmente excluir a nota fiscal? O status do item será revertido para "Em Conserto".';
-                    document.getElementById('confirmDeleteBtn').onclick = () => {
+                    document.getElementById('confirmDeleteBtn').onclick = async () => {
                         tool.maintenanceInfo.invoiceFile = null;
                         tool.maintenanceInfo.status = 'Em Conserto';
                         closeModal('deleteModal');
-                        setTimeout(() => {
-                            save();
-                            openManageMaintenanceModal(id);
-                        }, 50);
+                        await save();
+                        openManageMaintenanceModal(id);
                         playSound('success');
                     };
                     openModal('deleteModal');
                 }
 
-                function deleteMaintenance(id) {
+                async function deleteMaintenance(id) {
                     const tool = tools.find(t => t.id === id);
                     if (tool && tool.status === 'quebrado') {
                         tool.status = 'disponivel';
@@ -3937,7 +4175,7 @@
                         tool.maintenanceInfo = null;
                         history = history.filter(h => !(h.toolId === id && h.type === 'manutencao' && h.returnDate === null));
                         closeModal('deleteModal');
-                        setTimeout(save, 50);
+                        await save();
                         playSound('success');
                     }
                 }
