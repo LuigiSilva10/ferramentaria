@@ -15,7 +15,7 @@
                 tailwind.config = { darkMode: 'class' }
             </script>
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-            <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+            <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
@@ -40,8 +40,29 @@
                     color: #1E293B;
                 }
 
-                .sidebar { width: 280px; transition: all 0.3s ease; background-color: #0B1120; border-right: 1px solid #1E293B; }
-                .sidebar.collapsed { width: 80px; }
+                /* Sidebar Responsiva */
+                .sidebar {
+                    width: 80px;
+                    transition: all 0.3s ease;
+                    background-color: #0B1120;
+                    border-right: 1px solid #1E293B;
+                    position: sticky;
+                    top: 0;
+                    height: 100vh;
+                    z-index: 50;
+                    flex-shrink: 0;
+                }
+                .sidebar .sidebar-text { display: none; }
+                .sidebar .nav-btn { justify-content: center; }
+
+                @media (min-width: 768px) {
+                    .sidebar { width: 280px; }
+                    .sidebar.collapsed { width: 80px; }
+                    .sidebar .sidebar-text { display: inline; }
+                    .sidebar.collapsed .sidebar-text { display: none; }
+                    .sidebar .nav-btn { justify-content: flex-start; }
+                    .sidebar.collapsed .nav-btn { justify-content: center; }
+                }
                 
                 .main-content { flex: 1; display: none; opacity: 0; transform: translateY(10px); transition: all 0.4s ease; overflow-y: auto; }
                 .main-content.active-section { display: block; opacity: 1; transform: translateY(0); }
@@ -110,26 +131,34 @@
                 }
 
                 /* Dark Mode Overrides */
-                .dark body { background-color: #0f172a; color: #cbd5e1; }
-                .dark .bg-white { background-color: #1e293b; border-color: #334155; }
-                .dark .bg-slate-50 { background-color: #0f172a; border-color: #334155; }
-                .dark .bg-slate-100 { background-color: #334155; border-color: #475569; }
-                .dark .bg-slate-200 { background-color: #334155; border-color: #475569; }
-                .dark .text-slate-900, .dark .text-slate-800, .dark .text-slate-700 { color: #e2e8f0; }
-                .dark .text-slate-600, .dark .text-slate-500, .dark .text-slate-400 { color: #94a3b8; }
-                .dark .border-slate-100, .dark .border-slate-200 { border-color: #334155; }
-                .dark input, .dark select, .dark textarea { background-color: #334155; border-color: #475569; color: #e2e8f0; }
-                .dark .sidebar { background-color: #020617; border-color: #1e293b; }
-                .dark .nav-btn:hover { background-color: #1e293b; color: #e2e8f0; }
-                .dark .soft-ui-panel { background: #1e293b; box-shadow: none; border: 1px solid #334155; }
+                .dark body { background-color: #121212; color: #e0e0e0; }
+                .dark .bg-white { background-color: #1e1e1e; border-color: #2c2c2c; }
+                .dark .bg-slate-50 { background-color: #121212; border-color: #2c2c2c; }
+                .dark .bg-slate-100 { background-color: #252525; border-color: #333333; }
+                .dark .bg-slate-200 { background-color: #333333; border-color: #444444; }
+                .dark .text-slate-900, .dark .text-slate-800, .dark .text-slate-700 { color: #e0e0e0; }
+                .dark .text-slate-600, .dark .text-slate-500, .dark .text-slate-400 { color: #a0a0a0; }
+                .dark .border-slate-100, .dark .border-slate-200 { border-color: #2c2c2c; }
+                .dark input, .dark select, .dark textarea { background-color: #252525; border-color: #333333; color: #e0e0e0; }
+                .dark .sidebar { background-color: #000000; border-color: #1e1e1e; }
+                .dark .nav-btn:not(.active):hover { background-color: transparent; color: #a0a0a0; }
+                .dark #toolList tr:hover { background-color: transparent; }
+                .dark .soft-ui-panel { background: #1e1e1e; box-shadow: none; border: 1px solid #2c2c2c; }
+
+                /* Toast Animations */
+                @keyframes slideDown {
+                    from { transform: translateY(-100%) scale(0.9); opacity: 0; }
+                    to { transform: translateY(0) scale(1); opacity: 1; }
+                }
+                .toast-enter { animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
             </style>
         </head>
         <body class="bg-slate-50">
 
-            <aside id="sidebar" class="sidebar text-slate-400 flex flex-col h-screen z-50">
-                <div class="p-6 flex items-center justify-between">
-                    <h1 class="text-white font-black text-xl sidebar-text uppercase tracking-tighter">LDC PRO</h1>
-                    <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white bg-transparent border-none cursor-pointer"><i data-lucide="menu"></i></button>
+            <aside id="sidebar" class="sidebar text-slate-400 flex flex-col">
+                <div class="p-6 flex items-center justify-center md:justify-between">
+                    <h1 class="text-white font-black text-xl sidebar-text uppercase tracking-tighter hidden md:block">LDC PRO</h1>
+                    <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white bg-transparent border-none cursor-pointer hidden md:block"><i data-lucide="menu"></i></button>
                 </div>
                 <nav class="flex-1 px-4 space-y-2 mt-4">
                     <button id="btn-main" onclick="showSection('main')" class="nav-btn active"><i data-lucide="layout-dashboard"></i> <span class="sidebar-text">Painel Principal</span></button>
@@ -147,6 +176,9 @@
                             <button id="btn-tests" onclick="showSection('tests')" class="nav-btn"><i data-lucide="beaker"></i> <span class="sidebar-text">Testes</span></button>
                 </nav>
             </aside>
+
+            <!-- Toast Container -->
+            <div id="toast-container" class="fixed top-6 left-1/2 -translate-x-1/2 z-[2000] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
 
             <main id="section-main" class="main-content p-4 md:p-8 active-section">
                 <div class="max-w-[1400px] mx-auto">
@@ -184,7 +216,7 @@
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 <div class="soft-ui-panel"><p class="text-slate-400 text-[10px] font-bold uppercase mb-1">Total Geral</p><h2 id="totalCount" class="text-2xl font-black">0</h2></div>
                                 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-emerald-500 text-[10px] font-bold uppercase mb-1">Disponíveis</p><h2 id="availCount" class="text-2xl font-black text-emerald-600">0</h2></div>
-                                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-orange-500 text-[10px] font-bold uppercase mb-1">Em Uso</p><h2 id="loanCount" class="text-2xl font-black text-orange-500">0</h2></div>
+                                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative"><p class="text-orange-500 text-[10px] font-bold uppercase mb-1">Em Uso</p><h2 id="loanCount" class="text-2xl font-black text-orange-500">0</h2><span id="dashboardOverdueBadge" class="hidden absolute top-3 right-3 w-5 h-5 bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full shadow-md border-2 border-white dark:border-[#1e1e1e]"></span></div>
                                 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-red-500 text-[10px] font-bold uppercase mb-1">Manutenção</p><h2 id="brokenCount" class="text-2xl font-black text-red-600">0</h2></div>
                             </div>
                             
@@ -262,6 +294,7 @@
 
                         <div onclick="openCheckinModal()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-emerald-500 transition-all group relative overflow-hidden">
                             <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+                            <span id="returnCardOverdueBadge" class="hidden absolute top-6 right-6 w-12 h-12 bg-red-600 text-white text-xl font-black flex items-center justify-center rounded-full shadow-xl z-20"></span>
                             <div class="relative z-10 flex flex-col items-center text-center gap-6">
                                 <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
                                     <i data-lucide="package-check" size="48"></i>
@@ -305,17 +338,19 @@
                         <span id="overdueCountBadge" class="font-black">0</span>
                         <span>Ferramenta(s) com devolução atrasada. Clique para ver.</span>
                     </button>
-                    <div class="flex gap-4 mb-8 flex-wrap">
-                        <button onclick="setCatalogFilter('all')" id="filter-all" class="filter-pill active bg-slate-200 text-slate-700">Todos</button>
-                        <button onclick="setCatalogFilter('disponivel')" id="filter-disponivel" class="filter-pill bg-emerald-100 text-emerald-600">Disponíveis</button>
-                        <button onclick="setCatalogFilter('em uso')" id="filter-uso" class="filter-pill bg-orange-100 text-orange-600">Em Uso</button>
-                        <button onclick="setCatalogFilter('quebrado')" id="filter-quebrado" class="filter-pill bg-red-100 text-red-600">Manutenção</button>
-                        <div class="flex-1 flex justify-end gap-4">
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
+                        <div class="flex gap-2 flex-wrap">
+                            <button onclick="setCatalogFilter('all')" id="filter-all" class="filter-pill active bg-slate-200 text-slate-700">Todos</button>
+                            <button onclick="setCatalogFilter('disponivel')" id="filter-disponivel" class="filter-pill bg-emerald-100 text-emerald-600">Disponíveis</button>
+                            <button onclick="setCatalogFilter('em uso')" id="filter-uso" class="filter-pill bg-orange-100 text-orange-600">Em Uso</button>
+                            <button onclick="setCatalogFilter('quebrado')" id="filter-quebrado" class="filter-pill bg-red-100 text-red-600">Manutenção</button>
+                        </div>
+                        <div class="flex gap-4 w-full lg:w-auto justify-end">
                             <div class="bg-white p-3 px-5 rounded-xl border border-slate-100 shadow-sm text-right">
-                                <p class="text-slate-400 text-[8px] font-bold uppercase">Valor Total</p><h2 id="catalogTotalValue" class="text-lg font-black text-emerald-600">R$ 0,00</h2>
+                                <p class="text-slate-400 text-[10px] font-bold uppercase">Valor Total</p><h2 id="catalogTotalValue" class="text-lg font-black text-emerald-600">R$ 0,00</h2>
                             </div>
                             <div class="bg-white p-3 px-5 rounded-xl border border-slate-100 shadow-sm text-right">
-                                <p class="text-slate-400 text-[8px] font-bold uppercase">Peças Totais</p>
+                                <p class="text-slate-400 text-[10px] font-bold uppercase">Peças Totais</p>
                                 <h2 class="text-lg font-black text-slate-800 flex items-center justify-end gap-2"><i data-lucide="box" size="20" class="text-slate-400"></i><span id="catalogTotalQty">0</span></h2>
                             </div>
                         </div>
@@ -347,7 +382,7 @@
                                     <button onclick="clearSearch('historySearchInput', renderHistory)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 hidden z-10"><i data-lucide="x-circle" size="16"></i></button>
                                 </div>
                                 <div class="relative w-full md:w-48">
-                                    <i data-lucide="calendar-days" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
+                                <i data-lucide="calendar-days" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size="16"></i>
                                     <input type="text" id="historyDateInput" placeholder="FILTRAR DATA..." class="w-full bg-slate-800/50 border border-slate-700 text-white rounded-xl pl-12 pr-10 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all placeholder-slate-500 h-[42px] cursor-pointer">
                                     <button id="clearDateBtn" onclick="clearHistoryDateFilter()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 hidden z-10"><i data-lucide="x-circle" size="16"></i></button>
                                 </div>
@@ -382,65 +417,13 @@
                         </div>
                     </div>
 
-                    <!-- Add Worker Card Reformulado -->
-                    <div id="addWorkerFormContainer" class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-100 mb-8 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full -mr-16 -mt-16 pointer-events-none"></div>
-                        
-                        <div class="relative z-10">
-                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                                <div>
-                                        <h3 class="font-black text-slate-800 uppercase text-lg tracking-tight">Adicionar Colaborador</h3>
-                                    <p class="text-sm text-slate-400 font-medium">Selecione o tipo de vínculo e preencha os dados.</p>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-                                    <!-- Tipo de Colaborador -->
-                                    <div class="md:col-span-3 flex gap-3">
-                                    <div onclick="selectWorkerType('LDC')" id="type-card-ldc" class="flex-1 cursor-pointer bg-blue-50 border-2 border-blue-500 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all shadow-md group relative overflow-hidden">
-                                        <div id="indicator-ldc" class="absolute top-3 right-3 w-2.5 h-2.5 bg-blue-500 rounded-full transition-colors"></div>
-                                        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-sm group-hover:scale-110 transition-transform">
-                                            <i data-lucide="building-2" size="20"></i>
-                                        </div>
-                                        <span id="text-ldc" class="font-black text-blue-900 text-[10px] uppercase tracking-widest">LDC</span>
-                                    </div>
-                                    
-                                    <div onclick="selectWorkerType('TERCEIRO')" id="type-card-terceiro" class="flex-1 cursor-pointer bg-white border-2 border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all hover:border-slate-300 hover:shadow-md group relative overflow-hidden">
-                                        <div id="indicator-terceiro" class="absolute top-3 right-3 w-2.5 h-2.5 bg-slate-200 rounded-full transition-colors"></div>
-                                        <div class="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 shadow-sm group-hover:scale-110 transition-transform">
-                                            <i data-lucide="hard-hat" size="20"></i>
-                                        </div>
-                                        <span id="text-terceiro" class="font-black text-slate-400 text-[10px] uppercase tracking-widest">Terceiro</span>
-                                    </div>
-                                </div>
-
-                                <!-- Inputs -->
-                                    <div class="md:col-span-9 flex flex-col justify-center">
-                                    <div class="flex flex-col md:flex-row gap-3 items-end">
-                                            <div class="flex-1 w-full md:w-auto space-y-1.5">
-                                            <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Nome Completo</label>
-                                            <input type="text" id="workerNameInput" placeholder="NOME DO COLABORADOR" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all h-[48px]">
-                                        </div>
-                                            <div id="workerCostCenterField" class="flex-1 w-full md:w-auto space-y-1.5">
-                                                <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Centro de Custo</label>
-                                                <input type="text" id="workerCostCenterInput" placeholder="C. CUSTO" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all h-[48px]">
-                                            </div>
-                                            <div class="flex-1 w-full md:w-auto space-y-1.5">
-                                            <label id="workerCompanyLabel" class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Matrícula</label>
-                                                <input type="text" id="workerInfoInput" placeholder="000000" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all h-[48px]">
-                                        </div>
-                                        <button onclick="addWorker()" class="w-full md:w-auto h-[48px] bg-blue-600 text-white px-6 rounded-xl border-none cursor-pointer hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-bold uppercase text-xs tracking-widest flex items-center justify-center gap-2">
-                                            <i data-lucide="plus" size="16"></i> <span>Adicionar</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="mt-10 pt-8 border-t border-slate-100">
-                                <div id="teamGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
-                            </div>
-                        </div>
+                    <div class="flex justify-end mb-8">
+                        <button onclick="openAddWorkerModal()" class="bg-blue-600 text-white px-6 py-4 rounded-xl font-bold flex items-center gap-2 shadow-lg text-xs uppercase tracking-widest hover:bg-blue-700 transition-all border-none cursor-pointer w-full md:w-auto justify-center">
+                            <i data-lucide="plus" size="18"></i> Novo Colaborador
+                        </button>
                     </div>
+                    
+                    <div id="teamGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 </div>
             </main>
 
@@ -463,7 +446,7 @@
                             <div class="flex flex-col items-end gap-4 w-full xl:w-auto">
                                 <div class="flex items-center gap-3">
                                      <div class="bg-slate-800/50 px-4 py-2 rounded-xl border border-slate-700 text-right">
-                                        <p class="text-white text-[8px] font-bold uppercase">Total em Manutenção</p>
+                                        <p class="text-white text-[10px] font-bold uppercase">Total em Manutenção</p>
                                         <h2 class="text-lg font-black text-white flex items-center justify-end gap-2"><span id="maintenanceTotalCount">0</span></h2>
                                     </div>
                                 </div>
@@ -502,8 +485,8 @@
                     <h3 class="text-lg font-black text-slate-900 uppercase mb-2">Excluir Item?</h3>
                     <p class="text-slate-500 text-sm mb-6">Você tem certeza que deseja remover este item? Esta ação não pode ser desfeita.</p>
                     <div class="flex gap-3">
-                        <button onclick="closeModal('deleteModal')" class="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none">Cancelar</button>
-                        <button id="confirmDeleteBtn" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none shadow-lg hover:bg-rose-700 transition-all">Confirmar</button>
+                        <button onclick="closeModal('deleteModal')" class="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold uppercase text-xs cursor-pointer border-none">Cancelar</button>
+                        <button id="confirmDeleteBtn" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold uppercase text-xs cursor-pointer border-none shadow-lg hover:bg-rose-700 transition-all">Confirmar</button>
                     </div>
                 </div>
             </div>
@@ -513,7 +496,7 @@
                     <div class="w-16 h-16 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="alert-triangle" size="32"></i></div>
                     <h3 id="alertModalTitle" class="text-lg font-black text-slate-900 uppercase mb-2">Atenção</h3>
                     <p id="alertModalText" class="text-slate-500 text-sm mb-6">Mensagem de alerta.</p>
-                    <button onclick="closeModal('alertModal')" class="w-full py-3 bg-slate-100 text-slate-600 rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none hover:bg-slate-200 transition-all">Entendido</button>
+                    <button onclick="closeModal('alertModal')" class="w-full py-3 bg-slate-100 text-slate-600 rounded-xl font-bold uppercase text-xs cursor-pointer border-none hover:bg-slate-200 transition-all">Entendido</button>
                 </div>
             </div>
 
@@ -523,8 +506,8 @@
                     <h3 id="returnModalTitle" class="text-lg font-black text-slate-900 uppercase mb-2">Estado da Ferramenta</h3>
                     <p id="returnModalText" class="text-slate-500 text-sm mb-6">Qual o estado de devolução do item?</p>
                     <div class="flex gap-3">
-                        <button id="btnReturnBroken" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none shadow-lg hover:bg-rose-700">Quebrado</button>
-                        <button id="btnReturnWorking" class="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold uppercase text-[10px] cursor-pointer border-none shadow-lg hover:bg-emerald-600">Funcionando</button>
+                        <button id="btnReturnBroken" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold uppercase text-xs cursor-pointer border-none shadow-lg hover:bg-rose-700">Quebrado</button>
+                        <button id="btnReturnWorking" class="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold uppercase text-xs cursor-pointer border-none shadow-lg hover:bg-emerald-600">Funcionando</button>
                     </div>
                     <button onclick="closeModal('returnModal')" class="w-full mt-6 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black uppercase text-xs border-none cursor-pointer hover:bg-slate-200">Cancelar</button>
                 </div>
@@ -542,24 +525,24 @@
                                 <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="previewImage(this)">
                                 <div id="uploadPlaceholder" class="text-slate-400">
                                     <i data-lucide="camera" class="mx-auto" size="24"></i>
-                                    <p class="text-[8px] font-black uppercase">Adicionar Foto</p>
+                                    <p class="text-[10px] font-black uppercase">Adicionar Foto</p>
                                 </div>
                                 <div id="imagePreviewContainer" class="hidden relative h-full" title="Clique para alterar a imagem"><img id="imagePreview" class="h-full object-contain rounded-lg transition-opacity group-hover:opacity-80"><button onclick="removeImage(event)" class="absolute top-1 right-1 bg-rose-500 text-white rounded-full p-0.5 leading-none shadow-md border-2 border-white cursor-pointer" title="Remover Imagem"><i data-lucide="x" size="14"></i></button></div>
                             </div>
                             <div>
-                                <label for="toolCodeInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Código (#)</label>
+                                <label for="toolCodeInput" class="text-xs font-black uppercase text-slate-400 ml-4">Código (#)</label>
                                 <input type="text" id="toolCodeInput" placeholder="CÓDIGO / TAG" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-emerald-500 transition-all">
                             </div>
                             <div>
-                                <label for="toolNameInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Nome do Equipamento</label>
+                                <label for="toolNameInput" class="text-xs font-black uppercase text-slate-400 ml-4">Nome do Equipamento</label>
                                 <input type="text" id="toolNameInput" placeholder="NOME DA FERRAMENTA" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-emerald-500 transition-all">
                             </div>
                             <div>
-                                <label for="toolBrandInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Marca</label>
+                                <label for="toolBrandInput" class="text-xs font-black uppercase text-slate-400 ml-4">Marca</label>
                                 <input type="text" id="toolBrandInput" placeholder="MARCA DA FERRAMENTA" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-emerald-500 transition-all">
                             </div>
                             <div>
-                                <label for="toolWeightInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Peso</label>
+                                <label for="toolWeightInput" class="text-xs font-black uppercase text-slate-400 ml-4">Peso</label>
                                 <input type="number" id="toolWeightInput" placeholder="PESO (KG)" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-emerald-500 transition-all">
                             </div>
                             <div class="grid grid-cols-2 gap-3">
@@ -568,7 +551,7 @@
                                     <input type="number" id="toolValueInput" placeholder="150,00" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-xs outline-none focus:border-emerald-500 transition-all">
                                 </div>
                                 <div>
-                                    <label for="toolQtyInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Quantidade</label>
+                                    <label for="toolQtyInput" class="text-xs font-black uppercase text-slate-400 ml-4">Quantidade</label>
                                     <input type="number" id="toolQtyInput" placeholder="1" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-xs outline-none focus:border-emerald-500 transition-all">
                                 </div>
                             </div>
@@ -668,28 +651,20 @@
                                 
                                 <div class="space-y-6">
                                     <div>
-                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Tempo para Alerta de Atraso</label>
-                                        <div class="relative mt-2">
-                                            <i data-lucide="clock" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="18"></i>
-                                            <select id="settingOverdueHours" onchange="saveSettings()" class="w-full bg-white border-2 border-slate-100 rounded-xl pl-12 pr-10 py-3 font-bold text-slate-700 outline-none focus:border-blue-500 transition-all appearance-none cursor-pointer">
-                                                <option value="24">24 Horas (1 Dia)</option>
-                                                <option value="48">48 Horas (2 Dias)</option>
-                                                <option value="72">72 Horas (3 Dias)</option>
-                                                <option value="168">168 Horas (1 Semana)</option>
-                                                <option value="336">336 Horas (2 Semanas)</option>
-                                            </select>
-                                            <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size="18"></i>
+                                        <label class="text-xs font-bold text-slate-400 uppercase ml-2 tracking-wider">Tempo para Alerta de Atraso</label>
+                                        <div class="mt-4 bg-slate-50 rounded-2xl p-6 border border-slate-100 dark:bg-[#1e1e1e] dark:border-[#2c2c2c]">
+                                            <div class="flex justify-between items-end mb-6">
+                                                <span class="text-xs font-bold text-slate-400">1h</span>
+                                                <div class="text-center">
+                                                    <span id="settingOverdueHoursDisplay" class="text-3xl font-black text-blue-600 dark:text-blue-400">24</span>
+                                                    <span class="text-xs font-bold text-blue-400 uppercase ml-1">Horas</span>
+                                                    <p id="settingOverdueDaysDisplay" class="text-[10px] font-bold text-slate-400 uppercase mt-1">(1 Dia)</p>
+                                                </div>
+                                                <span class="text-xs font-bold text-slate-400">720h</span>
+                                            </div>
+                                            <input type="range" id="settingOverdueHours" min="1" max="720" value="24" oninput="updateOverdueDisplay(this.value)" onchange="saveSettings()" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 hover:accent-blue-500 transition-all dark:bg-slate-700">
                                         </div>
-                                        <p class="text-[10px] text-slate-400 mt-2 font-medium ml-2">Selecione o período máximo de empréstimo.</p>
-                                    </div>
-
-                                    <div class="pt-4">
-                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Limite de Estoque Baixo</label>
-                                        <div class="relative mt-2">
-                                            <i data-lucide="alert-circle" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="18"></i>
-                                            <input type="number" id="settingLowStock" value="5" onchange="saveSettings()" class="w-full bg-white border-2 border-slate-100 rounded-xl pl-12 pr-4 py-3 font-bold text-slate-700 outline-none focus:border-blue-500 transition-all" placeholder="Qtd.">
-                                        </div>
-                                        <p class="text-[10px] text-slate-400 mt-2 font-medium ml-2">Quantidade mínima para alerta de reposição.</p>
+                                        <p class="text-xs text-slate-400 mt-2 font-medium ml-2">Deslize para definir o período máximo de empréstimo (até 30 dias).</p>
                                     </div>
                                 </div>
                             </div>
@@ -710,7 +685,7 @@
                                     <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                         <div>
                                             <h4 class="font-bold text-slate-700 text-sm">Modo Escuro</h4>
-                                            <p class="text-[10px] text-slate-400 font-bold uppercase">Interface noturna</p>
+                                            <p class="text-xs text-slate-400 font-bold uppercase">Interface noturna</p>
                                         </div>
                                         <label class="relative inline-flex items-center cursor-pointer">
                                             <input type="checkbox" id="settingDarkMode" onchange="toggleDarkMode()" class="sr-only peer">
@@ -721,10 +696,21 @@
                                     <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                         <div>
                                             <h4 class="font-bold text-slate-700 text-sm">Sons do Sistema</h4>
-                                            <p class="text-[10px] text-slate-400 font-bold uppercase">Efeitos sonoros</p>
+                                            <p class="text-xs text-slate-400 font-bold uppercase">Efeitos sonoros</p>
                                         </div>
                                         <label class="relative inline-flex items-center cursor-pointer">
                                             <input type="checkbox" id="settingSystemSounds" onchange="saveSettings()" class="sr-only peer">
+                                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                        </label>
+                                    </div>
+
+                                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                        <div>
+                                            <h4 class="font-bold text-slate-700 text-sm">Notificações Pop-up</h4>
+                                            <p class="text-xs text-slate-400 font-bold uppercase">Toasts de confirmação</p>
+                                        </div>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" id="settingShowToasts" onchange="saveSettings()" class="sr-only peer">
                                             <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
                                         </label>
                                     </div>
@@ -745,7 +731,7 @@
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div>
-                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Frequência de Backup Automático</label>
+                                        <label class="text-xs font-bold text-slate-400 uppercase ml-2 tracking-wider">Frequência de Backup Automático</label>
                                         <select class="w-full mt-2 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-slate-700 outline-none focus:border-emerald-500 transition-all bg-white">
                                             <option>A cada alteração</option>
                                             <option>Diariamente</option>
@@ -754,7 +740,7 @@
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Chave de API (Integração)</label>
+                                        <label class="text-xs font-bold text-slate-400 uppercase ml-2 tracking-wider">Chave de API (Integração)</label>
                                         <div class="flex gap-2 mt-2">
                                             <input type="password" value="**********************" disabled class="flex-1 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-slate-400 outline-none bg-slate-50">
                                             <button class="bg-slate-100 text-slate-500 px-4 rounded-xl font-bold hover:bg-slate-200 transition-all"><i data-lucide="key"></i></button>
@@ -777,10 +763,6 @@
 
                                 <div class="space-y-4">
                                     <div class="flex items-center justify-between">
-                                        <label class="text-xs font-bold text-slate-600 dark:text-slate-300">Alertar Estoque Baixo</label>
-                                        <input type="checkbox" id="settingAlertLowStock" onchange="saveSettings()" class="w-5 h-5 text-orange-600 rounded focus:ring-orange-500 border-gray-300 cursor-pointer">
-                                    </div>
-                                    <div class="flex items-center justify-between">
                                         <label class="text-xs font-bold text-slate-600 dark:text-slate-300">Alertar Devoluções Atrasadas</label>
                                         <input type="checkbox" id="settingAlertOverdue" onchange="saveSettings()" class="w-5 h-5 text-orange-600 rounded focus:ring-orange-500 border-gray-300 cursor-pointer">
                                     </div>
@@ -801,15 +783,15 @@
 
                                 <div class="space-y-4">
                                     <div>
-                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">PIN de Administrador</label>
+                                        <label class="text-xs font-bold text-slate-400 uppercase ml-2 tracking-wider">PIN de Administrador</label>
                                         <div class="flex gap-2 mt-1">
                                             <input type="password" id="settingAdminPin" placeholder="****" class="flex-1 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-slate-700 outline-none focus:border-red-500 transition-all">
-                                            <button id="btnSavePin" onclick="setAdminPin()" class="bg-slate-800 text-white px-4 rounded-xl font-bold uppercase text-[10px] hover:bg-slate-700 transition-all">Definir</button>
-                                            <button id="btnDeletePin" onclick="deleteAdminPin()" class="hidden bg-red-100 text-red-600 px-4 rounded-xl font-bold uppercase text-[10px] hover:bg-red-200 transition-all border border-red-200">Excluir</button>
+                                            <button id="btnSavePin" onclick="setAdminPin()" class="bg-slate-800 text-white px-4 rounded-xl font-bold uppercase text-xs hover:bg-slate-700 transition-all">Definir</button>
+                                            <button id="btnDeletePin" onclick="deleteAdminPin()" class="hidden bg-red-100 text-red-600 px-4 rounded-xl font-bold uppercase text-xs hover:bg-red-200 transition-all border border-red-200">Excluir</button>
                                         </div>
-                                        <p class="text-[10px] text-slate-400 mt-2 font-medium">
+                                        <p class="text-xs text-slate-400 mt-2 font-medium">
                                             <i data-lucide="info" size="12" class="inline mr-1"></i>
-                                            Se definido, este PIN será exigido para <strong>Resetar o Sistema</strong> ou <strong>Excluir Colaboradores</strong>.
+                                            Se definido, este PIN será exigido para <strong>Resetar o Sistema</strong>.
                                         </p>
                                     </div>
                                 </div>
@@ -829,12 +811,12 @@
 
                                 <div class="space-y-4">
                                     <div>
-                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-wider">Link de Visualização (Somente Leitura)</label>
+                                        <label class="text-xs font-bold text-slate-400 uppercase ml-2 tracking-wider">Link de Visualização (Somente Leitura)</label>
                                         <div class="flex gap-2 mt-1">
                                             <input type="text" id="readOnlyLinkInput" readonly class="flex-1 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-slate-500 outline-none bg-slate-50 text-xs truncate">
-                                            <button onclick="copyReadOnlyLink()" class="bg-pink-500 text-white px-4 rounded-xl font-bold uppercase text-[10px] hover:bg-pink-600 transition-all shadow-lg shadow-pink-200">Copiar</button>
+                                            <button onclick="copyReadOnlyLink()" class="bg-pink-500 text-white px-4 rounded-xl font-bold uppercase text-xs hover:bg-pink-600 transition-all shadow-lg shadow-pink-200">Copiar</button>
                                         </div>
-                                        <p class="text-[10px] text-slate-400 mt-2 font-medium"><i data-lucide="info" size="12" class="inline mr-1"></i>Quem acessar este link poderá ver os dados mas <strong>não poderá editar nada</strong>.</p>
+                                        <p class="text-xs text-slate-400 mt-2 font-medium"><i data-lucide="info" size="12" class="inline mr-1"></i>Quem acessar este link poderá ver os dados mas <strong>não poderá editar nada</strong>.</p>
                                     </div>
                                 </div>
                             </div>
@@ -911,8 +893,8 @@
                     <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 space-y-4">
                         <p class="text-slate-600">Use os botões abaixo para simular cenários específicos e testar as funcionalidades de alerta do sistema.</p>
                         <div class="flex gap-4 pt-4 flex-wrap">
-                            <button onclick="simulateOverdue()" class="bg-yellow-500 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-yellow-600 transition-all border-none cursor-pointer"><i data-lucide="clock" size="16"></i> Simular Atraso de 24h</button>
-                            <button onclick="stopSimulation()" class="bg-slate-500 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest hover:bg-slate-600 transition-all border-none cursor-pointer"><i data-lucide="x-circle" size="16"></i> Parar Simulação</button>
+                            <button onclick="simulateOverdue()" class="bg-yellow-500 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-xs uppercase tracking-widest hover:bg-yellow-600 transition-all border-none cursor-pointer"><i data-lucide="clock" size="16"></i> Simular Atraso de 24h</button>
+                            <button onclick="stopSimulation()" class="bg-slate-500 text-white px-4 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg text-xs uppercase tracking-widest hover:bg-slate-600 transition-all border-none cursor-pointer"><i data-lucide="x-circle" size="16"></i> Parar Simulação</button>
                         </div>
                     </div>
                 </div>
@@ -926,7 +908,7 @@
                     </div>
                     <div class="p-8">
                         <div id="step-selecionar-ferramenta">
-                            <p class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">1. Qual ferramenta quebrou?</p>
+                            <p class="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest">1. Qual ferramenta quebrou?</p>
                             <div class="relative mb-4">
                                 <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="16"></i>
                                 <input type="text" id="maintenanceToolSearchInput" onkeyup="handleSearchInput(this, () => openMaintenanceModal(true))" placeholder="BUSCAR POR NOME, CÓDIGO OU MARCA..." class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl pl-12 pr-10 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
@@ -935,29 +917,103 @@
                             <div id="toolGridMaintenance" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[55vh] overflow-y-auto p-1 custom-scrollbar"></div>
                         </div>
                         <div id="step-detalhes-manutencao" class="hidden">
-                            <p class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">2. Detalhes do problema</p>
+                            <p class="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest">2. Detalhes do problema</p>
                             <div id="selectedToolMaintenance" class="mb-4"></div>
                             <div class="border-2 border-dashed border-slate-200 rounded-2xl p-4 text-center h-40 flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors group mb-4" onclick="document.getElementById('maintenanceFileInput').click()">
                                 <input type="file" id="maintenanceFileInput" class="hidden" accept="image/*" onchange="previewMaintenanceImage(this)">
                                 <div id="maintenanceUploadPlaceholder" class="text-slate-400">
                                     <i data-lucide="camera" class="mx-auto" size="24"></i>
-                                    <p class="text-[8px] font-black uppercase">Foto do Dano</p>
+                                    <p class="text-[10px] font-black uppercase">Foto do Dano</p>
                                 </div>
                                 <div id="maintenanceImagePreviewContainer" class="hidden relative h-full" title="Clique para alterar a imagem"><img id="maintenanceImagePreview" class="h-full object-contain rounded-lg transition-opacity group-hover:opacity-80"><button onclick="removeMaintenanceImage(event)" class="absolute top-1 right-1 bg-rose-500 text-white rounded-full p-0.5 leading-none shadow-md border-2 border-white cursor-pointer" title="Remover Imagem"><i data-lucide="x" size="14"></i></button></div>
                             </div>
                             <div id="maintenanceQtyContainer" class="hidden mb-4">
                                 <div class="flex justify-between items-center ml-4 mb-1">
-                                    <label for="maintenanceQtyInput" class="text-[10px] font-black uppercase text-slate-400">Quantidade para Manutenção</label>
-                                    <span id="maintenanceMaxQty" class="text-[10px] font-bold text-slate-400"></span>
+                                    <label for="maintenanceQtyInput" class="text-xs font-black uppercase text-slate-400">Quantidade para Manutenção</label>
+                                    <span id="maintenanceMaxQty" class="text-xs font-bold text-slate-400"></span>
                                 </div>
                                 <input type="number" id="maintenanceQtyInput" value="1" min="1" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-xs outline-none focus:border-red-500 transition-all">
                             </div>
                             <textarea id="maintenanceNoteInput" placeholder="Descreva o problema ou o motivo da manutenção..." class="w-full h-24 border-2 border-slate-100 rounded-xl p-3 font-medium text-sm outline-none focus:border-red-500 transition-all"></textarea>
                             <div class="flex gap-3 mt-4">
-                                <button onclick="resetMaintenance()" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase text-[10px] cursor-pointer border-none">Voltar</button>
-                                <button id="btnFinalizeMaintenance" class="flex-1 py-4 bg-red-600 text-white rounded-2xl font-black uppercase text-[10px] shadow-lg border-none cursor-pointer hover:bg-red-700">Confirmar Manutenção</button>
+                                <button onclick="resetMaintenance()" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase text-xs cursor-pointer border-none">Voltar</button>
+                                <button id="btnFinalizeMaintenance" class="flex-1 py-4 bg-red-600 text-white rounded-2xl font-black uppercase text-xs shadow-lg border-none cursor-pointer hover:bg-red-700">Confirmar Manutenção</button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="addWorkerModal" class="fixed inset-0 bg-slate-900/90 hidden z-[800] flex items-center justify-center p-4 backdrop-blur-md" onclick="closeModal('addWorkerModal')">
+                <div class="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
+                    <div class="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center">
+                        <h3 class="font-black uppercase tracking-tighter text-slate-900">Novo Colaborador</h3>
+                        <button onclick="closeModal('addWorkerModal'); event.stopPropagation();" class="text-slate-400 hover:text-rose-500 bg-transparent border-none cursor-pointer"><i data-lucide="x"></i></button>
+                    </div>
+                    <div class="p-8 max-h-[80vh] overflow-y-auto custom-scrollbar">
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Photo Upload -->
+                                <div class="border-2 border-dashed border-slate-200 rounded-2xl p-4 text-center h-40 flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors group" onclick="document.getElementById('workerFileInputModal').click()">
+                                    <input type="file" id="workerFileInputModal" class="hidden" accept="image/*" onchange="previewWorkerImage(this)">
+                                    <div id="workerUploadPlaceholderModal" class="text-slate-400">
+                                        <i data-lucide="camera" class="mx-auto" size="24"></i>
+                                        <p class="text-[10px] font-black uppercase">Adicionar Foto</p>
+                                    </div>
+                                    <div id="workerImagePreviewContainerModal" class="hidden relative h-full" title="Clique para alterar a imagem"><img id="workerImagePreviewModal" class="h-full object-contain rounded-lg transition-opacity group-hover:opacity-80"><button onclick="removeWorkerImage(event)" class="absolute top-1 right-1 bg-rose-500 text-white rounded-full p-0.5 leading-none shadow-md border-2 border-white cursor-pointer" title="Remover Imagem"><i data-lucide="x" size="14"></i></button></div>
+                                </div>
+                                <!-- QR Code Preview -->
+                                <div class="border-2 border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-50 relative overflow-hidden group">
+                                    <canvas id="workerQrCanvas" class="w-32 h-32 object-contain"></canvas>
+                                    <div id="qrPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 text-slate-300 z-10">
+                                        <i data-lucide="qr-code" size="32" class="mb-2 opacity-50"></i>
+                                        <span class="text-[10px] font-bold uppercase text-center px-4">Digite o nome ou ID para gerar</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Worker Type Selection -->
+                            <div class="flex gap-3">
+                                <div onclick="selectWorkerType('LDC')" id="type-card-ldc" class="flex-1 cursor-pointer bg-blue-50 border-2 border-blue-500 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all shadow-md group relative overflow-hidden">
+                                    <div id="indicator-ldc" class="absolute top-3 right-3 w-2.5 h-2.5 bg-blue-500 rounded-full transition-colors"></div>
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-sm group-hover:scale-110 transition-transform">
+                                        <i data-lucide="building-2" size="20"></i>
+                                    </div>
+                                    <span id="text-ldc" class="font-black text-blue-900 text-xs uppercase tracking-widest">LDC</span>
+                                </div>
+                                
+                                <div onclick="selectWorkerType('TERCEIRO')" id="type-card-terceiro" class="flex-1 cursor-pointer bg-white border-2 border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all hover:border-slate-300 hover:shadow-md group relative overflow-hidden">
+                                    <div id="indicator-terceiro" class="absolute top-3 right-3 w-2.5 h-2.5 bg-slate-200 rounded-full transition-colors"></div>
+                                    <div class="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 shadow-sm group-hover:scale-110 transition-transform">
+                                        <i data-lucide="hard-hat" size="20"></i>
+                                    </div>
+                                    <span id="text-terceiro" class="font-black text-slate-400 text-xs uppercase tracking-widest">Terceiro</span>
+                                </div>
+                            </div>
+
+                            <!-- Fields -->
+                            <div>
+                                <label class="text-xs font-black uppercase text-slate-400 ml-4">Nome Completo</label>
+                                <input type="text" id="workerNameInput" onkeyup="updateWorkerQrPreview()" placeholder="NOME DO COLABORADOR" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label id="workerCompanyLabel" class="text-xs font-black uppercase text-slate-400 ml-4">Matrícula</label>
+                                    <input type="text" id="workerInfoInput" placeholder="000000" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                                </div>
+                                <div id="workerCostCenterField" class="hidden">
+                                    <label class="text-xs font-black uppercase text-slate-400 ml-4">Centro de Custo</label>
+                                    <input type="text" id="workerCostCenterInput" placeholder="C. CUSTO" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                                </div>
+                                <div>
+                                    <label class="text-xs font-black uppercase text-slate-400 ml-4">Setor</label>
+                                    <input type="text" id="workerSectorInput" placeholder="SETOR" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 transition-all">
+                                </div>
+                            </div>
+
+                        </div>
+                        <button onclick="addWorker()" class="w-full mt-6 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs shadow-lg border-none cursor-pointer hover:bg-blue-700 transition-all">Salvar Colaborador</button>
                     </div>
                 </div>
             </div>
@@ -985,25 +1041,25 @@
                             <div id="toolGridMaterial" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[55vh] overflow-y-auto p-1 custom-scrollbar"></div>
                         </div>
                         <div id="step-material-qty" class="hidden text-center py-6">
-                            <p class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">2. Qual a quantidade?</p>
+                            <p class="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest">2. Qual a quantidade?</p>
                             <div id="selectedToolMaterial" class="mb-6"></div>
                             <input type="number" id="materialQtyInput" placeholder="QTD" class="w-32 text-center border-2 border-slate-200 rounded-xl px-4 py-3 font-black text-lg outline-none focus:border-blue-500 transition-all">
                             <div class="flex gap-3 mt-6">
-                                <button onclick="resetMaterial(0)" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase text-[10px] cursor-pointer border-none">Voltar</button>
-                                <button onclick="processQtyStep()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-[10px] shadow-lg border-none cursor-pointer hover:bg-blue-700">Avançar</button>
+                                <button onclick="resetMaterial(0)" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase text-xs cursor-pointer border-none">Voltar</button>
+                                <button onclick="processQtyStep()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs shadow-lg border-none cursor-pointer hover:bg-blue-700">Avançar</button>
                             </div>
                         </div>
                         <div id="step-material-worker" class="hidden">
-                            <p class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">3. Quem está retirando?</p>
+                            <p class="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest">3. Quem está retirando?</p>
                             <div id="teamGridMaterial" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar"></div>
-                                <button onclick="resetMaterial(1)" class="w-full mt-4 py-3 bg-slate-100 text-slate-500 rounded-xl font-black uppercase text-[10px] cursor-pointer border-none">Voltar</button>
+                                <button onclick="resetMaterial(1)" class="w-full mt-4 py-3 bg-slate-100 text-slate-500 rounded-xl font-black uppercase text-xs cursor-pointer border-none">Voltar</button>
                         </div>
                         <div id="step-material-confirm" class="hidden text-center py-6">
                             <div id="confirmationDetails" class="mb-6"></div>
                             <h4 class="text-xl font-black text-slate-900 uppercase mb-8">Confirmar Retirada?</h4>
                             <div class="flex gap-3">
-                                    <button onclick="resetMaterial(2)" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase text-[10px] cursor-pointer border-none">Voltar</button>
-                                    <button id="btnFinalizeMaterial" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] shadow-lg border-none cursor-pointer hover:bg-indigo-700">Confirmar Saída</button>
+                                    <button onclick="resetMaterial(2)" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase text-xs cursor-pointer border-none">Voltar</button>
+                                    <button id="btnFinalizeMaterial" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs shadow-lg border-none cursor-pointer hover:bg-indigo-700">Confirmar Saída</button>
                             </div>
                         </div>
                     </div>
@@ -1081,15 +1137,15 @@
                                     <h4 class="font-black uppercase text-slate-600 mb-3">Registrar Orçamento</h4>
                                     <div class="space-y-4">
                                         <div>
-                                            <label for="quoteProviderInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Fornecedor</label>
+                                            <label for="quoteProviderInput" class="text-xs font-black uppercase text-slate-400 ml-4">Fornecedor</label>
                                             <input type="text" id="quoteProviderInput" placeholder="NOME DA EMPRESA/FORNECEDOR" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs outline-none focus:border-blue-500 h-[47px]">
                                         </div>
                                         <div>
-                                            <label for="quoteCostInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Custo (R$)</label>
+                                            <label for="quoteCostInput" class="text-xs font-black uppercase text-slate-400 ml-4">Custo (R$)</label>
                                             <input type="number" id="quoteCostInput" placeholder="350,00" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-xs outline-none focus:border-blue-500">
                                         </div>
                                         <div>
-                                            <label for="quoteNoteInput" class="text-[10px] font-black uppercase text-slate-400 ml-4">Detalhes do Orçamento</label>
+                                            <label for="quoteNoteInput" class="text-xs font-black uppercase text-slate-400 ml-4">Detalhes do Orçamento</label>
                                             <textarea id="quoteNoteInput" placeholder="Descreva os detalhes do orçamento..." class="w-full h-20 border-2 border-slate-100 rounded-xl p-3 font-medium text-sm outline-none focus:border-blue-500"></textarea>
                                         </div>
                                         <button id="btnSaveQuote" class="w-full mt-4 py-3 bg-blue-600 text-white rounded-xl font-black uppercase text-xs shadow-lg hover:bg-blue-700">Salvar Orçamento</button>
@@ -1101,8 +1157,8 @@
                                     <h4 class="font-black uppercase text-slate-600 mb-3">Aprovação do Orçamento</h4>
                                     <div id="quoteDetailsDisplay" class="bg-slate-50 p-4 rounded-xl space-y-3 mb-4"></div>
                                     <div class="flex gap-3">
-                                        <button id="btnRejectRepair" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold uppercase text-[10px] shadow-lg hover:bg-rose-700">Recusar</button>
-                                        <button id="btnApproveRepair" class="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold uppercase text-[10px] shadow-lg hover:bg-emerald-600">Aprovar Conserto</button>
+                                        <button id="btnRejectRepair" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold uppercase text-xs shadow-lg hover:bg-rose-700">Recusar</button>
+                                        <button id="btnApproveRepair" class="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold uppercase text-xs shadow-lg hover:bg-emerald-600">Aprovar Conserto</button>
                                     </div>
                                 </div>
 
@@ -1138,7 +1194,7 @@
                                             <!-- Invoice link will be inserted here -->
                                         </div>
                                         <p class="text-sm text-slate-500">O processo de manutenção foi finalizado. O item está pronto para retornar ao estoque?</p>
-                                        <button id="btnConcludeMaintenance" class="w-full py-3 bg-blue-600 text-white rounded-xl font-black uppercase text-[10px] shadow-lg hover:bg-blue-700">Retornar ao Estoque</button>
+                                        <button id="btnConcludeMaintenance" class="w-full py-3 bg-blue-600 text-white rounded-xl font-black uppercase text-xs shadow-lg hover:bg-blue-700">Retornar ao Estoque</button>
                                     </div>
                                 </div>
                             </div>
@@ -1153,7 +1209,7 @@
                         <h3 class="font-black uppercase tracking-tighter text-slate-900">Detalhes do Colaborador</h3>
                         <button onclick="closeModal('workerDetailsModal');" class="text-slate-400 hover:text-rose-500 bg-transparent border-none cursor-pointer"><i data-lucide="x"></i></button>
                     </div>
-                    <div class="p-8" id="workerDetailsContent">
+                    <div class="p-8 max-h-[80vh] overflow-y-auto custom-scrollbar" id="workerDetailsContent">
                         <!-- Content will be injected here -->
                     </div>
                 </div>
@@ -1189,7 +1245,7 @@
                 team = team.filter(w => w.id !== 1 && w.name !== 'ALMOXARIFADO');
 
                 let history = JSON.parse(localStorage.getItem('ldc_history_db')) || [];
-                let appSettings = JSON.parse(localStorage.getItem('ldc_settings_db')) || { overdueHours: 24, systemSounds: true };
+                let appSettings = JSON.parse(localStorage.getItem('ldc_settings_db')) || { overdueHours: 24, systemSounds: true, darkMode: false, alertOverdue: true, adminPin: null };
                 let auditSession = { missing: [], found: [] };
 
                 // Timestamp para controle de concorrência (evita sobrescrever dados novos com velhos da nuvem)
@@ -1245,6 +1301,7 @@
                     } catch (e) { console.error("Erro ao carregar da nuvem", e); }
                 }
                 
+                let currentWorkerImageBase64 = "";
                 let currentImageBase64 = "";
                 let currentMaintenanceImageBase64 = "";
                 let pendingStatus = "disponivel";
@@ -1270,69 +1327,76 @@
 
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-                function playSound(type) {
+                function showToast(message, type = 'success') {
+                    if (appSettings.showToasts === false) return;
+                    const container = document.getElementById('toast-container');
+                    const toast = document.createElement('div');
+                    
+                    let bgClass = 'bg-slate-900/95';
+                    let borderClass = 'border-slate-700/50';
+                    let iconName = 'check-circle-2';
+                    let iconColor = 'text-emerald-400';
+                    
+                    if (type === 'error') {
+                        iconName = 'alert-circle';
+                        iconColor = 'text-rose-400';
+                    } else if (type === 'delete') {
+                        iconName = 'trash-2';
+                        iconColor = 'text-slate-400';
+                    }
+                    
+                    toast.className = `toast-enter pointer-events-auto flex items-center gap-4 p-4 rounded-2xl shadow-2xl backdrop-blur-md border ${borderClass} ${bgClass} text-white transform transition-all duration-300`;
+                    toast.innerHTML = `<div class="shrink-0"><i data-lucide="${iconName}" class="${iconColor}" size="24"></i></div><div class="flex-1 min-w-0"><p class="font-bold text-sm leading-tight">${message}</p></div>`;
+                    
+                    container.appendChild(toast);
+                    lucide.createIcons();
+                    
+                    setTimeout(() => {
+                        toast.style.opacity = '0';
+                        toast.style.transform = 'translateY(-10px) scale(0.95)';
+                        setTimeout(() => toast.remove(), 300);
+                    }, 3000);
+                }
+
+                function playSound(type, message = null) {
+                    if (message) showToast(message, type);
                     if (appSettings.systemSounds === false) return;
                     if (audioCtx.state === 'suspended') audioCtx.resume();
 
-                    const oscillator = audioCtx.createOscillator();
-                    const gainNode = audioCtx.createGain();
-
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioCtx.destination);
-
                     const now = audioCtx.currentTime;
+                    
+                    // Função auxiliar para sons suaves (Senoide com envelope suave)
+                    const playTone = (freq, type, duration, vol = 0.02) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = type;
+                        osc.frequency.setValueAtTime(freq, now);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        
+                        gain.gain.setValueAtTime(0, now);
+                        gain.gain.linearRampToValueAtTime(vol, now + 0.02); // Ataque suave
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + duration); // Decaimento natural
+                        
+                        osc.start(now);
+                        osc.stop(now + duration);
+                    };
 
                     if (type === 'click') {
-                        oscillator.type = 'sine';
-                        oscillator.frequency.setValueAtTime(600, now);
-                        oscillator.frequency.exponentialRampToValueAtTime(300, now + 0.05);
-                        gainNode.gain.setValueAtTime(0.03, now);
-                        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-                        oscillator.start(now);
-                        oscillator.stop(now + 0.05);
+                        playTone(300, 'sine', 0.1, 0.02); // Click suave e grave
                     } else if (type === 'type') {
-                        // Som de digitação simples e seco (Click)
-                        oscillator.type = 'sine';
-                        oscillator.frequency.setValueAtTime(800, now);
-                        oscillator.frequency.exponentialRampToValueAtTime(100, now + 0.05);
-                        
-                        gainNode.gain.setValueAtTime(0.05, now);
-                        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-                        
-                        oscillator.start(now);
-                        oscillator.stop(now + 0.05);
+                        playTone(600, 'sine', 0.05, 0.005); // Digitação extremamente sutil
                     } else if (type === 'delete') {
-                        oscillator.type = 'sine';
-                        oscillator.frequency.setValueAtTime(300, now);
-                        oscillator.frequency.exponentialRampToValueAtTime(200, now + 0.05);
-                        gainNode.gain.setValueAtTime(0.02, now);
-                        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-                        oscillator.start(now);
-                        oscillator.stop(now + 0.05);
+                        playTone(200, 'sine', 0.1, 0.02); // Delete grave
                     } else if (type === 'open') {
-                        oscillator.type = 'sine';
-                        oscillator.frequency.setValueAtTime(400, now);
-                        oscillator.frequency.exponentialRampToValueAtTime(600, now + 0.1);
-                        gainNode.gain.setValueAtTime(0.03, now);
-                        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-                        oscillator.start(now);
-                        oscillator.stop(now + 0.1);
+                        playTone(400, 'sine', 0.15, 0.02); // Abrir suave
                     } else if (type === 'success') {
-                        oscillator.type = 'sine';
-                        oscillator.frequency.setValueAtTime(500, now);
-                        oscillator.frequency.linearRampToValueAtTime(1000, now + 0.1);
-                        gainNode.gain.setValueAtTime(0.05, now);
-                        gainNode.gain.linearRampToValueAtTime(0.001, now + 0.3);
-                        oscillator.start(now);
-                        oscillator.stop(now + 0.3);
+                        // Acorde suave e agradável (não estridente)
+                        playTone(440, 'sine', 0.3, 0.03);
+                        setTimeout(() => playTone(554, 'sine', 0.3, 0.03), 100);
                     } else if (type === 'error') {
-                        oscillator.type = 'triangle';
-                        oscillator.frequency.setValueAtTime(150, now);
-                        oscillator.frequency.linearRampToValueAtTime(100, now + 0.15);
-                        gainNode.gain.setValueAtTime(0.1, now);
-                        gainNode.gain.linearRampToValueAtTime(0.001, now + 0.15);
-                        oscillator.start(now);
-                        oscillator.stop(now + 0.15);
+                        // Som de erro grave e macio (não agressivo)
+                        playTone(150, 'sine', 0.3, 0.05);
                     }
                 }
 
@@ -1430,7 +1494,6 @@
 
                 function toggleSidebar() { 
                     document.getElementById('sidebar').classList.toggle('collapsed'); 
-                    document.querySelectorAll('.sidebar-text').forEach(e => e.classList.toggle('hidden')); 
                 }
 
                 function openModal(id) { 
@@ -1498,6 +1561,25 @@
                     }
                 }
 
+                function openAddWorkerModal() {
+                    selectWorkerType('LDC');
+                    removeWorkerImage({ stopPropagation: () => {} });
+                    
+                    document.getElementById('workerNameInput').value = "";
+                    document.getElementById('workerInfoInput').value = "";
+                    document.getElementById('workerCostCenterInput').value = "";
+                    document.getElementById('workerSectorInput').value = "";
+
+                    updateWorkerQrPreview();
+                    
+                    const btn = document.querySelector('#addWorkerModal button.bg-blue-600');
+                    if(btn) { btn.onclick = addWorker; btn.innerText = "Salvar Colaborador"; }
+                    const title = document.querySelector('#addWorkerModal h3');
+                    if(title) title.innerText = "Novo Colaborador";
+
+                    openModal('addWorkerModal');
+                }
+
                 async function addWorker() {
                     const nameInput = document.getElementById('workerNameInput');
                     const infoInput = document.getElementById('workerInfoInput');
@@ -1505,46 +1587,97 @@
                     const name = nameInput.value.trim().toUpperCase();
                     const info = infoInput.value.trim().toUpperCase() || 'N/A';
                     const costCenter = costCenterInput.value.trim().toUpperCase();
+                    const sectorInput = document.getElementById('workerSectorInput');
+                    const sector = sectorInput.value.trim().toUpperCase();
+
                     if(!name) return;
+                    let qrCode = name; // QR Code gerado automaticamente pelo nome
+
                     const dateAdded = new Date().toLocaleDateString('pt-BR');
 
-                    // Salva 'info' (Matrícula ou CC) e 'type' (LDC ou TERCEIRO)
-                    team.push({ id: Date.now(), name, info, costCenter: (currentWorkerType === 'TERCEIRO' ? costCenter : null), type: currentWorkerType, dateAdded });
+                    team.push({ id: Date.now(), name, info, costCenter: (currentWorkerType === 'TERCEIRO' ? costCenter : null), type: currentWorkerType, dateAdded, img: currentWorkerImageBase64, sector, qrcode: qrCode });
                     
-                    nameInput.value = ""; infoInput.value = ""; costCenterInput.value = "";
+                    nameInput.value = ""; infoInput.value = ""; costCenterInput.value = ""; sectorInput.value = "";
+                    removeWorkerImage({ stopPropagation: () => {} });
+                    updateWorkerQrPreview();
+                    closeModal('addWorkerModal');
+
                     await save();
-                    playSound('success');
+                    playSound('success', 'Colaborador adicionado com sucesso!');
+                }
+
+                function editWorker(id) {
+                    const w = team.find(x => x.id === id);
+                    if (!w) return;
+
+                    selectWorkerType(w.type || (w.company === 'LDC' ? 'LDC' : 'TERCEIRO'));
+                    
+                    document.getElementById('workerNameInput').value = w.name || "";
+                    document.getElementById('workerInfoInput').value = w.info || w.company || "";
+                    document.getElementById('workerSectorInput').value = w.sector || "";
+                    document.getElementById('workerCostCenterInput').value = w.costCenter || "";
+                    
+                    if (w.img) {
+                        currentWorkerImageBase64 = w.img;
+                        document.getElementById('workerImagePreviewModal').src = w.img;
+                        document.getElementById('workerImagePreviewContainerModal').classList.remove('hidden');
+                        document.getElementById('workerUploadPlaceholderModal').classList.add('hidden');
+                    } else {
+                        removeWorkerImage({ stopPropagation: () => {} });
+                    }
+
+                    updateWorkerQrPreview();
+
+                    const btn = document.querySelector('#addWorkerModal button.bg-blue-600');
+                    if(btn) { btn.onclick = () => updateWorker(id); btn.innerText = "Atualizar Colaborador"; }
+                    const title = document.querySelector('#addWorkerModal h3');
+                    if(title) title.innerText = "Editar Colaborador";
+
+                    openModal('addWorkerModal');
+                }
+
+                async function updateWorker(id) {
+                    const w = team.find(x => x.id === id);
+                    if (!w) return;
+
+                    const name = document.getElementById('workerNameInput').value.trim().toUpperCase();
+                    if(!name) return;
+
+                    w.name = name;
+                    w.info = document.getElementById('workerInfoInput').value.trim().toUpperCase() || 'N/A';
+                    w.type = currentWorkerType;
+                    w.costCenter = (currentWorkerType === 'TERCEIRO' ? document.getElementById('workerCostCenterInput').value.trim().toUpperCase() : null);
+                    w.sector = document.getElementById('workerSectorInput').value.trim().toUpperCase();
+                    w.img = currentWorkerImageBase64;
+                    w.qrcode = name;
+
+                    closeModal('addWorkerModal');
+                    await save();
+                    playSound('success', 'Colaborador atualizado com sucesso!');
+                    renderTeam();
                 }
 
                 function removeWorker(id) {
-                    const executeRemove = () => {
-                        const worker = team.find(w => w.id === id);
-                        if (worker) {
-                            const toolsInPossession = tools.filter(t => t.user === worker.name).length;
-                            if (toolsInPossession > 0) {
-                                document.getElementById('alertModalTitle').innerText = "Ação Bloqueada";
-                                document.getElementById('alertModalText').innerText = `Não é possível remover ${worker.name}. Este colaborador ainda possui ${toolsInPossession} ferramenta(s) em sua posse.`;
-                                openModal('alertModal');
-                                playSound('error');
-                                return;
-                            }
-                            const modal = document.getElementById('deleteModal');
-                            modal.querySelector('h3').innerText = `Remover ${worker.name}?`;
-                            modal.querySelector('p').innerText = 'Você tem certeza que deseja remover este colaborador da equipe?';
-                            document.getElementById('confirmDeleteBtn').onclick = async () => {
-                                team = team.filter(w => w.id !== id);
-                                closeModal('deleteModal');
-                                await save();
-                                playSound('success');
-                            };
-                            openModal('deleteModal');
+                    const worker = team.find(w => w.id === id);
+                    if (worker) {
+                        const toolsInPossession = tools.filter(t => t.user === worker.name).length;
+                        if (toolsInPossession > 0) {
+                            document.getElementById('alertModalTitle').innerText = "Ação Bloqueada";
+                            document.getElementById('alertModalText').innerText = `Não é possível remover ${worker.name}. Este colaborador ainda possui ${toolsInPossession} ferramenta(s) em sua posse.`;
+                            openModal('alertModal');
+                            playSound('error', 'Não é possível remover: colaborador possui ferramentas.');
+                            return;
                         }
-                    };
-
-                    if (appSettings.adminPin) {
-                        requestPin(executeRemove);
-                    } else {
-                        executeRemove();
+                        const modal = document.getElementById('deleteModal');
+                        modal.querySelector('h3').innerText = `Remover ${worker.name}?`;
+                        modal.querySelector('p').innerText = 'Você tem certeza que deseja remover este colaborador da equipe?';
+                        document.getElementById('confirmDeleteBtn').onclick = async () => {
+                            team = team.filter(w => w.id !== id);
+                            closeModal('deleteModal');
+                            await save();
+                            playSound('success', 'Colaborador removido com sucesso.');
+                        };
+                        openModal('deleteModal');
                     }
                 }
 
@@ -1580,18 +1713,20 @@
                         const historyCount = history.filter(h => h.workerName === w.name).length;
                         return `
                         <div onclick="openWorkerDetails(${w.id})" class="bg-slate-50 rounded-2xl p-5 border border-slate-200 flex flex-col relative group hover:border-blue-400 transition-all cursor-pointer hover:shadow-lg hover:-translate-y-1">
-                            ${!isReadOnly ? `<div class="absolute top-2 right-2 flex flex-col items-end">
+                            ${!isReadOnly ? `<div class="absolute top-2 right-2 flex gap-1">
+                                <button onclick="editWorker(${w.id}); event.stopPropagation();" class="p-2 text-slate-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Editar Colaborador"><i data-lucide="pencil" size="16"></i></button>
                                 <button onclick="removeWorker(${w.id}); event.stopPropagation();" class="p-2 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Excluir Colaborador"><i data-lucide="trash-2" size="16"></i></button>
                             </div>` : ''}
                             <div class="flex items-center gap-4 mb-4">
-                                <div class="w-12 h-12 ${workerType === 'TERCEIRO' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'} rounded-full flex items-center justify-center text-lg font-black">
-                                    ${w.name.charAt(0)}
+                                <div class="w-12 h-12 ${workerType === 'TERCEIRO' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'} rounded-full flex items-center justify-center text-lg font-black overflow-hidden border border-slate-100 shadow-sm">
+                                    ${w.img ? `<img src="${w.img}" class="w-full h-full object-cover">` : w.name.charAt(0)}
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <h3 class="font-black text-slate-800 uppercase truncate text-sm" title="${w.name}">${w.name}</h3>
                                     <div class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase flex-wrap">
                                         <span class="${typeColor}">${typeLabel}</span>
                                         <span class="truncate" title="${infoLabel}: ${displayInfo}">• ${displayInfo}</span>
+                                        ${w.sector ? `<span class="truncate" title="Setor: ${w.sector}">• ${w.sector}</span>` : ''}
                                         ${w.costCenter ? `<span class="truncate" title="Centro de Custo: ${w.costCenter}">• ${w.costCenter}</span>` : ''}
                                     </div>
                                 </div>
@@ -1624,6 +1759,10 @@
                     let detailsGridHtml = '';
 
                     detailsGridHtml += `<div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center"><p class="text-[9px] font-bold text-slate-400 uppercase mb-1">${infoLabel}</p><p class="text-sm font-black text-slate-700 truncate" title="${displayInfo}">${displayInfo}</p></div>`;
+
+                    if (w.sector) {
+                        detailsGridHtml += `<div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center"><p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Setor</p><p class="text-sm font-black text-slate-700 truncate" title="${w.sector}">${w.sector}</p></div>`;
+                    }
 
                     if (w.costCenter) {
                         detailsGridHtml += `<div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center"><p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Centro de Custo</p><p class="text-sm font-black text-slate-700 truncate" title="${w.costCenter}">${w.costCenter}</p></div>`;
@@ -1658,13 +1797,21 @@
 
                     const content = `
                         <div class="flex flex-col items-center text-center mb-6">
-                            <div class="w-24 h-24 ${workerType === 'TERCEIRO' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'} rounded-full flex items-center justify-center text-3xl font-black mb-4 shadow-inner">
-                                ${w.name.charAt(0)}
+                            <div class="w-24 h-24 ${workerType === 'TERCEIRO' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'} rounded-full flex items-center justify-center text-3xl font-black mb-4 shadow-lg overflow-hidden border-4 border-white ${w.img ? 'cursor-zoom-in hover:scale-105 transition-transform' : ''}" ${w.img ? `onclick="openZoom('${w.img}')"` : ''}>
+                                ${w.img ? `<img src="${w.img}" class="w-full h-full object-cover">` : w.name.charAt(0)}
                             </div>
                             <h2 class="text-xl font-black text-slate-900 uppercase leading-tight mb-1">${w.name}</h2>
                             <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${typeColor}">${typeLabel}</span>
                             ${dateAdded ? `<p class="text-[10px] text-slate-400 font-bold mt-2 uppercase tracking-wider">Adicionado em ${dateAdded}</p>` : ''}
                         </div>
+                        
+                        <div class="flex justify-center mb-6">
+                            <div class="p-4 bg-white rounded-2xl border-2 border-slate-100 shadow-sm flex flex-col items-center">
+                                <canvas id="detailQrCanvas"></canvas>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase mt-2 tracking-wider">QR Code de Identificação</p>
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-2">
                             ${detailsGridHtml}
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center ${w.costCenter ? 'col-span-2 md:col-span-1' : 'col-span-2 md:col-span-1'}">
@@ -1677,11 +1824,53 @@
                     `;
 
                     document.getElementById('workerDetailsContent').innerHTML = content;
+                    
+                    if (w.qrcode || w.name) {
+                        new QRious({
+                            element: document.getElementById('detailQrCanvas'),
+                            value: (w.qrcode || w.name).toUpperCase(),
+                            size: 150
+                        });
+                    }
+
                     openModal('workerDetailsModal');
                     lucide.createIcons();
                 }
 
                 // Funções de Imagem e Modais de Ferramenta
+                function previewWorkerImage(input) {
+                    if (input.files && input.files[0]) {
+                        const file = input.files[0];
+                        const reader = new FileReader();
+                        reader.onload = e => {
+                            const img = new Image();
+                            img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                const ctx = canvas.getContext('2d');
+                                const maxWidth = 300; // Tamanho menor para perfil
+                                const maxHeight = 300;
+                                let width = img.width;
+                                let height = img.height;
+
+                                // Redimensionamento simples mantendo proporção
+                                if (width > height) { if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; } } 
+                                else { if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; } }
+                                
+                                canvas.width = width; canvas.height = height;
+                                ctx.drawImage(img, 0, 0, width, height);
+                                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                                
+                                currentWorkerImageBase64 = compressedBase64;
+                                document.getElementById('workerImagePreviewModal').src = compressedBase64;
+                                document.getElementById('workerImagePreviewContainerModal').classList.remove('hidden');
+                                document.getElementById('workerUploadPlaceholderModal').classList.add('hidden');
+                            };
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                }
+
                 function previewImage(input) {
                     if (input.files && input.files[0]) {
                         const file = input.files[0];
@@ -1722,6 +1911,33 @@
                             img.src = e.target.result;
                         };
                         reader.readAsDataURL(file);
+                    }
+                }
+
+                function removeWorkerImage(event) {
+                    if(event) event.stopPropagation();
+                    currentWorkerImageBase64 = "";
+                    document.getElementById('workerFileInputModal').value = null;
+                    document.getElementById('workerImagePreviewModal').src = "";
+                    document.getElementById('workerImagePreviewContainerModal').classList.add('hidden');
+                    document.getElementById('workerUploadPlaceholderModal').classList.remove('hidden');
+                    lucide.createIcons();
+                }
+
+                function updateWorkerQrPreview() {
+                    const name = document.getElementById('workerNameInput').value.trim();
+                    const content = name;
+                    
+                    const canvas = document.getElementById('workerQrCanvas');
+                    const placeholder = document.getElementById('qrPlaceholder');
+                    
+                    if (content) {
+                        const qr = new QRious({ element: canvas, value: content.toUpperCase(), size: 200 });
+                        placeholder.classList.add('hidden');
+                    } else {
+                        const ctx = canvas.getContext('2d');
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        placeholder.classList.remove('hidden');
                     }
                 }
 
@@ -1815,7 +2031,7 @@
                         document.getElementById('alertModalTitle').innerText = "Código Duplicado";
                         document.getElementById('alertModalText').innerText = `O código/tag "${code}" já está cadastrado no sistema.`;
                         openModal('alertModal');
-                        playSound('error');
+                        playSound('error', 'Código já cadastrado no sistema.');
                         return;
                     }
 
@@ -1845,7 +2061,7 @@
                     tools.unshift(tool);
                     closeModal('addModal');
                     await save();
-                    playSound('success');
+                    playSound('success', 'Novo item cadastrado com sucesso!');
                 }
 
                 async function editTool(id) {
@@ -1882,7 +2098,7 @@
                         t.img = currentImageBase64;
                         // A nota de manutenção só é alterada na tela de manutenção
                         await save(); closeModal('addModal');
-                        playSound('success');
+                        playSound('success', 'Item atualizado com sucesso!');
                     };
                     openModal('addModal');
                     lucide.createIcons();
@@ -1894,7 +2110,7 @@
                         document.getElementById('alertModalTitle').innerText = "Ação Bloqueada";
                         document.getElementById('alertModalText').innerText = "Não é possível excluir um item que está 'Em Uso'. Realize a devolução primeiro.";
                         openModal('alertModal');
-                        playSound('error');
+                        playSound('error', 'Não é possível excluir item em uso.');
                         return;
                     }
                     itemToDeleteId = id;
@@ -1905,7 +2121,7 @@
                         tools = tools.filter(t => t.id !== itemToDeleteId);
                         closeModal('deleteModal');
                         await save();
-                        playSound('success');
+                        playSound('success', 'Item excluído com sucesso.');
                     }; 
                     openModal('deleteModal');
                 }
@@ -2114,15 +2330,15 @@
                         <tr class="group hover:bg-slate-50">
                             <td class="px-8 py-5">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden border">
-                                        ${t.img ? `<img src="${t.img}" class="w-full h-full object-cover">` : `<div class="flex items-center justify-center h-full text-slate-300 text-[8px]">FOTO</div>`}
+                                    <div class="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden border shrink-0">
+                                        ${t.img ? `<img src="${t.img}" class="w-full h-full object-cover">` : `<div class="flex items-center justify-center h-full text-slate-300 text-[10px]">FOTO</div>`}
                                     </div>
-                                    <div><p class="font-black text-slate-800 uppercase text-xs">${t.name}</p><p class="text-[9px] font-bold text-slate-400">${t.code || ''} <span class="text-indigo-500 font-black">${t.brand ? ' | ' + t.brand + '</span>' : ''}</span></p></div>
+                                    <div><p class="font-black text-slate-800 uppercase text-xs">${t.name}</p><p class="text-[10px] font-bold text-slate-400">${t.code || ''} <span class="text-indigo-500 font-black">${t.brand ? ' | ' + t.brand + '</span>' : ''}</span></p></div>
                                 </div>
                             </td>
                             <td class="px-8 py-5">
                                 <div class="flex flex-col">
-                                    <span class="text-[9px] font-black uppercase px-2 py-1 rounded-lg w-fit ${
+                                    <span class="text-[10px] font-black uppercase px-2 py-1 rounded-lg w-fit ${
                                         t.status === 'disponivel' ? 'bg-emerald-50 text-emerald-600' :
                                         t.status === 'em uso' ? 'bg-orange-100 text-orange-600' :
                                         t.status === 'quebrado' && t.maintenanceInfo && t.maintenanceInfo.status === 'Em Conserto' ? 'bg-indigo-100 text-indigo-600' :
@@ -2183,7 +2399,7 @@
                     history = history.filter(h => h.historyId !== historyItemToDeleteId);
                     await save();
                     closeModal('deleteModal');
-                    playSound('success');
+                    playSound('success', 'Registro de histórico removido.');
                 }
 
                 function clearHistoryDateFilter() {
@@ -2250,7 +2466,7 @@
                                     ${toolImg ? `<img src="${toolImg}" class="w-full h-full object-cover">` : `<i data-lucide="wrench" class="text-slate-300" size="24"></i>`}
                                 </div>
                                 <div class="flex-1">
-                                    <span class="text-[10px] font-black uppercase px-2 py-1 rounded-md ${typeColor}">${typeLabel}</span>
+                                    <span class="text-[11px] font-black uppercase px-2 py-1 rounded-md ${typeColor}">${typeLabel}</span>
                                     <h3 class="font-black text-slate-800 uppercase mt-1">${h.toolName}</h3>
                                     <p class="text-[10px] font-bold text-slate-400 uppercase">${tool.code || ''}</p>
                                 </div>
@@ -2411,7 +2627,7 @@
                         const mainTh = document.getElementById('mainTableActionsHeader');
                         if(mainTh) mainTh.classList.add('hidden');
 
-                        const teamForm = document.getElementById('addWorkerFormContainer');
+                        const teamForm = document.querySelector('#section-team button[onclick="openAddWorkerModal()"]')?.parentElement;
                         if(teamForm) teamForm.classList.add('hidden');
 
                         // Ocultar opções de backup restritas
@@ -2486,14 +2702,34 @@
                     });
                 };
 
+                function updateOverdueDisplay(val) {
+                    const display = document.getElementById('settingOverdueHoursDisplay');
+                    const daysDisplay = document.getElementById('settingOverdueDaysDisplay');
+                    if (display) {
+                        display.innerText = val;
+                        if (daysDisplay) {
+                            const days = (val / 24);
+                            let daysText = '';
+                            if (days < 1) {
+                                daysText = '(< 1 Dia)';
+                            } else {
+                                const d = parseFloat(days.toFixed(1).replace('.0', ''));
+                                daysText = `(${d} Dia${d !== 1 ? 's' : ''})`;
+                            }
+                            daysDisplay.innerText = daysText;
+                        }
+                    }
+                }
+
                 // --- FUNÇÕES DE CONFIGURAÇÃO ---
                 function loadSettingsUI() {
                     // Carrega valores nos inputs
                     const hours = appSettings.overdueHours || 24;
-                    document.getElementById('settingOverdueHours').value = hours;
-                    
-                    const lowStock = appSettings.lowStockLimit || 5;
-                    document.getElementById('settingLowStock').value = lowStock;
+                    const slider = document.getElementById('settingOverdueHours');
+                    if (slider) {
+                        slider.value = hours;
+                        updateOverdueDisplay(hours);
+                    }
                     
                     // PIN UI Logic
                     const pinInput = document.getElementById('settingAdminPin');
@@ -2518,9 +2754,9 @@
 
                     // Checkboxes
                     document.getElementById('settingDarkMode').checked = appSettings.darkMode || false;
-                    document.getElementById('settingAlertLowStock').checked = appSettings.alertLowStock !== false;
                     document.getElementById('settingAlertOverdue').checked = appSettings.alertOverdue !== false;
                     document.getElementById('settingSystemSounds').checked = appSettings.systemSounds !== false;
+                    document.getElementById('settingShowToasts').checked = appSettings.showToasts !== false;
 
                     // Sharing Link
                     const baseUrl = window.location.href.split('?')[0];
@@ -2529,11 +2765,10 @@
 
                 async function saveSettings() {
                     appSettings.overdueHours = parseInt(document.getElementById('settingOverdueHours').value) || 24;
-                    appSettings.lowStockLimit = parseInt(document.getElementById('settingLowStock').value) || 5;
                     appSettings.darkMode = document.getElementById('settingDarkMode').checked;
-                    appSettings.alertLowStock = document.getElementById('settingAlertLowStock').checked;
                     appSettings.alertOverdue = document.getElementById('settingAlertOverdue').checked;
                     appSettings.systemSounds = document.getElementById('settingSystemSounds').checked;
+                    appSettings.showToasts = document.getElementById('settingShowToasts').checked;
                     await save();
                 }
 
@@ -2547,7 +2782,7 @@
                     document.getElementById('alertModalTitle').innerText = "Sucesso";
                     document.getElementById('alertModalText').innerText = "PIN de segurança definido com sucesso!";
                     openModal('alertModal');
-                    playSound('success');
+                    playSound('success', 'PIN de segurança definido.');
                 }
 
                 function copyReadOnlyLink() {
@@ -2559,7 +2794,7 @@
                     document.getElementById('alertModalTitle').innerText = "Link Copiado";
                     document.getElementById('alertModalText').innerText = "O link de visualização foi copiado para a área de transferência.";
                     openModal('alertModal');
-                    playSound('success');
+                    playSound('success', 'Link copiado!');
                 }
 
                 function deleteAdminPin() {
@@ -2575,7 +2810,7 @@
                         document.getElementById('alertModalTitle').innerText = "Sucesso";
                         document.getElementById('alertModalText').innerText = "PIN removido com sucesso.";
                         openModal('alertModal');
-                        playSound('success');
+                        playSound('success', 'PIN removido.');
                     };
                     openModal('deleteModal');
                 }
@@ -2645,12 +2880,12 @@
                             document.getElementById('alertModalTitle').innerText = "Sucesso";
                             document.getElementById('alertModalText').innerText = "Dados importados com sucesso!";
                             openModal('alertModal');
-                            playSound('success');
+                            playSound('success', 'Dados importados com sucesso!');
                         } catch(e) { 
                             document.getElementById('alertModalTitle').innerText = "Erro";
                             document.getElementById('alertModalText').innerText = "Erro ao importar arquivo. Verifique se o arquivo é um backup válido.";
                             openModal('alertModal');
-                            playSound('error');
+                            playSound('error', 'Erro ao importar dados.');
                         } finally {
                             // Reseta o título do modal de alerta para o padrão depois de usar
                             setTimeout(() => {
@@ -2698,13 +2933,13 @@
                         closeModal('returnModal');
                         document.getElementById(`tool-card-${id}`)?.remove();
                         await save();
-                        playSound('success');
+                        playSound('success', 'Devolução registrada com sucesso!');
                     } else if (condition === 'quebrado') {
                         // Para ferramentas normais e consumíveis, inicia o fluxo de manutenção
                         maintenanceData.toolId = itemToReturnId;
                         document.getElementById('step-selecionar-ferramenta').classList.add('hidden');
                         document.getElementById('step-detalhes-manutencao').classList.remove('hidden');
-                        document.getElementById('selectedToolMaintenance').innerHTML = `<div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl mb-3">
+                document.getElementById('selectedToolMaintenance').innerHTML = `<div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl mb-3 border border-slate-100">
                             <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden">${tool.img ? `<img src="${tool.img}" class="w-full h-full object-cover">` : `<i data-lucide="image" class="text-slate-300"></i>`}</div>
                             <div><p class="font-bold text-xs uppercase text-slate-800">${tool.name}</p><p class="text-[9px] font-black text-slate-400 uppercase">${tool.code}</p></div>
                         </div>`;
@@ -2749,7 +2984,7 @@
                         currentTool.maintenanceInfo.status = 'Finalizado';
                         closeModal('manageMaintenanceModal');
                         await save();
-                        playSound('success');
+                        playSound('success', 'Manutenção finalizada!');
                     };
 
                     if (file) {
@@ -2826,7 +3061,7 @@
                         t.maintenanceInfo = null;
                         document.getElementById(`tool-card-${id}`)?.remove();
                         await save();
-                        playSound('success');
+                        playSound('success', 'Manutenção concluída e item retornado ao estoque.');
                     }
                 }
 
@@ -2862,11 +3097,11 @@
                         let stockInfo;
                         if (t.status === 'disponivel') {
                             stockInfo = `
-                                <span class="text-[8px] font-black text-slate-400 uppercase">Estoque</span>
+                                <span class="text-[10px] font-black text-slate-400 uppercase">Estoque</span>
                                 <div class="flex items-center justify-center gap-1 text-slate-900 font-black text-lg"><i data-lucide="box" size="12"></i><span>${t.qty || 0}</span></div>
                             `;
                         } else {
-                            stockInfo = `<span class="text-[8px] font-black uppercase text-slate-400 uppercase">Em Uso Por</span><p class="text-orange-600 font-black text-lg">${t.user}</p>`;
+                            stockInfo = `<span class="text-[10px] font-black uppercase text-slate-400 uppercase">Em Uso Por</span><p class="text-orange-600 font-black text-lg">${t.user}</p>`;
                         }
                         return `
                         <div onclick="selectToolForMaintenance(${t.id})" class="bg-white rounded-2xl p-3 shadow-lg border border-slate-100 cursor-pointer hover:border-red-500 hover:shadow-xl transition-all flex flex-col text-center group">
@@ -2887,7 +3122,7 @@
                     const tool = tools.find(t => t.id === id);
                     document.getElementById('step-selecionar-ferramenta').classList.add('hidden');
                     document.getElementById('step-detalhes-manutencao').classList.remove('hidden');
-                    document.getElementById('selectedToolMaintenance').innerHTML = `<div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl mb-3">
+                    document.getElementById('selectedToolMaintenance').innerHTML = `<div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl mb-3 border border-slate-100">
                         <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden">${tool.img ? `<img src="${tool.img}" class="w-full h-full object-cover">` : `<i data-lucide="image" class="text-slate-300"></i>`}</div>
                         <div><p class="font-bold text-xs uppercase text-slate-800">${tool.name}</p><p class="text-[9px] font-black text-slate-400 uppercase">${tool.code}</p></div>
                     </div>`;
@@ -3050,7 +3285,7 @@
 
                     closeModal('maintenanceModal');
                     await save();
-                    playSound('success');
+                    playSound('success', 'Manutenção reportada com sucesso!');
                 }
 
                 // --- FUNÇÕES DE SAÍDA DE MATERIAL ---
@@ -3079,7 +3314,7 @@
 
                     list.innerHTML = availableItems.map(t => {
                         const stockInfo = `
-                            <span class="text-[8px] font-black text-slate-400 uppercase">Estoque</span>
+                            <span class="text-[10px] font-black text-slate-400 uppercase">Estoque</span>
                             <div class="flex items-center justify-center gap-1 text-slate-900 font-black text-lg"><i data-lucide="box" size="12"></i><span>${t.qty || 0}</span></div>
                         `;
 
@@ -3167,7 +3402,7 @@
                         list.innerHTML = team.map(w => `
                             <div onclick="selectWorkerForMaterial(${w.id})" class="bg-slate-50 p-4 rounded-xl border border-slate-100 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-2 text-center">
                                 <div class="w-10 h-10 bg-white text-blue-600 rounded-full flex items-center justify-center font-black shadow-sm">${w.name.charAt(0)}</div>
-                                <div><p class="font-bold text-[10px] uppercase text-slate-700">${w.name}</p><p class="text-[8px] font-black text-slate-400 uppercase">${w.company}</p></div>
+                                <div><p class="font-bold text-[10px] uppercase text-slate-700">${w.name}</p><p class="text-[10px] font-black text-slate-400 uppercase">${w.company}</p></div>
                             </div>
                         `).join('');
                         lucide.createIcons();
@@ -3230,7 +3465,7 @@
                     }
                     closeModal('materialModal');
                     await save();
-                    playSound('success');
+                    playSound('success', 'Saída registrada com sucesso!');
                 }
 
                 // --- FUNÇÕES DE ENTRADA (DEVOLUÇÃO) ---
@@ -3503,6 +3738,21 @@
                     if (actionsOverdueBadge) {
                         actionsOverdueBadge.classList.toggle('hidden', overdueTools.length === 0);
                     }
+
+                    // Badge no card do Dashboard (Em Uso)
+                    const dashboardBadge = document.getElementById('dashboardOverdueBadge');
+                    if (dashboardBadge) {
+                        dashboardBadge.classList.toggle('hidden', overdueTools.length === 0);
+                        dashboardBadge.innerText = overdueTools.length;
+                        if (overdueTools.length > 0) dashboardBadge.classList.add('animate-pulse');
+                    }
+
+                    // Badge no card de Devolução (Ações)
+                    const returnCardBadge = document.getElementById('returnCardOverdueBadge');
+                    if (returnCardBadge) {
+                        returnCardBadge.classList.toggle('hidden', overdueTools.length === 0);
+                        returnCardBadge.innerText = overdueTools.length;
+                    }
                 }
 
                 function openOverdueModal() {
@@ -3733,6 +3983,25 @@
                     );
                     XLSX.utils.book_append_sheet(wb, wsHist, "Historico");
 
+                    // --- 4. GUIA EQUIPE ---
+                    const teamData = team.sort((a, b) => (a.name || '').localeCompare(b.name || '')).map(w => [
+                        w.name,
+                        w.type || (w.company === 'LDC' ? 'LDC' : 'TERCEIRO'),
+                        w.info || w.company || 'N/A',
+                        w.sector || '-',
+                        w.costCenter || '-',
+                        w.dateAdded || '-'
+                    ]);
+                    const wsTeam = createSheet(
+                        "Relatório de Equipe",
+                        ['Nome', 'Tipo', 'Identificação', 'Setor', 'Centro de Custo', 'Data Cadastro'],
+                        teamData,
+                        [35, 15, 20, 25, 20, 15],
+                        [], // Sem moeda
+                        [1, 2, 5] // Tipo, ID, Data centralizados
+                    );
+                    XLSX.utils.book_append_sheet(wb, wsTeam, "Equipe");
+
                     // --- Download Workbook ---
                     XLSX.writeFile(wb, "Relatorio_LDC_Pro.xlsx");
                 }
@@ -3946,7 +4215,7 @@
                             </div>
                              <!-- Mini Timeline -->
                             <div class="mt-auto pt-4">
-                                <p class="text-[9px] font-bold text-slate-400 uppercase mb-2">Status</p>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Status</p>
                                 <div class="flex items-center gap-1"><div class="flex-1 h-1.5 rounded-full ${info.status === 'Aguardando Orçamento' || info.status === 'Aguardando Aprovação' || info.status === 'Em Conserto' || info.status === 'Finalizado' ? 'bg-amber-400' : 'bg-slate-200'}"></div><div class="flex-1 h-1.5 rounded-full ${info.status === 'Aguardando Aprovação' || info.status === 'Em Conserto' || info.status === 'Finalizado' ? 'bg-sky-400' : 'bg-slate-200'}"></div><div class="flex-1 h-1.5 rounded-full ${info.status === 'Em Conserto' || info.status === 'Finalizado' ? 'bg-indigo-400' : 'bg-slate-200'}"></div><div class="flex-1 h-1.5 rounded-full ${info.status === 'Finalizado' ? 'bg-emerald-400' : 'bg-slate-200'}"></div></div>
                                 <p class="text-center text-xs font-black uppercase mt-2 ${info.status === 'Aguardando Orçamento' ? 'text-amber-600' : info.status === 'Aguardando Aprovação' ? 'text-sky-600' : info.status === 'Em Conserto' ? 'text-indigo-600' : info.status === 'Finalizado' ? 'text-emerald-600' : 'text-red-600'}">${info.status}</p>
                             </div>
@@ -4092,7 +4361,7 @@
 
                     closeModal('manageMaintenanceModal');
                     await save();
-                    playSound('success');
+                    playSound('success', 'Orçamento salvo com sucesso!');
                 }
 
                 async function approveRepair(id) {
@@ -4103,7 +4372,7 @@
                     tool.maintenanceInfo.approvalDate = new Date().toISOString();
                     closeModal('manageMaintenanceModal');
                     await save();
-                    playSound('success');
+                    playSound('success', 'Conserto aprovado!');
                 }
 
                 async function sendBackToQuote(id) {
@@ -4117,7 +4386,7 @@
                     tool.maintenanceInfo.invoiceFile = null;
                     closeModal('manageMaintenanceModal');
                     await save();
-                    playSound('success');
+                    playSound('success', 'Retornado para orçamento.');
                 }
 
                 async function rejectRepair(id) {
@@ -4131,7 +4400,7 @@
                     tool.maintenanceInfo.invoiceFile = null;
                     closeModal('manageMaintenanceModal');
                     await save();
-                    playSound('success');
+                    playSound('success', 'Conserto recusado.');
                 }
 
                 async function requestDeleteMaintenance(id, event) {
@@ -4161,7 +4430,7 @@
                         closeModal('deleteModal');
                         await save();
                         openManageMaintenanceModal(id);
-                        playSound('success');
+                        playSound('success', 'Nota fiscal excluída.');
                     };
                     openModal('deleteModal');
                 }
@@ -4176,7 +4445,7 @@
                         history = history.filter(h => !(h.toolId === id && h.type === 'manutencao' && h.returnDate === null));
                         closeModal('deleteModal');
                         await save();
-                        playSound('success');
+                        playSound('success', 'Manutenção cancelada.');
                     }
                 }
 
