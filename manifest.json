@@ -1,0 +1,21 @@
+{
+    "name": "LDC Ferramentaria Pro",
+    "short_name": "LDC Pro",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#F8FAFC",
+    "theme_color": "#0B1120",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/1048/1048953.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/1048/1048953.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
