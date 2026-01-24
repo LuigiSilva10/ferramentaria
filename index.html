@@ -6,12 +6,12 @@
             <title>LDC | Ferramentaria Pro</title>
             
             <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛠️</text></svg>">
-            <link rel="manifest" href="manifest.json">
+            <link rel="manifest" href="manifest.json?v=2.2">
             <meta name="theme-color" content="#0B1120">
             <meta name="apple-mobile-web-app-capable" content="yes">
             <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
             <meta name="apple-mobile-web-app-title" content="LDC Pro">
-            <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1048/1048953.png">
+            <link rel="apple-touch-icon" href="https://fonts.gstatic.com/s/e/notoemoji/latest/1f6e0/512.png">
             <script src="https://cdn.tailwindcss.com"></script>
             <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
             <script src="https://unpkg.com/lucide@latest"></script>
@@ -22,7 +22,10 @@
 
                 // Registrar Service Worker para PWA
                 if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.register('sw.js');
+                    // Forçar a remoção de caches antigos para garantir atualização
+                    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                        for(let registration of registrations) { registration.unregister(); }
+                    });
                 }
             </script>
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -168,7 +171,7 @@
 
             <aside id="sidebar" class="sidebar text-slate-400 flex flex-col">
                 <div class="p-6 flex items-center justify-center md:justify-between">
-                    <h1 class="text-white font-black text-xl sidebar-text uppercase tracking-tighter hidden md:block">LDC PRO</h1>
+                    <h1 class="text-white font-black text-xl sidebar-text uppercase tracking-tighter hidden md:block">LDC PRO <span class="text-[10px] text-blue-400 align-top">v2.2</span></h1>
                     <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white bg-transparent border-none cursor-pointer hidden md:block"><i data-lucide="menu"></i></button>
                 </div>
                 <nav class="flex-1 px-4 space-y-2 mt-4">
@@ -214,7 +217,7 @@
 
                             <div class="flex flex-col items-end gap-4 w-full xl:w-auto">
                                 <div class="flex items-center gap-2 text-slate-300 bg-slate-800/80 px-5 py-2.5 rounded-full border border-slate-700/50 backdrop-blur-md shadow-lg">
-                                    <i data-lucide="calendar" size="16" class="text-blue-400"></i>
+                                    <i data-lucide="calendar" size="16" class="text-white"></i>
                                     <span id="currentDateDisplay" class="text-xs font-bold uppercase tracking-widest"></span>
                                 </div>
                                 
@@ -230,11 +233,18 @@
                                 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative"><p class="text-orange-500 text-[10px] font-bold uppercase mb-1">Em Uso</p><h2 id="loanCount" class="text-2xl font-black text-orange-500">0</h2><span id="dashboardOverdueBadge" class="hidden absolute top-3 right-3 w-5 h-5 bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full shadow-md border-2 border-white dark:border-[#1e1e1e]"></span></div>
                                 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-red-500 text-[10px] font-bold uppercase mb-1">Manutenção</p><h2 id="brokenCount" class="text-2xl font-black text-red-600">0</h2></div>
                             </div>
-                            
+
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-purple-500 text-[10px] font-bold uppercase mb-1">Colaboradores</p><h2 id="mainTeamCount" class="text-2xl font-black text-slate-700">0</h2></div>
+                                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-blue-500 text-[10px] font-bold uppercase mb-1">Valor Total</p><h2 id="mainTotalValue" class="text-xl font-black text-slate-700">R$ 0,00</h2></div>
+                                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-teal-500 text-[10px] font-bold uppercase mb-1">Peças Totais</p><h2 id="mainTotalItems" class="text-2xl font-black text-slate-700">0</h2></div>
+                                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-indigo-500 text-[10px] font-bold uppercase mb-1">Valor em Uso</p><h2 id="mainValueInUse" class="text-xl font-black text-slate-700">R$ 0,00</h2></div>
+                            </div>
+
                             <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100">
                                 <table class="w-full text-left text-sm">
                                     <thead class="bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
-                                        <tr><th class="px-8 py-4">Equipamento</th><th class="px-8 py-4">Status / Responsável</th><th id="mainTableActionsHeader" class="px-8 py-4 text-right">Ações</th></tr>
+                                        <tr><th class="px-4 md:px-8 py-4">Equipamento</th><th class="px-4 md:px-8 py-4">Status / Responsável</th><th id="mainTableActionsHeader" class="px-4 md:px-8 py-4 text-right">Ações</th></tr>
                                     </thead>
                                     <tbody id="toolList" class="divide-y divide-slate-50"></tbody>
                                 </table>
@@ -349,6 +359,7 @@
                         <span id="overdueCountBadge" class="font-black">0</span>
                         <span>Ferramenta(s) com devolução atrasada. Clique para ver.</span>
                     </button>
+
                     <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
                         <div class="flex gap-2 flex-wrap">
                             <button onclick="setCatalogFilter('all')" id="filter-all" class="filter-pill active bg-slate-200 text-slate-700">Todos</button>
@@ -428,7 +439,7 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-end mb-8 gap-3">
+                    <div class="flex flex-col md:flex-row justify-end mb-8 gap-3">
                         <button onclick="printAllWorkerCards()" class="bg-slate-800 text-white px-6 py-4 rounded-xl font-bold flex items-center gap-2 shadow-lg text-xs uppercase tracking-widest hover:bg-slate-700 transition-all border-none cursor-pointer w-full md:w-auto justify-center">
                             <i data-lucide="printer" size="18"></i> Imprimir Todos
                         </button>
@@ -2664,9 +2675,42 @@
                     document.getElementById('brokenCount').innerText = visibleTools.filter(t => t.status === 'quebrado').length;
                     document.getElementById('currentDateDisplay').innerText = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
 
+                    // Estatísticas Adicionais
+                    const totalValue = tools.reduce((sum, t) => sum + ((t.value || 0) * (t.qty || 1)), 0);
+                    const totalValueEl = document.getElementById('totalValueDisplay');
+                    if(totalValueEl) totalValueEl.innerText = formatBRL(totalValue);
+
+                    const totalTeamEl = document.getElementById('totalTeamCount');
+                    if(totalTeamEl) totalTeamEl.innerText = team.length;
+
+                    const totalHistoryEl = document.getElementById('totalHistoryCount');
+                    if(totalHistoryEl) totalHistoryEl.innerText = history.length;
+
+                    const uniqueToolsEl = document.getElementById('uniqueToolsCount');
+                    if(uniqueToolsEl) {
+                        const uniqueNames = new Set(tools.map(t => t.name.trim().toLowerCase())).size;
+                        uniqueToolsEl.innerText = uniqueNames;
+                    }
+
+                    // Atualiza cards extras do Painel Principal
+                    const mainTeamCountEl = document.getElementById('mainTeamCount');
+                    if (mainTeamCountEl) mainTeamCountEl.innerText = team.length;
+
+                    const mainTotalValueEl = document.getElementById('mainTotalValue');
+                    if (mainTotalValueEl) mainTotalValueEl.innerText = formatBRL(totalValue);
+
+                    const mainTotalItemsEl = document.getElementById('mainTotalItems');
+                    if (mainTotalItemsEl) mainTotalItemsEl.innerText = tools.reduce((sum, tool) => sum + (tool.qty || 1), 0);
+
+                    const mainValueInUseEl = document.getElementById('mainValueInUse');
+                    if (mainValueInUseEl) {
+                        const valueInUse = tools.filter(t => t.status === 'em uso').reduce((sum, t) => sum + ((t.value || 0) * (t.qty || 1)), 0);
+                        mainValueInUseEl.innerText = formatBRL(valueInUse);
+                    }
+
                     document.getElementById('toolList').innerHTML = visibleTools.map(t => `
                         <tr class="group hover:bg-slate-50">
-                            <td class="px-8 py-5">
+                            <td class="px-4 md:px-8 py-5">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden border shrink-0">
                                         ${t.img ? `<img src="${t.img}" class="w-full h-full object-cover">` : `<div class="flex items-center justify-center h-full text-slate-300 text-[10px]">FOTO</div>`}
@@ -2674,7 +2718,7 @@
                                     <div><p class="font-black text-slate-800 uppercase text-xs">${t.name}</p><p class="text-[10px] font-bold text-slate-400">${t.code || ''} <span class="text-indigo-500 font-black">${t.brand ? ' | ' + t.brand + '</span>' : ''}</span></p></div>
                                 </div>
                             </td>
-                            <td class="px-8 py-5">
+                            <td class="px-4 md:px-8 py-5">
                                 <div class="flex flex-col">
                                     <span class="text-[10px] font-black uppercase px-2 py-1 rounded-lg w-fit ${
                                         t.status === 'disponivel' ? 'bg-emerald-50 text-emerald-600' :
@@ -2687,7 +2731,7 @@
                                     ${t.status === 'quebrado' && t.maintenanceNote ? `<span class="text-[9px] text-rose-500 font-bold mt-1 block truncate" title="${t.maintenanceNote}">${t.maintenanceNote}</span>` : ''}
                                 </div>
                             </td>` + (!isReadOnly ? `
-                            <td class="px-8 py-5 text-right">
+                            <td class="px-4 md:px-8 py-5 text-right">
                                 <div class="flex justify-end gap-2">
                                     ${t.status === 'em uso' ? 
                                         `<button onclick="requestReturn(${t.id})" class="p-2 text-orange-500 hover:bg-orange-50 rounded-lg transition-colors" title="Devolver"><i data-lucide="rotate-ccw" size="16"></i></button>` :
