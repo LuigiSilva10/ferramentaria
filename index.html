@@ -1038,7 +1038,7 @@
                             </div>
 
                         </div>
-                        <button onclick="addWorker()" class="w-full mt-6 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs shadow-lg border-none cursor-pointer hover:bg-blue-700 transition-all">Salvar Colaborador</button>
+                        <button id="btnSaveWorker" onclick="addWorker()" class="w-full mt-6 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs shadow-lg border-none cursor-pointer hover:bg-blue-700 transition-all">Salvar Colaborador</button>
                     </div>
                 </div>
             </div>
@@ -1071,7 +1071,7 @@
                             <input type="number" id="materialQtyInput" placeholder="QTD" class="w-32 text-center border-2 border-slate-200 rounded-xl px-4 py-3 font-black text-lg outline-none focus:border-blue-500 transition-all">
                             <div class="flex gap-3 mt-6">
                                 <button onclick="resetMaterial(0)" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase text-xs cursor-pointer border-none">Voltar</button>
-                                <button onclick="processQtyStep()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs shadow-lg border-none cursor-pointer hover:bg-blue-700">Avançar</button>
+                                <button id="btnNextMaterialQty" onclick="processQtyStep()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs shadow-lg border-none cursor-pointer hover:bg-blue-700">Avançar</button>
                             </div>
                         </div>
                         <div id="step-material-worker" class="hidden">
@@ -1597,7 +1597,7 @@
 
                     updateWorkerQrPreview();
                     
-                    const btn = document.querySelector('#addWorkerModal button.bg-blue-600');
+                    const btn = document.getElementById('btnSaveWorker');
                     if(btn) { btn.onclick = addWorker; btn.innerText = "Salvar Colaborador"; }
                     const title = document.querySelector('#addWorkerModal h3');
                     if(title) title.innerText = "Novo Colaborador";
@@ -1653,7 +1653,7 @@
 
                     updateWorkerQrPreview();
 
-                    const btn = document.querySelector('#addWorkerModal button.bg-blue-600');
+                    const btn = document.getElementById('btnSaveWorker');
                     if(btn) { btn.onclick = () => updateWorker(id); btn.innerText = "Atualizar Colaborador"; }
                     const title = document.querySelector('#addWorkerModal h3');
                     if(title) title.innerText = "Editar Colaborador";
@@ -3050,8 +3050,11 @@
                     };
 
                     // Equipe
-                    setupEnter('workerNameInput', addWorker);
-                    setupEnter('workerCompanyInput', addWorker);
+                    const saveWorkerAction = () => document.getElementById('btnSaveWorker').click();
+                    setupEnter('workerNameInput', saveWorkerAction);
+                    setupEnter('workerInfoInput', saveWorkerAction);
+                    setupEnter('workerCostCenterInput', saveWorkerAction);
+                    setupEnter('workerSectorInput', saveWorkerAction);
 
                     // Ferramentas (Adicionar/Editar)
                     const saveToolAction = () => document.getElementById('btnSaveTool').click();
@@ -3066,11 +3069,18 @@
                     setupEnter('pinInputModal', validatePin);
 
                     // Saída de Materiais (Quantidade)
-                    setupEnter('materialQtyInput', processQtyStep);
+                    setupEnter('materialQtyInput', () => document.getElementById('btnNextMaterialQty').click());
 
                     // Manutenção (Orçamento)
-                    setupEnter('quoteProviderInput', () => saveQuote(itemToManageMaintenanceId));
-                    setupEnter('quoteCostInput', () => saveQuote(itemToManageMaintenanceId));
+                    const saveQuoteAction = () => document.getElementById('btnSaveQuote').click();
+                    setupEnter('quoteProviderInput', saveQuoteAction);
+                    setupEnter('quoteCostInput', saveQuoteAction);
+
+                    // Manutenção (Reportar)
+                    setupEnter('maintenanceQtyInput', () => document.getElementById('btnFinalizeMaintenance').click());
+
+                    // Configurações (PIN)
+                    setupEnter('settingAdminPin', () => document.getElementById('btnSavePin').click());
 
                     // Sons de digitação
                     document.addEventListener('keydown', (e) => {
