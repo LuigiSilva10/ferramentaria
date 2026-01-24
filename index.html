@@ -235,7 +235,7 @@
                             </div>
 
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-purple-500 text-[10px] font-bold uppercase mb-1">Colaboradores</p><h2 id="mainTeamCount" class="text-2xl font-black text-slate-700">0</h2></div>
+                                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-purple-500 text-[10px] font-bold uppercase mb-1">Colaboradores Totais</p><h2 id="mainTeamCount" class="text-2xl font-black text-slate-700">0</h2></div>
                                 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-blue-500 text-[10px] font-bold uppercase mb-1">Valor Total</p><h2 id="mainTotalValue" class="text-xl font-black text-slate-700">R$ 0,00</h2></div>
                                 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-teal-500 text-[10px] font-bold uppercase mb-1">Peças Totais</p><h2 id="mainTotalItems" class="text-2xl font-black text-slate-700">0</h2></div>
                                 <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm"><p class="text-indigo-500 text-[10px] font-bold uppercase mb-1">Valor em Uso</p><h2 id="mainValueInUse" class="text-xl font-black text-slate-700">R$ 0,00</h2></div>
@@ -2676,7 +2676,7 @@
                     document.getElementById('currentDateDisplay').innerText = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
 
                     // Estatísticas Adicionais
-                    const totalValue = tools.reduce((sum, t) => sum + ((t.value || 0) * (t.qty || 1)), 0);
+                    const totalValue = tools.reduce((sum, t) => sum + ((t.value || 0) * (t.hasOwnProperty('qty') ? t.qty : 1)), 0);
                     const totalValueEl = document.getElementById('totalValueDisplay');
                     if(totalValueEl) totalValueEl.innerText = formatBRL(totalValue);
 
@@ -2700,11 +2700,11 @@
                     if (mainTotalValueEl) mainTotalValueEl.innerText = formatBRL(totalValue);
 
                     const mainTotalItemsEl = document.getElementById('mainTotalItems');
-                    if (mainTotalItemsEl) mainTotalItemsEl.innerText = tools.reduce((sum, tool) => sum + (tool.qty || 1), 0);
+                    if (mainTotalItemsEl) mainTotalItemsEl.innerText = tools.reduce((sum, tool) => sum + (tool.hasOwnProperty('qty') ? tool.qty : 1), 0);
 
                     const mainValueInUseEl = document.getElementById('mainValueInUse');
                     if (mainValueInUseEl) {
-                        const valueInUse = tools.filter(t => t.status === 'em uso').reduce((sum, t) => sum + ((t.value || 0) * (t.qty || 1)), 0);
+                        const valueInUse = tools.filter(t => t.status === 'em uso').reduce((sum, t) => sum + ((t.value || 0) * (t.hasOwnProperty('qty') ? t.qty : 1)), 0);
                         mainValueInUseEl.innerText = formatBRL(valueInUse);
                     }
 
