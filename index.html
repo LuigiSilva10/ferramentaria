@@ -2999,7 +2999,7 @@
                     if (isReadOnly) {
                         document.body.classList.add('read-only-mode');
                         // Ocultar botões e seções administrativas
-                        ['btn-actions', 'btn-team', 'btn-settings', 'btn-tests'].forEach(id => {
+                        ['btn-actions', 'btn-settings', 'btn-tests'].forEach(id => {
                             const el = document.getElementById(id);
                             if(el) el.classList.add('hidden');
                         });
