@@ -931,7 +931,7 @@
                         <h3 class="font-black uppercase tracking-tighter text-slate-900">Reportar Manutenção</h3>
                         <button onclick="closeModal('maintenanceModal'); event.stopPropagation();" class="text-slate-400 hover:text-rose-500 bg-transparent border-none cursor-pointer"><i data-lucide="x"></i></button>
                     </div>
-                    <div class="p-8">
+                    <div class="p-8 max-h-[80vh] overflow-y-auto custom-scrollbar">
                         <div id="step-selecionar-ferramenta">
                             <p class="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest">1. Qual ferramenta quebrou?</p>
                             <div class="relative mb-4">
@@ -3791,12 +3791,21 @@
                         lucide.createIcons();
                     } else if (step === 2) { // Etapa de Colaborador
                         const list = document.getElementById('teamGridMaterial');
-                        list.innerHTML = team.map(w => `
+                        list.innerHTML = team.map(w => {
+                            const workerType = w.type || (w.company === 'LDC' ? 'LDC' : 'TERCEIRO');
+                            const textColor = workerType === 'TERCEIRO' ? 'text-orange-600' : 'text-blue-600';
+                            const infoDisplay = w.info || w.company || 'N/A';
+                            return `
                             <div onclick="selectWorkerForMaterial(${w.id})" class="bg-slate-50 p-4 rounded-xl border border-slate-100 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-2 text-center">
-                                <div class="w-10 h-10 bg-white text-blue-600 rounded-full flex items-center justify-center font-black shadow-sm">${w.name.charAt(0)}</div>
-                                <div><p class="font-bold text-[10px] uppercase text-slate-700">${w.name}</p><p class="text-[10px] font-black text-slate-400 uppercase">${w.company}</p></div>
+                                <div class="w-10 h-10 bg-white ${textColor} rounded-full flex items-center justify-center font-black shadow-sm overflow-hidden border border-slate-100">
+                                    ${w.img ? `<img src="${w.img}" class="w-full h-full object-cover">` : w.name.charAt(0)}
+                                </div>
+                                <div class="w-full">
+                                    <p class="font-bold text-[10px] uppercase text-slate-700 truncate px-1" title="${w.name}">${w.name}</p>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase truncate px-1" title="${infoDisplay}">${infoDisplay}</p>
+                                </div>
                             </div>
-                        `).join('');
+                        `; }).join('');
                         lucide.createIcons();
                     } else if (step === 3) { // Etapa de Confirmação
                         const tool = tools.find(t => t.id === materialData.toolId);
