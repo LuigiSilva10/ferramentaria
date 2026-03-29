@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDC | Ferramentaria Pro</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛠️</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
+        
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; transition: all 0.3s ease; }
+        .sidebar.collapsed { width: 80px; }
+        .main-content { flex: 1; display: none; opacity: 0; transform: translateY(10px); transition: all 0.4s ease; }
+        .main-content.active-section { display: block; opacity: 1; transform: translateY(0); }
+        
+        .nav-btn { width: 100%; display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: 0.75rem; font-weight: 700; color: #94a3b8; transition: all 0.2s; }
+        .nav-btn.active { background-color: #2563eb; color: white; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4); }
+
+        .selection-card { border: 2px solid #f1f5f9; cursor: pointer; transition: all 0.2s; border-radius: 1.5rem; }
+        .selection-card:hover { border-color: #3b82f6; background: #eff6ff; transform: scale(1.02); }
+        .selection-card.selected { border-color: #2563eb; background: #dbeafe; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        
+        .search-input-inner {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            border-radius: 0.75rem;
+            width: 100%;
+            font-size: 0.75rem;
+            font-weight: 700;
+            outline: none;
+        }
+    </style>
+</head>
+<body id="mainBody">
+
+    <aside id="sidebar" class="sidebar bg-slate-900 text-slate-400 flex flex-col sticky top-0 h-screen z-50">
+        <div class="p-6 flex items-center justify-between">
+            <h1 class="text-white font-black text-xl sidebar-text uppercase tracking-tighter">LDC PRO</h1>
+            <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white"><i data-lucide="menu"></i></button>
+        </div>
+        
+        <nav class="flex-1 px-4 space-y-2 mt-4">
+            <button id="btn-main" onclick="showSection('main')" class="nav-btn active"><i data-lucide="layout-dashboard"></i> <span class="sidebar-text">Painel Principal</span></button>
+            <button id="btn-catalog" onclick="showSection('catalog')" class="nav-btn"><i data-lucide="layout-grid"></i> <span class="sidebar-text">Catálogo Visual</span></button>
+            <button id="btn-team" onclick="openModal('teamModal')" class="nav-btn"><i data-lucide="users"></i> <span class="sidebar-text">Gerenciar Equipe</span></button>
+            <button id="btn-database" onclick="showSection('database')" class="nav-btn"><i data-lucide="database"></i> <span class="sidebar-text">Banco de Dados</span></button>
+            
+            <div class="pt-4 mt-4 border-t border-slate-800 px-4 sidebar-text">
+                <p class="text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Ativos Totais</p>
+                <div class="bg-slate-800/50 p-3 rounded-xl border border-white/5">
+                    <p class="text-white font-black text-lg" id="totalValueSidebar">R$ 0,00</p>
+                </div>
+            </div>
+        </nav>
+    </aside>
+
+    <main id="section-main" class="main-content p-4 md:p-8 active-section">
+        <div class="max-w-[1400px] mx-auto">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900 uppercase tracking-tighter">Inventário</h2>
+                    <p id="currentDateDisplay" class="text-slate-500 text-xs font-bold uppercase"></p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="openLoanFlow()" class="bg-slate-900 text-white px-6 py-3 rounded-xl font-black flex items-center gap-2 shadow-lg text-xs uppercase tracking-widest"><i data-lucide="arrow-up-right" size="16"></i> Saída</button>
+                    <button onclick="openModal('addModal')" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-black flex items-center gap-2 shadow-lg text-xs uppercase tracking-widest"><i data-lucide="plus" size="16"></i> Novo Item</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-8 space-y-6">
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="bg-white p-5 rounded-2xl border shadow-sm"><p class="text-slate-400 text-[9px] font-black uppercase mb-1">Total</p><h2 id="totalCount" class="text-2xl font-black">0</h2></div>
+                        <div class="bg-white p-5 rounded-2xl border shadow-sm"><p class="text-emerald-500 text-[9px] font-black uppercase mb-1">Livres</p><h2 id="availCount" class="text-2xl font-black text-emerald-600">0</h2></div>
+                        <div class="bg-white p-5 rounded-2xl border shadow-sm"><p class="text-orange-500 text-[9px] font-black uppercase mb-1">Em Uso</p><h2 id="loanCount" class="text-2xl font-black text-orange-600">0</h2></div>
+                        <div class="bg-white p-5 rounded-2xl border shadow-sm"><p class="text-blue-500 text-[9px] font-black uppercase mb-1">Equipe</p><h2 id="teamCount" class="text-2xl font-black text-blue-600">0</h2></div>
+                    </div>
+                    <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden border">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-slate-50 text-slate-400 text-[10px] font-black uppercase">
+                                <tr><th class="px-8 py-4">Item</th><th class="px-8 py-4">Status</th><th class="px-8 py-4 text-right">Ações</th></tr>
+                            </thead>
+                            <tbody id="toolList" class="divide-y divide-slate-50"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="lg:col-span-4">
+                    <div class="bg-slate-900 rounded-[2.5rem] p-8 text-white h-full min-h-[500px] shadow-2xl flex flex-col">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-[10px] font-black uppercase text-slate-500 flex items-center gap-2"><i data-lucide="history" size="14"></i> Logs</h3>
+                            <button onclick="confirmClearHistory()" class="text-[9px] font-black text-rose-400 uppercase">Limpar Tudo</button>
+                        </div>
+                        <div id="historyLog" class="space-y-4 overflow-y-auto flex-1 pr-2 custom-scrollbar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <main id="section-catalog" class="main-content p-4 md:p-8">
+        <div class="max-w-[1400px] mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase">Catálogo</h2>
+                <div class="relative w-full md:w-96">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="18"></i>
+                    <input type="text" id="catalogSearch" onkeyup="renderCatalog()" placeholder="Buscar..." class="w-full pl-12 pr-4 py-4 rounded-2xl border-none shadow-lg outline-none bg-white text-sm font-bold">
+                </div>
+            </div>
+            <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"></div>
+        </div>
+    </main>
+
+    <main id="section-database" class="main-content p-4 md:p-8">
+        <div class="max-w-4xl mx-auto mt-10">
+            <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase mb-10">Backup</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div onclick="exportData()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all text-center">
+                    <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="download-cloud"></i></div>
+                    <h3 class="font-black uppercase text-slate-800">Exportar</h3>
+                </div>
+                <div onclick="document.getElementById('importInput').click()" class="bg-white p-10 rounded-[2.5rem] shadow-xl cursor-pointer border-2 border-transparent hover:border-emerald-500 transition-all text-center">
+                    <input type="file" id="importInput" class="hidden" accept=".json" onchange="importData(this)">
+                    <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="upload-cloud"></i></div>
+                    <h3 class="font-black uppercase text-slate-800">Importar</h3>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="loanModal" class="modal-overlay fixed inset-0 bg-slate-900/90 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-[3rem] w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="p-8 border-b bg-slate-50 flex justify-between items-center">
+                <h3 class="text-xl font-black text-slate-900 uppercase">Saída de Material</h3>
+                <button onclick="closeModal('loanModal')" class="text-slate-400 hover:text-rose-500"><i data-lucide="x"></i></button>
+            </div>
+            <div class="flex-1 flex flex-col overflow-hidden">
+                <div id="step1" class="flex-1 p-8 overflow-y-auto custom-scrollbar">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                        <h4 class="font-black uppercase text-slate-800 text-xs">1. Colaborador</h4>
+                        <div class="relative md:w-64">
+                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size="14"></i>
+                            <input type="text" id="searchMemberLoan" onkeyup="renderSelectionTeam()" placeholder="Nome..." class="search-input-inner">
+                        </div>
+                    </div>
+                    <div id="selectionTeamGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+                </div>
+                <div id="step2" class="flex-1 p-8 overflow-y-auto hidden custom-scrollbar">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                        <h4 class="font-black uppercase text-slate-800 text-xs">2. Item</h4>
+                        <div class="relative md:w-64">
+                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size="14"></i>
+                            <input type="text" id="searchToolLoan" onkeyup="renderSelectionTool()" placeholder="Item..." class="search-input-inner">
+                        </div>
+                    </div>
+                    <div id="selectionToolGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+                </div>
+            </div>
+            <div class="p-8 border-t flex justify-between items-center bg-slate-50">
+                <button id="btnBackStep" onclick="changeStep(1)" class="px-6 py-3 font-black text-slate-400 uppercase text-[10px] hidden">← Voltar</button>
+                <div id="loanSummary" class="text-center hidden"><p id="summaryText" class="text-xs font-black text-blue-600 uppercase"></p></div>
+                <button id="btnConfirmLoan" onclick="finalizeLoan()" class="px-10 py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase text-xs hidden shadow-lg">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="teamModal" class="modal-overlay fixed inset-0 bg-slate-900/80 hidden flex items-center justify-center p-4 z-[100]">
+        <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-lg shadow-2xl flex flex-col max-h-[80vh]">
+            <h3 class="text-lg font-black mb-6 uppercase text-center">Equipe</h3>
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="memberName" placeholder="NOME" class="flex-1 border-2 border-slate-100 rounded-xl px-4 py-2 font-bold uppercase text-xs outline-none">
+                <input type="text" id="memberId" placeholder="ID" class="w-20 border-2 border-slate-100 rounded-xl px-4 py-2 font-bold uppercase text-xs outline-none">
+                <button onclick="addTeamMember()" class="bg-blue-600 text-white px-4 rounded-xl font-bold"><i data-lucide="plus"></i></button>
+            </div>
+            <div class="relative mb-4">
+                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size="14"></i>
+                <input type="text" id="searchTeamConfig" onkeyup="renderTeam()" placeholder="Pesquisar..." class="search-input-inner">
+            </div>
+            <div class="flex-1 overflow-y-auto space-y-2 custom-scrollbar" id="teamListContainer"></div>
+            <button onclick="closeModal('teamModal')" class="mt-6 w-full py-2 text-slate-400 font-bold uppercase text-[10px]">Fechar</button>
+        </div>
+    </div>
+
+    <div id="addModal" class="modal-overlay fixed inset-0 bg-slate-900/80 hidden z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-md">
+            <h3 class="text-lg font-black mb-6 text-center uppercase">Novo Item</h3>
+            <div class="space-y-3">
+                <div class="border-2 border-dashed border-slate-200 rounded-2xl p-4 text-center cursor-pointer" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="previewImage(this)">
+                    <div id="uploadPlaceholder" class="text-slate-400"><i data-lucide="camera" class="mx-auto" size="24"></i><p class="text-[8px] font-black uppercase">Foto</p></div>
+                    <img id="imagePreview" class="hidden h-32 w-full object-contain">
+                </div>
+                <input type="text" id="toolCodeInput" placeholder="CÓDIGO" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs">
+                <input type="text" id="toolNameInput" placeholder="DESCRIÇÃO" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold uppercase text-xs">
+                <input type="number" id="toolValueInput" placeholder="VALOR (R$)" class="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-xs">
+            </div>
+            <button onclick="addTool()" class="w-full mt-6 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs shadow-lg">Salvar</button>
+            <button onclick="closeModal('addModal')" class="w-full mt-2 text-slate-400 font-bold text-[10px] uppercase">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal-overlay fixed inset-0 bg-slate-900/95 hidden flex items-center justify-center p-4 z-[500]">
+        <div class="bg-white rounded-[2.5rem] p-10 w-full max-w-sm text-center">
+            <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-6"><i data-lucide="alert-circle" size="32"></i></div>
+            <h3 id="confirmTitle" class="text-xl font-black mb-2 uppercase">Confirmar</h3>
+            <p id="confirmMessage" class="text-slate-500 text-sm mb-10"></p>
+            <div class="flex gap-3">
+                <button onclick="closeModal('confirmModal')" class="flex-1 py-4 text-slate-400 font-bold">Não</button>
+                <button id="confirmBtn" class="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black shadow-lg">Sim</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tools = JSON.parse(localStorage.getItem('ldc_pro_db')) || [];
+        let history = JSON.parse(localStorage.getItem('ldc_pro_hist')) || [];
+        let team = JSON.parse(localStorage.getItem('ldc_pro_team')) || [];
+        let currentImageBase64 = "";
+        let selectedMember = null;
+        let selectedTool = null;
+
+        const formatBRL = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+
+        // FUNÇÃO PARA FORMATAR DATA E HORA PT-BR
+        function getBrazilianDateTime() {
+            const agora = new Date();
+            const data = agora.toLocaleDateString('pt-BR');
+            const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            return { data, hora };
+        }
+
+        function showSection(s) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.main-content').forEach(content => content.classList.remove('active-section'));
+            document.getElementById(`btn-${s}`).classList.add('active');
+            document.getElementById(`section-${s}`).classList.add('active-section');
+            if(s === 'catalog') renderCatalog();
+            render();
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.querySelectorAll('.sidebar-text').forEach(el => el.classList.toggle('hidden'));
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); if(id === 'teamModal') renderTeam(); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        // FLUXO SAÍDA
+        function openLoanFlow() {
+            if(team.length === 0) { showCustomAlert("Erro", "Cadastre a equipe primeiro."); return; }
+            selectedMember = null; selectedTool = null;
+            document.getElementById('searchMemberLoan').value = "";
+            document.getElementById('searchToolLoan').value = "";
+            changeStep(1); renderSelectionTeam();
+            openModal('loanModal');
+        }
+
+        function renderSelectionTeam() {
+            const query = document.getElementById('searchMemberLoan').value.toLowerCase();
+            const filtered = team.filter(m => m.name.toLowerCase().includes(query));
+            const grid = document.getElementById('selectionTeamGrid');
+            grid.innerHTML = filtered.map(m => `
+                <div onclick="selectMember('${m.id}', '${m.name}')" id="team-card-${m.id}" class="selection-card p-4 text-center">
+                    <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-2 font-black text-slate-400">${m.name.charAt(0)}</div>
+                    <p class="font-black text-slate-800 uppercase text-[9px] truncate">${m.name}</p>
+                </div>
+            `).join('');
+        }
+
+        function selectMember(id, name) {
+            selectedMember = { id, name };
+            document.querySelectorAll('#selectionTeamGrid .selection-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById(`team-card-${id}`).classList.add('selected');
+            setTimeout(() => { changeStep(2); renderSelectionTool(); }, 300);
+        }
+
+        function renderSelectionTool() {
+            const query = document.getElementById('searchToolLoan').value.toLowerCase();
+            const available = tools.filter(t => t.status === 'disponivel' && t.name.toLowerCase().includes(query));
+            const grid = document.getElementById('selectionToolGrid');
+            grid.innerHTML = available.map(t => `
+                <div onclick="selectTool(${t.id})" id="tool-card-${t.id}" class="selection-card p-4">
+                    <div class="h-16 bg-slate-50 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+                        ${t.img ? `<img src="${t.img}" class="w-full h-full object-cover">` : `<i data-lucide="wrench" class="text-slate-200" size="16"></i>`}
+                    </div>
+                    <p class="font-black text-slate-800 uppercase text-[9px] truncate">${t.name}</p>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function selectTool(id) {
+            selectedTool = tools.find(t => t.id === id);
+            document.querySelectorAll('#selectionToolGrid .selection-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById(`tool-card-${id}`).classList.add('selected');
+            document.getElementById('btnConfirmLoan').classList.remove('hidden');
+            document.getElementById('loanSummary').classList.remove('hidden');
+            document.getElementById('summaryText').innerText = `${selectedTool.name} → ${selectedMember.name}`;
+        }
+
+        function changeStep(s) {
+            document.getElementById('step1').classList.toggle('hidden', s !== 1);
+            document.getElementById('step2').classList.toggle('hidden', s !== 2);
+            document.getElementById('btnBackStep').classList.toggle('hidden', s !== 2);
+        }
+
+        function finalizeLoan() {
+            selectedTool.status = 'em uso';
+            selectedTool.user = selectedMember.name;
+            save(); closeModal('loanModal');
+        }
+
+        // DEVOLUÇÃO
+        function returnTool(id) {
+            const t = tools.find(x => x.id === id);
+            const tempo = getBrazilianDateTime();
+            history.unshift({ 
+                id: Date.now(), 
+                tool: t.name, 
+                user: t.user, 
+                date: tempo.data, 
+                time: tempo.hora 
+            });
+            t.status = 'disponivel'; t.user = '-'; save();
+        }
+
+        // DADOS E RENDERIZAÇÃO
+        function save() {
+            localStorage.setItem('ldc_pro_db', JSON.stringify(tools));
+            localStorage.setItem('ldc_pro_hist', JSON.stringify(history));
+            localStorage.setItem('ldc_pro_team', JSON.stringify(team));
+            render();
+            if(document.getElementById('section-catalog').classList.contains('active-section')) renderCatalog();
+        }
+
+        function render() {
+            document.getElementById('totalCount').innerText = tools.length;
+            document.getElementById('availCount').innerText = tools.filter(t => t.status === 'disponivel').length;
+            document.getElementById('loanCount').innerText = tools.filter(t => t.status === 'em uso').length;
+            document.getElementById('teamCount').innerText = team.length;
+            document.getElementById('totalValueSidebar').innerText = formatBRL(tools.reduce((a, b) => a + (b.value || 0), 0));
+            document.getElementById('currentDateDisplay').innerText = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            document.getElementById('toolList').innerHTML = tools.map(t => `
+                <tr class="group hover:bg-slate-50 transition-all">
+                    <td class="px-8 py-5">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-xl bg-slate-100 border overflow-hidden">
+                                ${t.img ? `<img src="${t.img}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-slate-300"><i data-lucide="wrench" size="14"></i></div>`}
+                            </div>
+                            <div><p class="font-black text-slate-800 uppercase text-xs">${t.name}</p><p class="text-[9px] font-bold text-slate-400 uppercase">${t.code}</p></div>
+                        </div>
+                    </td>
+                    <td class="px-8 py-5"><span class="text-[9px] font-black uppercase px-2 py-1 rounded-lg ${t.status === 'disponivel' ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'}">${t.status === 'em uso' ? 'COM ' + t.user : t.status}</span></td>
+                    <td class="px-8 py-5 text-right">
+                        <div class="flex items-center justify-end gap-3">
+                            <button onclick="deleteItem(${t.id})" class="text-rose-400 opacity-0 group-hover:opacity-100"><i data-lucide="trash-2" size="14"></i></button>
+                            ${t.status === 'em uso' ? `<button onclick="returnTool(${t.id})" class="bg-slate-900 text-white text-[9px] font-black uppercase px-4 py-2 rounded-xl">Receber</button>` : `<button onclick="openLoanFlow()" class="bg-blue-600 text-white text-[9px] font-black uppercase px-4 py-2 rounded-xl">Liberar</button>`}
+                        </div>
+                    </td>
+                </tr>`).join('');
+            
+            document.getElementById('historyLog').innerHTML = history.slice(0,15).map(h => `
+                <div class="bg-white/5 p-4 rounded-2xl border border-white/5 relative group hover:bg-white/10 transition-all">
+                    <button onclick="deleteLog(${h.id})" class="absolute top-3 right-3 text-rose-400 opacity-0 group-hover:opacity-100"><i data-lucide="trash-2" size="12"></i></button>
+                    <p class="text-xs font-black text-white uppercase pr-6">${h.tool}</p>
+                    <p class="text-[9px] text-blue-400 font-black uppercase mt-1">${h.user}</p>
+                    <p class="text-[8px] text-slate-500 mt-1 font-bold">${h.date} às ${h.time}</p>
+                </div>`).join('');
+            lucide.createIcons();
+        }
+
+        function renderCatalog() {
+            const query = document.getElementById('catalogSearch').value.toLowerCase();
+            const filtered = tools.filter(t => t.name.toLowerCase().includes(query) || t.code.toLowerCase().includes(query));
+            document.getElementById('catalogGrid').innerHTML = filtered.map(t => `
+                <div class="bg-white rounded-[2rem] overflow-hidden shadow-lg border-2 border-transparent hover:border-blue-500 transition-all flex flex-col group">
+                    <div class="h-40 bg-slate-50 relative flex items-center justify-center overflow-hidden">
+                        ${t.img ? `<img src="${t.img}" class="w-full h-full object-cover">` : `<i data-lucide="wrench" class="text-slate-200" size="40"></i>`}
+                        <button onclick="deleteItem(${t.id})" class="absolute top-4 right-4 bg-white/80 p-2 rounded-full text-rose-500 opacity-0 group-hover:opacity-100 shadow-sm"><i data-lucide="trash-2" size="14"></i></button>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col">
+                        <span class="text-[8px] font-black uppercase px-2 py-1 rounded-lg self-start mb-2 ${t.status === 'disponivel' ? 'bg-emerald-100 text-emerald-600' : 'bg-orange-100 text-orange-600'}">${t.status}</span>
+                        <h3 class="font-black text-slate-900 uppercase text-xs mb-1">${t.name}</h3>
+                        <div class="mt-auto pt-4 border-t border-slate-50 font-black text-sm text-slate-600">${formatBRL(t.value)}</div>
+                    </div>
+                </div>`).join('');
+            lucide.createIcons();
+        }
+
+        function deleteItem(id) {
+            const item = tools.find(t => t.id === id);
+            document.getElementById('confirmTitle').innerText = "Excluir Item";
+            document.getElementById('confirmMessage').innerText = `Remover ${item.name} permanentemente?`;
+            document.getElementById('confirmBtn').onclick = () => { tools = tools.filter(t => t.id !== id); save(); closeModal('confirmModal'); };
+            openModal('confirmModal');
+        }
+
+        function deleteLog(id) {
+            document.getElementById('confirmTitle').innerText = "Remover Log";
+            document.getElementById('confirmMessage').innerText = "Apagar este registro?";
+            document.getElementById('confirmBtn').onclick = () => { history = history.filter(h => h.id !== id); save(); closeModal('confirmModal'); };
+            openModal('confirmModal');
+        }
+
+        function confirmClearHistory() {
+            document.getElementById('confirmTitle').innerText = "Limpar Tudo";
+            document.getElementById('confirmMessage').innerText = "Deseja apagar TODO o histórico?";
+            document.getElementById('confirmBtn').onclick = () => { history = []; save(); closeModal('confirmModal'); };
+            openModal('confirmModal');
+        }
+
+        function addTeamMember() {
+            const n = document.getElementById('memberName').value.trim();
+            const id = document.getElementById('memberId').value.trim();
+            if(n && id) { team.push({ name: n, id: id }); save(); renderTeam(); document.getElementById('memberName').value = ""; document.getElementById('memberId').value = ""; }
+        }
+
+        function renderTeam() {
+            const query = document.getElementById('searchTeamConfig').value.toLowerCase();
+            const filtered = team.filter(m => m.name.toLowerCase().includes(query));
+            document.getElementById('teamListContainer').innerHTML = filtered.map(m => `
+                <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl border text-[10px] font-black uppercase">
+                    <span>${m.name} (ID: ${m.id})</span>
+                    <button onclick="team=team.filter(x=>x.id!=='${m.id}');save();renderTeam();" class="text-rose-500"><i data-lucide="trash-2" size="14"></i></button>
+                </div>`).join('');
+            lucide.createIcons();
+        }
+
+        function addTool() {
+            const code = document.getElementById('toolCodeInput').value.trim();
+            const name = document.getElementById('toolNameInput').value.trim();
+            const val = parseFloat(document.getElementById('toolValueInput').value) || 0;
+            if(!code || !name) return;
+            tools.unshift({ id: Date.now(), code, name, img: currentImageBase64, value: val, status: 'disponivel', user: '-' });
+            currentImageBase64 = ""; document.getElementById('imagePreview').classList.add('hidden');
+            document.getElementById('uploadPlaceholder').classList.remove('hidden');
+            document.getElementById('toolCodeInput').value = ""; document.getElementById('toolNameInput').value = ""; document.getElementById('toolValueInput').value = "";
+            closeModal('addModal'); save();
+        }
+
+        function previewImage(input) {
+            const r = new FileReader();
+            r.onload = (e) => {
+                currentImageBase64 = e.target.result;
+                document.getElementById('imagePreview').src = currentImageBase64;
+                document.getElementById('imagePreview').classList.remove('hidden');
+                document.getElementById('uploadPlaceholder').classList.add('hidden');
+            };
+            r.readAsDataURL(input.files[0]);
+        }
+
+        function exportData() {
+            const blob = new Blob([JSON.stringify({ tools, history, team })], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `LDC_Backup.json`; a.click();
+        }
+
+        function importData(input) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = JSON.parse(e.target.result);
+                if(data.tools) { tools = data.tools; history = data.history || []; team = data.team || []; save(); }
+            };
+            reader.readAsText(input.files[0]);
+        }
+
+        function showCustomAlert(title, msg) {
+            document.getElementById('confirmTitle').innerText = title;
+            document.getElementById('confirmMessage').innerText = msg;
+            document.getElementById('confirmBtn').onclick = () => closeModal('confirmModal');
+            openModal('confirmModal');
+        }
+
+        window.onload = () => { render(); showSection('main'); };
+    </script>
+</body>
+</html>
